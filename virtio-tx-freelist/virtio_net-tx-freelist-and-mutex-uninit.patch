@@ -1,0 +1,77 @@
+From: Alan Shearer
+Subject: virtio_net: return TX buf on enqueue failure; destroy mutexes on interrupt setup failure
+
+The send path removed a BufInfo from txFreeList and left it stranded if
+queue_request_v() failed, shrinking the TX pool until transmit stalled.
+
+setup_interrupt() / queue_setup_interrupt() failure jumped to err6 after
+mutex_init() without mutex_destroy(). err6 is also used before the
+mutexes exist (TX BufInfo allocation), so introduce err7 for the
+post-init path.
+
+---
+ src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
+--- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
++++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
+@@ -434,21 +434,21 @@
+ 	status = info->virtio->setup_interrupt(info->virtio_device, NULL, info);
+ 	if (status != B_OK) {
+ 		ERROR("interrupt setup failed (%s)\n", strerror(status));
+-		goto err6;
++		goto err7;
+ 	}
+ 
+ 	status = info->virtio->queue_setup_interrupt(info->rxQueues[0],
+ 		virtio_net_rxDone, info);
+ 	if (status != B_OK) {
+ 		ERROR("queue interrupt setup failed (%s)\n", strerror(status));
+-		goto err6;
++		goto err7;
+ 	}
+ 
+ 	status = info->virtio->queue_setup_interrupt(info->txQueues[0],
+ 		virtio_net_txDone, info);
+ 	if (status != B_OK) {
+ 		ERROR("queue interrupt setup failed (%s)\n", strerror(status));
+-		goto err6;
++		goto err7;
+ 	}
+ 
+ 	if ((info->features & VIRTIO_NET_F_CTRL_VQ) != 0) {
+@@ -456,13 +456,16 @@
+ 			NULL, info);
+ 		if (status != B_OK) {
+ 			ERROR("queue interrupt setup failed (%s)\n", strerror(status));
+-			goto err6;
++			goto err7;
+ 		}
+ 	}
+ 
+ 	*_cookie = info;
+ 	return B_OK;
+ 
++err7:
++	mutex_destroy(&info->rxLock);
++	mutex_destroy(&info->txLock);
+ err6:
+ 	for (int i = 0; i < info->txSizes[0]; i++)
+ 		delete info->txBufInfos[i];
+@@ -773,12 +776,13 @@
+ 	// queue the virtio_net_hdr + buffer data
+ 	status_t status = info->virtio->queue_request_v(info->txQueues[0],
+ 		entries, 2, 0, buf);
+-	mutex_unlock(&info->txLock);
+-
+ 	if (status != B_OK) {
++		info->txFreeList.Add(buf);
++		mutex_unlock(&info->txLock);
+ 		ERROR("tx queueing on queue %d failed (%s)\n", 0, strerror(status));
+ 		return status;
+ 	}
++	mutex_unlock(&info->txLock);
+ 
+ 	sBufferModule->free(buffer);
+ 	return B_OK;

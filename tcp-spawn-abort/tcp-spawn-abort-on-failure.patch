@@ -1,0 +1,67 @@
+From: Alan Shearer
+Subject: tcp: abort child socket if _Spawn fails after listen queue insert
+
+spawn_pending_socket() already puts the child on pending_children and
+increments child_count. _Spawn() could then return DROP (open, bind,
+send path, or SYN-ACK failure) without removing that child, so the
+listen socket kept a dead half-open until it was closed.
+
+Mark the child CLOSED on those error paths and have _ListenReceive call
+set_aborted() after _Spawn returns. Abort is done there because _Spawn
+still holds the child fLock; the destructor also takes that lock.
+
+---
+ src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
+--- a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
++++ b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
+@@ -1552,7 +1552,9 @@
+ 
+ 	TRACE("Spawn()");
+ 
+-	// TODO: proper error handling!
++	// On failure the child stays CLOSED so _ListenReceive can abort it.
++	// Do not call set_aborted() here: we still hold fLock, and the
++	// destructor would take the same lock.
+ 	if (ProtocolSocket::Open() != B_OK) {
+ 		T(Error(this, "opening failed", __LINE__));
+ 		return DROP;
+@@ -1565,10 +1567,12 @@
+ 
+ 	if (fManager->BindChild(this, buffer->destination) != B_OK) {
+ 		T(Error(this, "binding failed", __LINE__));
++		fState = CLOSED;
+ 		return DROP;
+ 	}
+ 	if (_PrepareSendPath(buffer->source) != B_OK) {
+ 		T(Error(this, "prepare send faild", __LINE__));
++		fState = CLOSED;
+ 		return DROP;
+ 	}
+ 
+@@ -1580,6 +1584,7 @@
+ 	// send SYN+ACK
+ 	if (_SendAcknowledge() != B_OK) {
+ 		T(Error(this, "sending failed", __LINE__));
++		fState = CLOSED;
+ 		return DROP;
+ 	}
+ 
+@@ -1613,8 +1618,13 @@
+ 		return DROP;
+ 	}
+ 
+-	return ((TCPEndpoint *)newSocket->first_protocol)->_Spawn(this,
+-		segment, buffer);
++	TCPEndpoint* child = (TCPEndpoint*)newSocket->first_protocol;
++	int32 action = child->_Spawn(this, segment, buffer);
++	if (child->State() == CLOSED) {
++		// _Spawn failed after spawn_pending_socket already queued the child
++		gSocketModule->set_aborted(newSocket);
++	}
++	return action;
+ }
+ 
+ 
