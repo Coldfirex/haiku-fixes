@@ -6,33 +6,64 @@ get_domain() is NULL without freeing it. The same function wrote the
 ICMP header through NetBufferPrepend without checking Status(); on
 prepend failure fData is not valid.
 
+Declare status_t once. On a NULL domain set status and fall through
+to the existing free at the end of the function.
+
 The cause buffer is still owned by the caller.
 
 ---
+ src/add-ons/kernel/network/protocols/icmp/icmp.cpp | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/icmp/icmp.cpp b/src/add-ons/kernel/network/protocols/icmp/icmp.cpp
 --- a/src/add-ons/kernel/network/protocols/icmp/icmp.cpp
 +++ b/src/add-ons/kernel/network/protocols/icmp/icmp.cpp
-@@ -662,6 +662,10 @@
+@@ -662,6 +662,11 @@
  	// Now prepare the ICMP header
  
  	NetBufferPrepend<icmp_header> icmpHeader(reply);
-+	if (icmpHeader.Status() != B_OK) {
++	status_t status = icmpHeader.Status();
++	if (status != B_OK) {
 +		gBufferModule->free(reply);
-+		return icmpHeader.Status();
++		return status;
 +	}
  	icmpHeader->type = icmpType;
  	icmpHeader->code = icmpCode;
  	icmpHeader->zero = 0;
-@@ -694,8 +698,10 @@
+@@ -691,20 +696,22 @@
+ 	icmpHeader.Sync();
+ 
+ 	// Append IP header + 8 byte of the original datagram
+-	status_t status = gBufferModule->append_restored_header(reply, buffer, 0,
++	status = gBufferModule->append_restored_header(reply, buffer, 0,
  		std::min(header.HeaderLength() + 8, (int)header.TotalLength()));
  	if (status == B_OK) {
  		net_domain* domain = get_domain(buffer);
 -		if (domain == NULL)
-+		if (domain == NULL) {
-+			gBufferModule->free(reply);
- 			return B_ERROR;
-+		}
+-			return B_ERROR;
++
++		if (domain == NULL)
++			status = B_ERROR;
++		else {
++			*ICMPChecksumField(reply)
++				= gBufferModule->checksum(reply, 0, reply->size, true);
  
- 		*ICMPChecksumField(reply)
- 			= gBufferModule->checksum(reply, 0, reply->size, true);
+-		*ICMPChecksumField(reply)
+-			= gBufferModule->checksum(reply, 0, reply->size, true);
+-
+-		reply->protocol = IPPROTO_ICMP;
+-
+-		TRACE("  send ICMP message %p to %s\n", reply, AddressString(
+-				domain->address_module, reply->destination, true).Data());
+-
+-		status = domain->module->send_data(NULL, reply);
++			reply->protocol = IPPROTO_ICMP;
++
++			TRACE("  send ICMP message %p to %s\n", reply, AddressString(
++					domain->address_module, reply->destination, true).Data());
++
++			status = domain->module->send_data(NULL, reply);
++		}
+ 	}
+ 	if (status != B_OK)
+ 		gBufferModule->free(reply);

@@ -49,7 +49,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  		return DROP;
  	}
  
-@@ -1613,8 +1618,13 @@
+@@ -1613,8 +1618,12 @@
  		return DROP;
  	}
  
@@ -57,10 +57,9 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
 -		segment, buffer);
 +	TCPEndpoint* child = (TCPEndpoint*)newSocket->first_protocol;
 +	int32 action = child->_Spawn(this, segment, buffer);
-+	if (child->State() == CLOSED) {
-+		// _Spawn failed after spawn_pending_socket already queued the child
++	// _Spawn failed after spawn_pending_socket already queued the child.
++	if (child->State() == CLOSED)
 +		gSocketModule->set_aborted(newSocket);
-+	}
 +	return action;
  }
  
