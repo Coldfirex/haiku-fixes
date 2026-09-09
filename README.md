@@ -10,6 +10,7 @@ udp-receiveerror/    ReceiveError / DeliverError early-return leak
 virtio-tx-freelist/  TX BufInfo leak + mutex teardown on init fail
 virtio-free-id/      device id leak on publish_device fail
 tcp-spawn-abort/     listen-queue child leak when _Spawn fails
+icmp-error-reply/    reply buffer leak if get_domain/prepend fails
 ```
 
 ## Apply a patch
@@ -33,6 +34,6 @@ Patched: pages flatten.
 
 `udp-receiveerror` needs raw ICMP (`SOCK_RAW`). Default target is `127.0.0.1`.
 
-Virtio and TCP changes are driver/stack error paths. They have no
-userspace flooder in this tree; confirm with a rebuild and the
-failing init / listen scenario.
+Virtio, TCP, and ICMP error-reply changes are stack error paths. They have
+no userspace flooder in this tree; confirm with a rebuild and the failing
+path.

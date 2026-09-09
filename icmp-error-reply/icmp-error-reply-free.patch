@@ -1,0 +1,38 @@
+From: Alan Shearer
+Subject: icmp: free error-reply buffer if domain lookup or prepend fails
+
+icmp_error_reply() creates a reply buffer, then returns B_ERROR if
+get_domain() is NULL without freeing it. The same function wrote the
+ICMP header through NetBufferPrepend without checking Status(); on
+prepend failure fData is not valid.
+
+The cause buffer is still owned by the caller.
+
+---
+
+diff --git a/src/add-ons/kernel/network/protocols/icmp/icmp.cpp b/src/add-ons/kernel/network/protocols/icmp/icmp.cpp
+--- a/src/add-ons/kernel/network/protocols/icmp/icmp.cpp
++++ b/src/add-ons/kernel/network/protocols/icmp/icmp.cpp
+@@ -662,6 +662,10 @@
+ 	// Now prepare the ICMP header
+ 
+ 	NetBufferPrepend<icmp_header> icmpHeader(reply);
++	if (icmpHeader.Status() != B_OK) {
++		gBufferModule->free(reply);
++		return icmpHeader.Status();
++	}
+ 	icmpHeader->type = icmpType;
+ 	icmpHeader->code = icmpCode;
+ 	icmpHeader->zero = 0;
+@@ -694,8 +698,10 @@
+ 		std::min(header.HeaderLength() + 8, (int)header.TotalLength()));
+ 	if (status == B_OK) {
+ 		net_domain* domain = get_domain(buffer);
+-		if (domain == NULL)
++		if (domain == NULL) {
++			gBufferModule->free(reply);
+ 			return B_ERROR;
++		}
+ 
+ 		*ICMPChecksumField(reply)
+ 			= gBufferModule->checksum(reply, 0, reply->size, true);
