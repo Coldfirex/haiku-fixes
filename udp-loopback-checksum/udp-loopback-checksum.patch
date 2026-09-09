@@ -1,0 +1,53 @@
+From: Alan Shearer
+Subject: udp: skip software TX checksum when the route is loopback
+
+SendRoutedData always walks the datagram to compute the UDP
+pseudo-header checksum, then sets NET_BUFFER_L4_CHECKSUM_VALID so the
+receive path will skip verification.
+
+On loopback the packet never leaves the host. The software checksum is
+pure CPU and shows up on localhost iperf3 -u. If the route's interface
+has IFF_LOOPBACK, leave udp_checksum at the 0 already written before
+Sync() and only set L4_VALID. Deframe already skips the check when that
+flag is set.
+
+IPv6 UDP requires a non-zero checksum on the wire; loopback is not on
+the wire. The L4_VALID flag is what the local Deframe path consults.
+
+Ticket: https://dev.haiku-os.org/ticket/18730
+
+---
+
+diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
+--- a/src/add-ons/kernel/network/protocols/udp/udp.cpp
++++ b/src/add-ons/kernel/network/protocols/udp/udp.cpp
+@@ -1078,12 +1078,25 @@
+ 
+ 	header.Sync();
+ 
+-	uint16 calculatedChecksum = Checksum::PseudoHeader(AddressModule(),
+-		gBufferModule, buffer, IPPROTO_UDP);
+-	if (calculatedChecksum == 0)
+-		calculatedChecksum = 0xffff;
+-
+-	*UDPChecksumField(buffer) = calculatedChecksum;
++	const bool loopback = route != NULL
++		&& route->interface_address != NULL
++		&& route->interface_address->interface != NULL
++		&& (route->interface_address->interface->flags & IFF_LOOPBACK) != 0;
++
++	if (!loopback) {
++		uint16 calculatedChecksum = Checksum::PseudoHeader(AddressModule(),
++			gBufferModule, buffer, IPPROTO_UDP);
++		if (calculatedChecksum == 0)
++			calculatedChecksum = 0xffff;
++
++		*UDPChecksumField(buffer) = calculatedChecksum;
++	}
++	// else: udp_checksum is already 0 from the prepend above. Packet never
++	// leaves the host; Deframe honors NET_BUFFER_L4_CHECKSUM_VALID on RX.
++
+ 	buffer->buffer_flags |= NET_BUFFER_L4_CHECKSUM_VALID;
+ 
+ 	return next->module->send_routed_data(next, route, buffer);
+ }

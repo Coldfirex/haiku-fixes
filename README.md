@@ -5,12 +5,14 @@ These are notes and reproducers, not a Haiku Gerrit submission.
 Do not send the generated patches to review.haiku-os.org as-is.
 
 ```
-udp-deliverdata/     DeliverData clone leak when FIFO is full
-udp-receiveerror/    ReceiveError / DeliverError early-return leak
-virtio-tx-freelist/  TX BufInfo leak + mutex teardown on init fail
-virtio-free-id/      device id leak on publish_device fail
-tcp-spawn-abort/     listen-queue child leak when _Spawn fails
-icmp-error-reply/    reply buffer leak if get_domain/prepend fails
+udp-deliverdata/         DeliverData clone leak when FIFO is full
+udp-receiveerror/        ReceiveError / DeliverError early-return leak
+virtio-tx-freelist/      TX BufInfo leak + mutex teardown on init fail
+virtio-free-id/          device id leak on publish_device fail
+tcp-spawn-abort/         listen-queue child leak when _Spawn fails
+icmp-error-reply/        reply buffer leak if get_domain/prepend fails
+udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
+udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
 ```
 
 ## Apply a patch
@@ -37,3 +39,11 @@ Patched: pages flatten.
 Virtio, TCP, and ICMP error-reply changes are stack error paths. They have
 no userspace flooder in this tree; confirm with a rebuild and the failing
 path.
+
+`udp-unicast-enqueue` and `udp-loopback-checksum` are #18730 performance
+changes. Measure with:
+
+```
+iperf3 -s
+iperf3 -c localhost -u -b 0 -t 20
+```
