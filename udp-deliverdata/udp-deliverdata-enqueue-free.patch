@@ -1,0 +1,26 @@
+From: Alan Shearer
+Subject: udp: free cloned buffer if DeliverData enqueue fails
+
+DeliverData clones the incoming datagram, deframes it, then Enqueue()s
+it. _Enqueue returns ENOBUFS when the socket receive buffer is full and
+does not take ownership. EnqueueClone already frees on that failure;
+DeliverData did not, so multicast/deliver_data to a full socket leaked
+the clone.
+
+---
+
+diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
+--- a/src/add-ons/kernel/network/protocols/udp/udp.cpp
++++ b/src/add-ons/kernel/network/protocols/udp/udp.cpp
+@@ -1173,7 +1173,10 @@
+ 		return status;
+ 	}
+ 
+-	return Enqueue(buffer);
++	status = Enqueue(buffer);
++	if (status != B_OK)
++		gBufferModule->free(buffer);
++	return status;
+ }
+ 
+ 

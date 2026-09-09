@@ -1,0 +1,55 @@
+From: Alan Shearer
+Subject: udp: free ICMP error buffer on ReceiveError early returns
+
+icmp_receive_data hands the original packet to error_received and does
+not free it. ReceiveError returned on short packets, missing domain
+support, or a failed header read without freeing. DeliverError also
+returned on broadcast/multicast without freeing.
+
+The success path and the QUENCH/default arm already call free.
+
+---
+
+diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
+--- a/src/add-ons/kernel/network/protocols/udp/udp.cpp
++++ b/src/add-ons/kernel/network/protocols/udp/udp.cpp
+@@ -313,8 +313,10 @@
+ status_t
+ UdpDomainSupport::DeliverError(status_t error, net_buffer* buffer)
+ {
+-	if ((buffer->msg_flags & (MSG_BCAST | MSG_MCAST)) != 0)
++	if ((buffer->msg_flags & (MSG_BCAST | MSG_MCAST)) != 0) {
++		gBufferModule->free(buffer);
+ 		return B_ERROR;
++	}
+ 
+ 	MutexLocker _(fLock);
+ 
+@@ -773,14 +775,17 @@
+ 	TRACE_EPM("ReceiveError(code %" B_PRIx32 " %p [%" B_PRIu32 " bytes])",
+ 		error, buffer, buffer->size);
+ 
+-	// We only really need the port information
+-	if (buffer->size < 4)
++	// ICMP error_received transfers buffer ownership to us.
++	if (buffer->size < 4) {
++		gBufferModule->free(buffer);
+ 		return B_BAD_VALUE;
++	}
+ 
+ 	UdpDomainSupport* domainSupport = _GetDomainSupport(buffer);
+ 	if (domainSupport == NULL) {
+ 		// we don't instantiate domain supports in the receiving path, as
+ 		// we are only interested in delivering data to existing sockets.
++		gBufferModule->free(buffer);
+ 		return B_ERROR;
+ 	}
+ 	DomainSupportDeleter deleter(domainSupport);
+@@ -790,6 +795,7 @@
+ 	udp_header header;
+ 	if (gBufferModule->read(buffer, 0, &header,
+ 			std::min((size_t)buffer->size, sizeof(udp_header))) != B_OK) {
++		gBufferModule->free(buffer);
+ 		return B_BAD_VALUE;
+ 	}
+ 
