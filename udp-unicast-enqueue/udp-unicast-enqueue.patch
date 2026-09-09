@@ -3,23 +3,24 @@ Subject: udp: enqueue the incoming buffer on unicast instead of cloning
 
 Unicast demux has one matching endpoint. StoreData always EnqueueClone()s
 the already-deframed datagram; ReceiveData then frees the original. That
-is a full net_buffer clone on every localhost / unicast packet (iperf3
--u against 127.0.0.1).
+is a full net_buffer clone on every localhost / unicast packet.
 
-Enqueue the incoming buffer itself and transfer ownership. Broadcast and
+Enqueue the incoming buffer and transfer ownership. Broadcast and
 DeliverData still clone: they can fan out to more than one socket.
 
-If the socket FIFO is full, Enqueue does not take the buffer; free it
-in _DemuxUnicast so ReceiveData does not double-free on the success path.
+If the socket FIFO is full, Enqueue does not take the buffer. Free it in
+_DemuxUnicast so ReceiveData does not double-free on the success path.
 
 Ticket: https://dev.haiku-os.org/ticket/18730
 
 ---
+ src/add-ons/kernel/network/protocols/udp/udp.cpp | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
 --- a/src/add-ons/kernel/network/protocols/udp/udp.cpp
 +++ b/src/add-ons/kernel/network/protocols/udp/udp.cpp
-@@ -626,7 +626,15 @@
+@@ -626,7 +626,14 @@
  		return B_NAME_NOT_FOUND;
  	}
  
@@ -28,23 +29,21 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
 +	// to the socket queue instead of cloning it. Enqueue takes ownership
 +	// only on success.
 +	status_t status = endpoint->Enqueue(buffer);
-+	if (status != B_OK) {
++	if (status != B_OK)
 +		gBufferModule->free(buffer);
-+		return B_OK;
-+	}
 +
  	return B_OK;
  }
  
  
-@@ -762,8 +770,13 @@
+@@ -762,8 +769,12 @@
  		return B_ERROR;
  	}
  
 -	gBufferModule->free(buffer);
 -	return B_OK;
 +	// Broadcast still clones inside StoreData; free the original here.
-+	// Unicast Enqueue already took (or freed) the buffer in _DemuxUnicast.
++	// Unicast Enqueue already took or freed the buffer in _DemuxUnicast.
 +	if ((buffer->msg_flags & MSG_BCAST) != 0)
 +		gBufferModule->free(buffer);
 +

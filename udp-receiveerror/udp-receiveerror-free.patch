@@ -9,6 +9,8 @@ returned on broadcast/multicast without freeing.
 The success path and the QUENCH/default arm already call free.
 
 ---
+ src/add-ons/kernel/network/protocols/udp/udp.cpp | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
 --- a/src/add-ons/kernel/network/protocols/udp/udp.cpp

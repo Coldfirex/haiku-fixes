@@ -17,11 +17,13 @@ the wire. The L4_VALID flag is what the local Deframe path consults.
 Ticket: https://dev.haiku-os.org/ticket/18730
 
 ---
+ src/add-ons/kernel/network/protocols/udp/udp.cpp | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
 --- a/src/add-ons/kernel/network/protocols/udp/udp.cpp
 +++ b/src/add-ons/kernel/network/protocols/udp/udp.cpp
-@@ -1078,12 +1078,25 @@
+@@ -1078,12 +1078,23 @@
  
  	header.Sync();
  
@@ -31,6 +33,8 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
 -		calculatedChecksum = 0xffff;
 -
 -	*UDPChecksumField(buffer) = calculatedChecksum;
++	// Packet never leaves the host on loopback. udp_checksum is already 0
++	// from the prepend; Deframe honors NET_BUFFER_L4_CHECKSUM_VALID on RX.
 +	const bool loopback = route != NULL
 +		&& route->interface_address != NULL
 +		&& route->interface_address->interface != NULL
@@ -44,8 +48,6 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
 +
 +		*UDPChecksumField(buffer) = calculatedChecksum;
 +	}
-+	// else: udp_checksum is already 0 from the prepend above. Packet never
-+	// leaves the host; Deframe honors NET_BUFFER_L4_CHECKSUM_VALID on RX.
 +
  	buffer->buffer_flags |= NET_BUFFER_L4_CHECKSUM_VALID;
  

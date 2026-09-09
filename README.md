@@ -4,6 +4,9 @@ One folder per issue. The patch and its test (if any) live together.
 These are notes and reproducers, not a Haiku Gerrit submission.
 Do not send the generated patches to review.haiku-os.org as-is.
 
+Patches follow the Haiku coding guidelines:
+https://www.haiku-os.org/development/coding-guidelines/
+
 ```
 udp-deliverdata/         DeliverData clone leak when FIFO is full
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
@@ -27,7 +30,7 @@ git apply /path/to/<folder>/<name>.patch
 
 ```
 cd udp-deliverdata
-gcc -O2 -o udp_deliverdata_leak udp_deliverdata_leak.c -lnetwork
+make
 ./udp_deliverdata_leak 60
 ```
 
@@ -36,14 +39,15 @@ Patched: pages flatten.
 
 `udp-receiveerror` needs raw ICMP (`SOCK_RAW`). Default target is `127.0.0.1`.
 
-Virtio, TCP, and ICMP error-reply changes are stack error paths. They have
-no userspace flooder in this tree; confirm with a rebuild and the failing
-path.
-
-`udp-unicast-enqueue` and `udp-loopback-checksum` are #18730 performance
-changes. Measure with:
+`udp-unicast-enqueue` has a localhost send/recv check (`make && ./udp_unicast_loopback`).
+That only proves ownership and that the loopback path still delivers. Measure
+#18730 with:
 
 ```
 iperf3 -s
 iperf3 -c localhost -u -b 0 -t 20
 ```
+
+Virtio, TCP, and ICMP error-reply changes are stack error paths. They have
+no userspace flooder in this tree; confirm with a rebuild and the failing
+path.
