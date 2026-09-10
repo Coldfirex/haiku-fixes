@@ -1,0 +1,82 @@
+From: Alan Shearer
+Subject: ipv4: drop leaked multicast interface refs and IP_MULTICAST_IF
+
+get_multicast_interface() calls get_route() and never put_route().
+ipv4_delta_membership() and ipv4_generic_delta_membership() call
+get_interface() / get_interface_with_address() (both acquire an
+Interface) and never put_interface(). The file already notes both
+leaks. Every IP_ADD_MEMBERSHIP / MCAST_JOIN_GROUP leaves a route or
+interface reference behind.
+
+Acquire the interface through get_interface(), put the route, and
+put_interface() on every exit of the two wrappers.
+
+IP_MULTICAST_IF stores a heap sockaddr on ipv4_protocol. The
+destructor only deleted the raw socket wrapper, so a socket that set
+the option leaked that address on close.
+
+---
+ src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+@@ -172,6 +172,7 @@
+ 	~ipv4_protocol()
+ 	{
+ 		delete raw;
++		delete multicast_address;
+ 	}
+ 
+ 	RawSocket*			raw;
+@@ -997,14 +998,16 @@
+ static net_interface*
+ get_multicast_interface(ipv4_protocol* protocol, const in_addr* address)
+ {
+-	// TODO: this is broken and leaks references
+ 	sockaddr_in groupAddr;
+ 	net_route* route = sDatalinkModule->get_route(sDomain,
+ 		fill_sockaddr_in(&groupAddr, address ? address->s_addr : INADDR_ANY));
+ 	if (route == NULL)
+ 		return NULL;
+ 
+-	return route->interface_address->interface;
++	net_interface* interface = sDatalinkModule->get_interface(sDomain,
++		route->interface_address->interface->index);
++	sDatalinkModule->put_route(sDomain, route);
++	return interface;
+ }
+ 
+ 
+@@ -1025,8 +1028,10 @@
+ 	if (interface == NULL)
+ 		return B_DEVICE_NOT_FOUND;
+ 
+-	return ipv4_delta_membership(protocol, option, interface,
++	status_t status = ipv4_delta_membership(protocol, option, interface,
+ 		groupAddr, sourceAddr);
++	sDatalinkModule->put_interface(interface);
++	return status;
+ }
+ 
+ 
+@@ -1041,7 +1046,6 @@
+ 
+ 	const in_addr* groupAddr = &((const sockaddr_in*)_groupAddr)->sin_addr;
+ 
+-	// TODO: this is broken and leaks references
+ 	net_interface* interface;
+ 	if (index == 0)
+ 		interface = get_multicast_interface(protocol, groupAddr);
+@@ -1055,7 +1059,9 @@
+ 	if (_sourceAddr != NULL)
+ 		sourceAddr = &((const sockaddr_in*)_sourceAddr)->sin_addr;
+ 
+-	return ipv4_delta_membership(protocol, generic_to_ipv4(option), interface,
+-		groupAddr, sourceAddr);
++	status_t status = ipv4_delta_membership(protocol, generic_to_ipv4(option),
++		interface, groupAddr, sourceAddr);
++	sDatalinkModule->put_interface(interface);
++	return status;
+ }

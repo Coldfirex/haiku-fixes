@@ -1,0 +1,51 @@
+From: Alan Shearer
+Subject: ipv4: UnblockSource/DropSSM must remove the source address
+
+UnblockSource() and DropSSM() copied BlockSource()/AddSSM() and call
+AddressSet::Add() after confirming the source is present. Add() is a
+no-op when the address is already in the set, so IP_UNBLOCK_SOURCE and
+IP_DROP_SOURCE_MEMBERSHIP never change the filter.
+
+Remove the source instead. A second unblock/drop then returns
+EADDRNOTAVAIL, which is the POSIX result.
+
+Also initialize MulticastGroupInterface::fFilterMode to kInclude.
+IsEmpty() treats anything else as a live group, so a failed JoinGroup()
+could LeaveGroup() a membership that was never joined.
+
+---
+ src/add-ons/kernel/network/protocols/ipv4/multicast.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp b/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp
+@@ -34,8 +34,9 @@
+ 	:
+ 	fParent(parent),
+ 	fMulticastAddress(address),
+-	fInterface(interface)
++	fInterface(interface),
++	fFilterMode(kInclude)
+ {
+ }
+ 
+ 
+@@ -89,8 +90,8 @@
+ 	if (!fAddresses.Has(sourceAddress))
+ 		return EADDRNOTAVAIL;
+ 
+-	fAddresses.Add(sourceAddress);
++	fAddresses.Remove(sourceAddress);
+ 	return B_OK;
+ }
+ 
+ 
+@@ -114,7 +115,7 @@
+ 	if (!fAddresses.Has(sourceAddress))
+ 		return EADDRNOTAVAIL;
+ 
+-	fAddresses.Add(sourceAddress);
++	fAddresses.Remove(sourceAddress);
+ 	return B_OK;
+ }

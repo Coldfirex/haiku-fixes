@@ -1,0 +1,79 @@
+From: Alan Shearer
+Subject: ipv4: reject wrapped fragment ranges; keep buffers on merge fail
+
+reassemble_fragments() computes the fragment end in uint16:
+
+	end = start + TotalLength() - HeaderLength()
+
+start can be 65528. The add wraps, so a bogus packet either looks like
+start >= end (harmless B_BAD_DATA) or corrupts fBytesLeft / IsComplete().
+Compute the range in 32 bits and reject anything past IP_MAXPACKET.
+
+FragmentPacket::Reassemble() RemoveHead()s each buffer before merge().
+merge() does not free either buffer on ENOBUFS, but the failure path
+just returned, so those buffers were not on fFragments when the
+packet was deleted. Put every buffer except the caller-owned `to`
+back on the list. Only update the accumulator after a successful merge
+into `to`.
+
+---
+ src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 36 +++++++++++++++++++++---
+ 1 file changed, 32 insertions(+), 4 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+@@ -418,11 +418,22 @@
+ 			status_t status;
+ 			if (to == fragment) {
+ 				status = gBufferModule->merge(fragment, buffer, false);
+-				buffer = fragment;
+-			} else
++				if (status != B_OK) {
++					if (buffer != to)
++						fFragments.Add(buffer);
++					return status;
++				}
++				buffer = fragment;
++			} else {
+ 				status = gBufferModule->merge(buffer, fragment, true);
+-			if (status != B_OK)
+-				return status;
++				if (status != B_OK) {
++					if (buffer != to)
++						fFragments.Add(buffer);
++					if (fragment != to)
++						fFragments.Add(fragment);
++					return status;
++				}
++			}
+ 		} else
+ 			buffer = fragment;
+ 	}
+@@ -569,15 +584,22 @@
+ 	uint16 fragmentOffset = header.FragmentOffset();
+-	uint16 start = (fragmentOffset & IP_FRAGMENT_OFFSET_MASK) << 3;
+-	uint16 end = start + header.TotalLength() - header.HeaderLength();
++	uint32 start = (uint32)(fragmentOffset & IP_FRAGMENT_OFFSET_MASK) << 3;
++	uint32 headerLength = header.HeaderLength();
++	uint32 totalLength = header.TotalLength();
++	if (totalLength < headerLength)
++		return B_BAD_DATA;
++	uint32 end = start + (totalLength - headerLength);
++	if (start >= end || end > IP_MAXPACKET)
++		return B_BAD_DATA;
+ 	bool lastFragment = (fragmentOffset & IP_MORE_FRAGMENTS) == 0;
+ 
+ 	TRACE("   Received IPv4 %sfragment of size %d, offset %d.",
+-		lastFragment ? "last ": "", end - start, start);
++		lastFragment ? "last ": "", (int)(end - start), (int)start);
+ 
+ 	// Remove header unless this is the first fragment
+ 	if (start != 0)
+ 		gBufferModule->remove_header(buffer, header.HeaderLength());
+ 
+-	status = packet->AddFragment(start, end, buffer, lastFragment);
++	status = packet->AddFragment((uint16)start, (uint16)end, buffer,
++		lastFragment);
+ 	if (status != B_OK)
+ 		return status;

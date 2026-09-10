@@ -20,6 +20,9 @@ arp-request-buffer-dtor/ ~arp_entry leaked the request template
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
+ipv4-multicast-filter/   UnblockSource/DropSSM Remove; init fFilterMode
+ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor
+ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 ```
 
 ## Apply a patch
@@ -56,6 +59,14 @@ iperf3 -c localhost -u -b 0 -t 20
 Needs an IPv4 ethernet interface so the ARP module is loaded.
 Unpatched: GET_ENTRY fails after SET reject then SET without reject.
 Patched: prints `reject lifted`.
+
+`ipv4-multicast-filter` uses setsockopt (`make && ./ipv4_multicast_filter`).
+Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
+Patched: the second call returns EADDRNOTAVAIL.
+
+`ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
+paths. Confirm with a rebuild. The membership test also exercises the
+get_route / get_interface path that leaked references.
 
 Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
 error paths. They have no userspace flooder in this tree; confirm with
