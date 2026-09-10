@@ -1,0 +1,54 @@
+From: Alan Shearer
+Subject: arp: drop a non-permanent reject when a mapping is learned
+
+Rejected ARP entries are supposed to last 20 seconds (ARP_REJECT_TIMEOUT)
+and be cleared if the host is seen again (#18816).
+
+arp_update_entry() never applied the incoming flags to an existing
+entry. A later request, reply, or `arp -s` therefore left ARP_FLAG_REJECT
+set and called MarkFailed() again. Incoming traffic also reset
+timer_state to STALE (30 minutes), so a live host that kept ARPing
+refreshed the reject forever.
+
+Clear a non-permanent reject when the update itself is not a reject.
+OR in PUBLISH / PERMANENT / REJECT from the caller so ARP_SET_ENTRY
+can change those bits on an existing entry.
+
+Also write the reused ARP header back before sending a reply.
+NetBufferHeaderReader does not Sync(); if direct_access() fell back to
+a copy, the on-wire packet was still the original request.
+
+---
+ src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+--- a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
++++ b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+@@ -401,6 +401,16 @@
+ 
+ 		entry->hardware_address = *hardwareAddress;
+ 		entry->timestamp = system_time();
++
++		// Incoming packets pass flags == 0. A non-permanent reject must
++		// not stick once we have a mapping for that protocol address.
++		if ((entry->flags & ARP_FLAG_PERMANENT) == 0
++			&& (flags & ARP_FLAG_REJECT) == 0) {
++			entry->flags &= ~ARP_FLAG_REJECT;
++		}
++
++		entry->flags |= flags & (ARP_FLAG_PUBLISH | ARP_FLAG_PERMANENT
++			| ARP_FLAG_REJECT);
+ 	} else {
+ 		entry = arp_entry::Add(protocolAddress, hardwareAddress, flags);
+ 		if (entry == NULL)
+@@ -609,6 +619,9 @@
+ 	buffer->msg_flags = 0;
+ 		// make sure this won't be a broadcast message
+ 
++	// Reader may hold a copy if the header was not directly accessible.
++	gBufferModule->write(buffer, 0, &header, sizeof(arp_header));
++
+ 	gBufferModule->trim(buffer, sizeof(arp_header));
+ 	return entry->protocol->next->module->send_data(entry->protocol->next,
+ 		buffer);

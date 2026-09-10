@@ -16,6 +16,10 @@ tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 icmp-error-reply/        reply buffer leak if get_domain/prepend fails
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
 udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
+arp-request-buffer-dtor/ ~arp_entry leaked the request template
+arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
+arp-reject-learn/        #18816 reject never cleared on learn
+arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ```
 
 ## Apply a patch
@@ -40,7 +44,7 @@ Patched: pages flatten.
 `udp-receiveerror` needs raw ICMP (`SOCK_RAW`). Default target is `127.0.0.1`.
 
 `udp-unicast-enqueue` has a localhost send/recv check (`make && ./udp_unicast_loopback`).
-That only proves ownership and that the loopback path still delivers. Measure
+That only proves ownership and the loopback path still delivers. Measure
 #18730 with:
 
 ```
@@ -48,6 +52,11 @@ iperf3 -s
 iperf3 -c localhost -u -b 0 -t 20
 ```
 
-Virtio, TCP, and ICMP error-reply changes are stack error paths. They have
-no userspace flooder in this tree; confirm with a rebuild and the failing
-path.
+`arp-reject-learn` talks to the ARP generic syscall (`make && ./arp_reject_learn`).
+Needs an IPv4 ethernet interface so the ARP module is loaded.
+Unpatched: GET_ENTRY fails after SET reject then SET without reject.
+Patched: prints `reject lifted`.
+
+Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
+error paths. They have no userspace flooder in this tree; confirm with
+a rebuild and the failing path.

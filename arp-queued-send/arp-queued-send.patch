@@ -1,0 +1,48 @@
+From: Alan Shearer
+Subject: arp: do not dereference a NULL protocol when flushing the resolve queue
+
+Packets waiting for a MAC are queued on the arp_entry and sent from
+MarkValid() once the mapping is known.
+
+protocol is only set in arp_start_resolve() and arp_set_local_entry().
+arp_update_entry() can MarkValid() an entry learned from a request or
+reply whose protocol pointer is still NULL. send_data() through
+protocol->next is then a NULL dereference (KDL).
+
+If the pointer is missing, drop the queue. If send_data() fails, the
+ethernet frame module does not take the buffer — free it, same as the
+ARP timer already does for request templates.
+
+---
+ src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+--- a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
++++ b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+@@ -337,16 +337,24 @@
+ 
+ 	flags = (flags & ~ARP_FLAG_REJECT) | ARP_FLAG_VALID;
+ 
++	if (protocol == NULL || protocol->next == NULL) {
++		ClearQueue();
++		return;
++	}
++
+ 	BufferList::Iterator iterator = queue.GetIterator();
+ 	while (iterator.HasNext()) {
+ 		net_buffer *buffer = iterator.Next();
+ 		iterator.Remove();
+ 
+ 		TRACE(("  ARP Dequeing packet %p...\n", buffer));
+ 
+ 		memcpy(buffer->destination, &hardware_address,
+ 			hardware_address.sdl_len);
+-		protocol->next->module->send_data(protocol->next, buffer);
++		status_t status = protocol->next->module->send_data(protocol->next,
++			buffer);
++		if (status < B_OK)
++			gBufferModule->free(buffer);
+ 	}
+ }
+ 

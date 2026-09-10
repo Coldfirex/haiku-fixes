@@ -1,0 +1,84 @@
+From: Alan Shearer
+Subject: arp: unregister handlers on init failure; drop entries on uninit
+
+arp_init_protocol() registers the ARP frame handler, then the IPv4
+domain handler, then allocates the protocol object. Failure after the
+first register left those handlers installed with no protocol.
+
+Remote cache entries keep a raw protocol pointer for retransmission
+and for MarkValid(). arp_uninit_protocol() deleted that object without
+removing those entries. A later request timer or a late reply would
+dereference the freed arp_protocol (KDL).
+
+Unregister both handlers on any init failure. On uninit, schedule
+removal of every cache entry that still points at this protocol.
+
+---
+ src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 41 +++++++++++++++++++++++++++++++----------
+ 1 file changed, 31 insertions(+), 10 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+--- a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
++++ b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+@@ -534,6 +534,32 @@
+ }
+ 
+ 
++static void
++arp_remove_protocol_entries(arp_protocol* protocol)
++{
++	MutexLocker locker(sCacheLock);
++
++	AddressCache::Iterator iterator(sCache);
++	while (iterator.HasNext()) {
++		arp_entry* entry = iterator.Next();
++		if (entry->protocol != protocol)
++			continue;
++
++		sCache->Remove(entry);
++		entry->flags |= ARP_FLAG_REMOVED;
++		entry->protocol = NULL;
++
++		locker.Unlock();
++		delete entry;
++		locker.Lock();
++
++		iterator = AddressCache::Iterator(sCache);
++	}
++}
++
++
+ /*!\tCreates permanent local entries for all addresses of the interface belonging
+ \tto this protocol.
+ \tReturns an error if no entry could be added.
+@@ -986,11 +1012,19 @@
+ \tstatus = sStackModule->register_domain_device_handler(
+ \t\tinterface->device, B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_IP), domain);
+-\tif (status != B_OK)
++\tif (status != B_OK) {
++\t\tsStackModule->unregister_device_handler(interface->device,
++\t\t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
+ \t\treturn status;
++\t}
+ 
+ \tarp_protocol* protocol = new(std::nothrow) arp_protocol;
+-\tif (protocol == NULL)
++\tif (protocol == NULL) {
++\t\tsStackModule->unregister_device_handler(interface->device,
++\t\t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_IP));
++\t\tsStackModule->unregister_device_handler(interface->device,
++\t\t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
+ \t\treturn B_NO_MEMORY;
++\t}
+ 
+ \tmemset(&protocol->hardware_address, 0, sizeof(sockaddr_dl));
+ \tprotocol->local_address = 0;
+@@ -1003,6 +1037,8 @@
+ status_t
+ arp_uninit_protocol(net_datalink_protocol *protocol)
+ {
++\tarp_remove_protocol_entries((arp_protocol*)protocol);
++
+ \tsStackModule->unregister_device_handler(protocol->interface->device,
+ \t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
+ \tsStackModule->unregister_device_handler(protocol->interface->device,

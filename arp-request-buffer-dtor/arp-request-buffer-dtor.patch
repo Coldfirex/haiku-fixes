@@ -1,0 +1,32 @@
+From: Alan Shearer
+Subject: arp: free request_buffer when the cache entry is destroyed
+
+arp_entry holds a template ARP request in request_buffer while
+resolution is in progress. delete_request_buffer() is only called from
+arp_update_entry() on a successful (or reject) update.
+
+The destructor cancelled the timer and drained the packet queue, but
+never released request_buffer. That leaks the template whenever an
+unresolved entry is dropped: prepend failure in arp_start_resolve(),
+ARP_DELETE_ENTRY / ARP_FLUSH_ENTRIES, the 20-second reject timeout, or
+the stale timer.
+
+The destructor already waits for the timer, so no concurrent get/put
+remains. Reuse delete_request_buffer().
+
+---
+ src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+--- a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
++++ b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
+@@ -303,6 +303,8 @@
+ 	sStackModule->cancel_timer(&timer);
+ 	sStackModule->wait_for_timer(&timer);
+ 
++	delete_request_buffer(this);
++
+ 	ClearQueue();
+ }
+ 
