@@ -48,37 +48,37 @@ diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add
 +}
 +
 +
- /*!\tCreates permanent local entries for all addresses of the interface belonging
- \tto this protocol.
- \tReturns an error if no entry could be added.
+ /*!	Creates permanent local entries for all addresses of the interface belonging
+ 	to this protocol.
+ 	Returns an error if no entry could be added.
 @@ -986,11 +1012,19 @@
- \tstatus = sStackModule->register_domain_device_handler(
- \t\tinterface->device, B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_IP), domain);
--\tif (status != B_OK)
-+\tif (status != B_OK) {
-+\t\tsStackModule->unregister_device_handler(interface->device,
-+\t\t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
- \t\treturn status;
-+\t}
+ 	status = sStackModule->register_domain_device_handler(
+ 		interface->device, B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_IP), domain);
+-	if (status != B_OK)
++	if (status != B_OK) {
++		sStackModule->unregister_device_handler(interface->device,
++			B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
+ 		return status;
++	}
  
- \tarp_protocol* protocol = new(std::nothrow) arp_protocol;
--\tif (protocol == NULL)
-+\tif (protocol == NULL) {
-+\t\tsStackModule->unregister_device_handler(interface->device,
-+\t\t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_IP));
-+\t\tsStackModule->unregister_device_handler(interface->device,
-+\t\t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
- \t\treturn B_NO_MEMORY;
-+\t}
+ 	arp_protocol* protocol = new(std::nothrow) arp_protocol;
+-	if (protocol == NULL)
++	if (protocol == NULL) {
++		sStackModule->unregister_device_handler(interface->device,
++			B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_IP));
++		sStackModule->unregister_device_handler(interface->device,
++			B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
+ 		return B_NO_MEMORY;
++	}
  
- \tmemset(&protocol->hardware_address, 0, sizeof(sockaddr_dl));
- \tprotocol->local_address = 0;
+ 	memset(&protocol->hardware_address, 0, sizeof(sockaddr_dl));
+ 	protocol->local_address = 0;
 @@ -1003,6 +1037,8 @@
  status_t
  arp_uninit_protocol(net_datalink_protocol *protocol)
  {
-+\tarp_remove_protocol_entries((arp_protocol*)protocol);
++	arp_remove_protocol_entries((arp_protocol*)protocol);
 +
- \tsStackModule->unregister_device_handler(protocol->interface->device,
- \t\tB_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
- \tsStackModule->unregister_device_handler(protocol->interface->device,
+ 	sStackModule->unregister_device_handler(protocol->interface->device,
+ 		B_NET_FRAME_TYPE(IFT_ETHER, ETHER_TYPE_ARP));
+ 	sStackModule->unregister_device_handler(protocol->interface->device,
