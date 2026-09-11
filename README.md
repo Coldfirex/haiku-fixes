@@ -24,6 +24,10 @@ ipv4-multicast-filter/   UnblockSource/DropSSM call Remove, not Add
 ipv4-multicast-filtermode/ init MulticastGroupInterface fFilterMode
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
+virtio-gpu-mutex-uninit/ commandLock leak if interrupt setup fails
+virtio-gpu-detach-backing/ zero-init DETACH_BACKING command header
+virtio-gpu-clone-fd/     accelerant clone path closed fd twice
+virtio-gpu-open-shared-area/ shared info area leak if open() fails
 ```
 
 ## Apply a patch
@@ -71,6 +75,6 @@ Patched: the second call returns EADDRNOTAVAIL.
 paths. Confirm with a rebuild. The membership test also exercises the
 get_route / get_interface path that leaked references.
 
-Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
-error paths. They have no userspace flooder in this tree; confirm with
-a rebuild and the failing path.
+Virtio, virtio_gpu, TCP, ICMP error-reply, and the other ARP changes are
+driver/stack error paths. They have no userspace flooder in this tree;
+confirm with a rebuild and the failing path.

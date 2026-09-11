@@ -1,0 +1,37 @@
+From: Alan Shearer
+Subject: virtio_gpu: free shared info area if open() fails
+
+open() created the shared-info area then jumped to error without
+deleting it. framebufferArea / sharedArea were also uninitialized if
+an earlier step failed, so delete_area() could see a garbage id.
+
+Initialize both area ids to -1 and delete the shared area on the
+error path.
+
+---
+ src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+--- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
++++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+@@ -604,6 +604,9 @@
+ 	if (handle == NULL)
+ 		return B_NO_MEMORY;
+ 
++	info->sharedArea = -1;
++	info->framebufferArea = -1;
++
+ 	info->commandDone = create_sem(1, "virtio_gpu_command");
+ 	if (info->commandDone < B_OK)
+ 		goto error;
+@@ -671,6 +674,9 @@
+ 
+ error:
+ 	delete_area(info->framebufferArea);
+ 	info->framebufferArea = -1;
++	delete_area(info->sharedArea);
++	info->sharedArea = -1;
+ 	delete_sem(info->commandDone);
+ 	info->commandDone = -1;
+ 	free(handle);
