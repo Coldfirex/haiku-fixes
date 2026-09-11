@@ -20,7 +20,8 @@ arp-request-buffer-dtor/ ~arp_entry leaked the request template
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
-ipv4-multicast-filter/   UnblockSource/DropSSM Remove; init fFilterMode
+ipv4-multicast-filter/   UnblockSource/DropSSM call Remove, not Add
+ipv4-multicast-filtermode/ init MulticastGroupInterface fFilterMode
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 ```
@@ -63,6 +64,8 @@ Patched: prints `reject lifted`.
 `ipv4-multicast-filter` uses setsockopt (`make && ./ipv4_multicast_filter`).
 Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
 Patched: the second call returns EADDRNOTAVAIL.
+
+`ipv4-multicast-filtermode` is a constructor default. Confirm with a rebuild.
 
 `ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
 paths. Confirm with a rebuild. The membership test also exercises the

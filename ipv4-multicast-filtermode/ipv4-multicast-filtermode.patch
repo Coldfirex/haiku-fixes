@@ -1,0 +1,28 @@
+From: Alan Shearer
+Subject: ipv4: initialize MulticastGroupInterface filter mode to include
+
+MulticastGroupInterface never set fFilterMode. IsEmpty() treats any
+mode other than kInclude with an empty address list as a live group, so
+a failed JoinGroup() could LeaveGroup() a membership that was never
+joined.
+
+Default to kInclude, matching an unused include-mode filter.
+
+---
+ src/add-ons/kernel/network/protocols/ipv4/multicast.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp b/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp
+@@ -34,8 +34,9 @@
+ 	:
+ 	fParent(parent),
+ 	fMulticastAddress(address),
+-	fInterface(interface)
++	fInterface(interface),
++	fFilterMode(kInclude)
+ {
+ }
+ 
+ 
