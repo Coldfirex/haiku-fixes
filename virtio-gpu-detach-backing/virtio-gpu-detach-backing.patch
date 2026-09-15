@@ -1,8 +1,8 @@
 From: Alan Shearer
-Subject: virtio_gpu: zero-init RESOURCE_DETACH_BACKING command
+Subject: virtio_gpu: initialize detach_backing command
 
-Every other virtio-gpu command struct is value-initialized. detach_backing
-left hdr.flags and fence_id uninitialized before send_cmd().
+backing was uninitialized; response on the next line already uses {}.
+hdr.flags and fence_id were sent as stack garbage.
 
 ---
  src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 2 +-
