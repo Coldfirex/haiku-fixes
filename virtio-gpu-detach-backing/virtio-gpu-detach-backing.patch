@@ -1,8 +1,9 @@
 From: Alan Shearer
 Subject: virtio_gpu: initialize detach_backing command
 
-backing was uninitialized; response on the next line already uses {}.
-hdr.flags and fence_id were sent as stack garbage.
+The command struct was uninitialized. send_cmd() overwrites fence_id
+but ORs flags, so hdr.flags, ctx_id, and padding could go to the
+device as stack garbage. Use {} like the other commands in this file.
 
 ---
  src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 2 +-
