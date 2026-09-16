@@ -1,14 +1,14 @@
 #!/bin/sh
-# All-in-one helper meant to run *inside Haiku* (the guest).
-# See Coldfirex/haiku-fixes. Auto-detects HAIKU_SRC.
+# Haiku-guest helper. Does not walk the disk (that hangs SSH).
+# Set HAIKU_SRC once if the tree is not in a common path.
 
 set -e
 
 FIXES_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-GERRIT_USER=${GERRIT_USER:-Coldfirex}
 GERRIT_HTTP=${GERRIT_HTTP:-https://review.haiku-os.org}
 ENV_FILE=$FIXES_DIR/.on-haiku.env
 TRY_PATCHDIR=$FIXES_DIR/.tmp
+TRY_STATE=$FIXES_DIR/.on-haiku-try
 
 is_haiku_tree() {
 	[ -d "$1/src/add-ons" ] && { [ -d "$1/.git" ] || [ -f "$1/configure" ]; }
@@ -23,11 +23,6 @@ guess_output() {
 	[ -z "$HAIKU_SRC" ] && return
 	if [ -d "$HAIKU_SRC/generated" ]; then
 		HAIKU_OUTPUT=$HAIKU_SRC/generated
-		return
-	fi
-	set -- "$HAIKU_SRC"/generated.*
-	if [ -d "$1" ]; then
-		HAIKU_OUTPUT=$1
 	else
 		HAIKU_OUTPUT=$HAIKU_SRC/generated
 	fi
@@ -43,57 +38,39 @@ find_haiku_src() {
 		guess_output
 		return 0
 	fi
-	for d in "$HOME/haiku" "$HOME/src/haiku" "$HOME/source/haiku" /boot/home/haiku /boot/home/src/haiku /boot/home/source/haiku "$FIXES_DIR/../haiku" "$FIXES_DIR/../../haiku"; do
+	for d in "$HOME/haiku" "$HOME/src/haiku" "$HOME/source/haiku" /boot/home/haiku /boot/home/src/haiku /boot/home/source/haiku "$FIXES_DIR/../haiku"; do
 		if is_haiku_tree "$d"; then
 			HAIKU_SRC=$(CDPATH= cd -- "$d" && pwd)
 			guess_output
 			return 0
 		fi
 	done
-	found=$(find "$HOME" /boot/home -maxdepth 5 -type d -path '*/src/add-ons' 2>/dev/null | head -1)
-	if [ -n "$found" ]; then
-		HAIKU_SRC=$(CDPATH= cd -- "$found/../.." && pwd)
-		if is_haiku_tree "$HAIKU_SRC"; then
-			guess_output
-			return 0
-		fi
-	fi
 	return 1
 }
 
 save_env() {
-	[ -n "$HAIKU_SRC" ] && printf 'HAIKU_SRC=%s\nHAIKU_OUTPUT=%s\n' "$HAIKU_SRC" "$HAIKU_OUTPUT" > "$ENV_FILE"
+	[ -n "$HAIKU_SRC" ] || return 0
+	printf 'HAIKU_SRC=%s\nHAIKU_OUTPUT=%s\n' "$HAIKU_SRC" "$HAIKU_OUTPUT" > "$ENV_FILE"
+	TRY_STATE=$HAIKU_SRC/.on-haiku-try
 }
 
-find_haiku_src || true
-TRY_STATE=${HAIKU_SRC:+$HAIKU_SRC/.on-haiku-try}
-TRY_STATE=${TRY_STATE:-$FIXES_DIR/.on-haiku-try}
-
 need_haiku() {
-	if [ "$(uname)" != "Haiku" ]; then
-		echo "on-haiku.sh is for the Haiku guest" >&2
-		exit 1
-	fi
+	[ "$(uname)" = "Haiku" ] || { echo "run this inside Haiku" >&2; exit 1; }
 }
 
 need_src() {
+	echo "looking for haiku source tree..."
 	if ! find_haiku_src; then
-		echo "no haiku source tree found. export HAIKU_SRC=/path/to/haiku" >&2
+		echo "not found. Set it:" >&2
+		echo "  export HAIKU_SRC=/path/to/haiku" >&2
 		exit 1
 	fi
 	save_env
-	echo "using HAIKU_SRC=$HAIKU_SRC"
-	echo "using HAIKU_OUTPUT=$HAIKU_OUTPUT"
+	echo "HAIKU_SRC=$HAIKU_SRC"
+	echo "HAIKU_OUTPUT=$HAIKU_OUTPUT"
 }
 
 have() { command -v "$1" >/dev/null 2>&1; }
-
-usage() {
-	cat <<EOF
-usage: $0 try <gerrit-change>
-       $0 untry | configure | test-log | screen | bootstrap
-EOF
-}
 
 copy_one() {
 	src=$1; dst=$2
@@ -120,106 +97,75 @@ overlay_target() {
 		ln -sfn "../../bin/$target" "$base/dev/graphics/$target"
 		;;
 	*)
-		base=$HOME/config/non-packaged/add-ons/kernel/drivers
-		mkdir -p "$base/bin"
-		copy_one "$bin" "$base/bin/$target"
+		mkdir -p "$HOME/config/non-packaged/add-ons/kernel/drivers/bin"
+		copy_one "$bin" "$HOME/config/non-packaged/add-ons/kernel/drivers/bin/$target"
 		;;
 	esac
 }
 
-cmd_overlay() {
-	need_haiku
-	for t in "$@"; do overlay_target "$t"; done
-	echo "overlay ready. Reboot."
-}
-
-cmd_configure() {
-	need_haiku; need_src
-	cd "$HAIKU_SRC"
-	[ -d "$HAIKU_OUTPUT" ] && { echo "already configured: $HAIKU_OUTPUT"; return 0; }
-	./configure --use-gcc-pipe
-}
-
-cmd_bootstrap() {
-	need_haiku
-	have git || pkgman install git
-	have curl || pkgman install curl
-	have jam || pkgman install jam
-	if ! find_haiku_src; then
-		HAIKU_SRC=$HOME/haiku
-		HAIKU_OUTPUT=$HAIKU_SRC/generated
-	fi
-	if [ ! -d "$HAIKU_SRC/.git" ]; then
-		git clone "https://git.haiku-os.org/haiku" "$HAIKU_SRC"
-	fi
-	save_env
-}
-
-gerrit_latest_ps() {
-	change=$1
-	mod=$(printf '%02d' $((change % 100)))
-	git ls-remote "$GERRIT_HTTP/haiku" "refs/changes/$mod/$change/*" | awk '{print $2}' | sed -n "s|^refs/changes/[0-9][0-9]/$change/||p" | grep -E '^[0-9]+$' | sort -n | tail -1
-}
-
-files_to_targets() {
-	awk '{ f=$0; if (f ~ /accelerants\/virtio\//) print "virtio_gpu.accelerant"; else if (f ~ /drivers\/graphics\/virtio\// || f ~ /graphics\/virtio\//) print "virtio_gpu"; else if (f ~ /ether\/virtio\//) print "virtio_net"; else if (f ~ /protocols\/udp\//) print "udp"; else if (f ~ /protocols\/tcp\//) print "tcp"; else if (f ~ /protocols\/ipv4\//) print "ipv4"; else if (f ~ /protocols\/icmp\//) print "icmp"; else if (f ~ /datalink_protocols\/arp\//) print "arp"; }' | sort -u
-}
-
 cmd_try() {
-	need_haiku; need_src
-	change=$1; ps=$2
-	[ -n "$change" ] || { echo "try needs a Gerrit change number" >&2; exit 1; }
-	[ -f "$TRY_STATE" ] && { echo "run: $0 untry first"; cat "$TRY_STATE"; exit 1; }
-	[ -d "$HAIKU_OUTPUT" ] || { echo "run: $0 configure"; exit 1; }
-	[ -z "$ps" ] && ps=$(gerrit_latest_ps "$change")
-	[ -n "$ps" ] || { echo "change $change not found on Gerrit" >&2; exit 1; }
+	need_haiku
+	need_src
+	change=$1
+	ps=$2
+	[ -n "$change" ] || { echo "usage: $0 try 11584" >&2; exit 1; }
+	[ -f "$TRY_STATE" ] && { echo "already trying:"; cat "$TRY_STATE"; echo "run: $0 untry"; exit 1; }
+	[ -d "$HAIKU_OUTPUT" ] || { echo "no $HAIKU_OUTPUT — run: $0 configure" >&2; exit 1; }
+	echo "asking Gerrit for $change ..."
+	if [ -z "$ps" ]; then
+		mod=$(printf '%02d' $((change % 100)))
+		ps=$(git ls-remote "$GERRIT_HTTP/haiku" "refs/changes/$mod/$change/*" | awk '{print $2}' | sed -n "s|^refs/changes/[0-9][0-9]/$change/||p" | grep -E '^[0-9]+$' | sort -n | tail -1)
+	fi
+	[ -n "$ps" ] || { echo "Gerrit change $change not found" >&2; exit 1; }
 	mod=$(printf '%02d' $((change % 100)))
 	ref="refs/changes/$mod/$change/$ps"
 	echo "fetch $ref"
 	git -C "$HAIKU_SRC" fetch "$GERRIT_HTTP/haiku" "$ref"
+	echo "apply"
 	mkdir -p "$TRY_PATCHDIR"
 	patch=$TRY_PATCHDIR/gerrit-$change-$ps.patch
 	git -C "$HAIKU_SRC" format-patch -1 --stdout FETCH_HEAD > "$patch"
 	git -C "$HAIKU_SRC" apply --check "$patch"
 	git -C "$HAIKU_SRC" apply "$patch"
-	targets=$(awk '/^diff --git / { f=$3; sub(/^a\//,"",f); print f }' "$patch" | files_to_targets)
-	[ -n "$targets" ] || { echo "applied, no known jam targets"; exit 1; }
-	echo "jam $targets"
+	targets=$(awk '/^diff --git / { f=$3; sub(/^a\//,"",f); print f }' "$patch" | awk '{ f=$0; if (f ~ /accelerants\/virtio\//) print "virtio_gpu.accelerant"; else if (f ~ /graphics\/virtio\//) print "virtio_gpu"; }' | sort -u)
+	[ -n "$targets" ] || { echo "applied, but no virtio_gpu jam targets" >&2; exit 1; }
+	echo "jam $targets  (this can take a few minutes with little output)"
 	( cd "$HAIKU_OUTPUT" && jam -q $targets )
-	cmd_overlay $targets
+	echo "overlay $targets"
+	for t in $targets; do overlay_target "$t"; done
 	printf 'CHANGE=%s\nPS=%s\nPATCH=%s\nTARGETS=%s\n' "$change" "$ps" "$patch" "$targets" > "$TRY_STATE"
-	echo "Applied $change/$ps. Reboot, then screenmode 1920 1080 32"
+	echo "done. Reboot, then: screenmode 1920 1080 32"
 }
 
 cmd_untry() {
-	need_haiku; need_src
+	need_haiku
+	need_src
 	[ -f "$TRY_STATE" ] || { echo "no try state"; exit 1; }
 	. "$TRY_STATE"
 	[ -n "$PATCH" ] && [ -f "$PATCH" ] && git -C "$HAIKU_SRC" apply -R "$PATCH" || true
 	for t in $TARGETS; do
-		case $t in
-		*.accelerant) rm -f "$HOME/config/non-packaged/add-ons/accelerants/$t" ;;
-		*) rm -f "$HOME/config/non-packaged/add-ons/kernel/drivers/bin/$t"; rm -f "$HOME/config/non-packaged/add-ons/kernel/drivers/dev/graphics/$t" ;;
-		esac
+		rm -f "$HOME/config/non-packaged/add-ons/accelerants/$t"
+		rm -f "$HOME/config/non-packaged/add-ons/kernel/drivers/bin/$t"
+		rm -f "$HOME/config/non-packaged/add-ons/kernel/drivers/dev/graphics/$t"
 	done
 	rm -f "$TRY_STATE"
 	echo "untry done. Reboot."
 }
 
-cmd_test_log() {
+cmd_configure() {
 	need_haiku
-	have listimage && listimage | grep -i virtio || true
-	have screenmode && screenmode || true
-	[ -f /var/log/syslog ] && grep -i virtio_gpu /var/log/syslog | tail -40
+	need_src
+	cd "$HAIKU_SRC"
+	[ -d "$HAIKU_OUTPUT" ] && { echo "already configured: $HAIKU_OUTPUT"; return 0; }
+	echo "configure --use-gcc-pipe"
+	./configure --use-gcc-pipe
 }
 
-cmd=${1:-help}; shift || true
+cmd=${1:-}
+shift || true
 case $cmd in
-bootstrap) cmd_bootstrap ;;
-configure) cmd_configure ;;
-try) cmd_try "${1:?change}" "${2:-}" ;;
+try) cmd_try "${1:?11584}" "${2:-}" ;;
 untry) cmd_untry ;;
-overlay) cmd_overlay "$@" ;;
-test-log) cmd_test_log ;;
-*) usage ;;
+configure) cmd_configure ;;
+*) echo "usage: $0 try 11584 | untry | configure" ;;
 esac
