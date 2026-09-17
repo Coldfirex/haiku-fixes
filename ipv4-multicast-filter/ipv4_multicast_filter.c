@@ -12,7 +12,7 @@
  * still returns 0 because the source never left the set.
  * Patched: the second call returns EADDRNOTAVAIL.
  *
- * Build on Haiku:
+ * Build on Haiku (gcc 2.95 or gcc 13):
  *		make
  * Run (needs IPv4, loopback is enough):
  *		./ipv4_multicast_filter
@@ -48,11 +48,16 @@ OpenUdp()
 static int
 TestUnblock()
 {
-	int fd = OpenUdp();
+	int fd;
+	int status;
+	int saved;
+	struct ip_mreq group;
+	struct ip_mreq_source req;
+
+	fd = OpenUdp();
 	if (fd < 0)
 		return Fail("socket");
 
-	struct ip_mreq group;
 	memset(&group, 0, sizeof(group));
 	group.imr_multiaddr.s_addr = inet_addr("239.255.42.1");
 	group.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -62,7 +67,6 @@ TestUnblock()
 		return Fail("IP_ADD_MEMBERSHIP");
 	}
 
-	struct ip_mreq_source req;
 	memset(&req, 0, sizeof(req));
 	req.imr_multiaddr.s_addr = group.imr_multiaddr.s_addr;
 	req.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -77,9 +81,8 @@ TestUnblock()
 		return Fail("IP_UNBLOCK_SOURCE");
 	}
 
-	int status = setsockopt(fd, IPPROTO_IP, IP_UNBLOCK_SOURCE, &req,
-		sizeof(req));
-	int saved = errno;
+	status = setsockopt(fd, IPPROTO_IP, IP_UNBLOCK_SOURCE, &req, sizeof(req));
+	saved = errno;
 	setsockopt(fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, &group, sizeof(group));
 	close(fd);
 
@@ -101,11 +104,15 @@ TestUnblock()
 static int
 TestDropSource()
 {
-	int fd = OpenUdp();
+	int fd;
+	int status;
+	int saved;
+	struct ip_mreq_source req;
+
+	fd = OpenUdp();
 	if (fd < 0)
 		return Fail("socket");
 
-	struct ip_mreq_source req;
 	memset(&req, 0, sizeof(req));
 	req.imr_multiaddr.s_addr = inet_addr("239.255.42.2");
 	req.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -122,9 +129,9 @@ TestDropSource()
 		return Fail("IP_DROP_SOURCE_MEMBERSHIP");
 	}
 
-	int status = setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, &req,
+	status = setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, &req,
 		sizeof(req));
-	int saved = errno;
+	saved = errno;
 	close(fd);
 
 	if (status == 0) {

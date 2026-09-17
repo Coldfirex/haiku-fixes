@@ -12,7 +12,7 @@
  * never read. A second socket floods that group. After the FIFO is
  * full, each extra datagram clones a net_buffer that is leaked.
  *
- * Build on Haiku:
+ * Build on Haiku (gcc 2.95 or gcc 13):
  *		make
  * Run:
  *		./udp_deliverdata_leak 60
@@ -40,10 +40,12 @@
 	typedef uint64_t uint64;
 #endif
 
+
 static const char* kGroup = "239.255.42.1";
 static const uint16 kPort = 42424;
 static const int kReceiveBytes = 2048;
 static const int kPayload = 512;
+
 
 static void
 PrintMemory(uint64 sent)
@@ -62,6 +64,7 @@ PrintMemory(uint64 sent)
 	printf("sent=%llu\n", (unsigned long long)sent);
 }
 
+
 static void
 PrintErrorAndExit(const char* what)
 {
@@ -69,29 +72,45 @@ PrintErrorAndExit(const char* what)
 	exit(1);
 }
 
+
 int
 main(int argc, char** argv)
 {
-	int seconds = 30;
+	int seconds;
+	int receiveFd;
+	int sendFd;
+	int yes;
+	int receiveBytes;
+	int ttl;
+	unsigned char loop;
+	struct sockaddr_in bindAddr;
+	struct ip_mreq membership;
+	struct sockaddr_in destination;
+	char payload[512];
+	uint64 sent;
+	time_t start;
+	time_t lastPrint;
+	time_t now;
+
+	seconds = 30;
 	if (argc > 1)
 		seconds = atoi(argv[1]);
 	if (seconds < 1)
 		seconds = 1;
 
-	int receiveFd = socket(AF_INET, SOCK_DGRAM, 0);
+	receiveFd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (receiveFd < 0)
 		PrintErrorAndExit("socket recv");
 
-	int yes = 1;
+	yes = 1;
 	setsockopt(receiveFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 
-	int receiveBytes = kReceiveBytes;
+	receiveBytes = kReceiveBytes;
 	if (setsockopt(receiveFd, SOL_SOCKET, SO_RCVBUF, &receiveBytes,
 			sizeof(receiveBytes)) < 0) {
 		PrintErrorAndExit("SO_RCVBUF");
 	}
 
-	struct sockaddr_in bindAddr;
 	memset(&bindAddr, 0, sizeof(bindAddr));
 	bindAddr.sin_family = AF_INET;
 	bindAddr.sin_port = htons(kPort);
@@ -99,7 +118,6 @@ main(int argc, char** argv)
 	if (bind(receiveFd, (struct sockaddr*)&bindAddr, sizeof(bindAddr)) < 0)
 		PrintErrorAndExit("bind");
 
-	struct ip_mreq membership;
 	memset(&membership, 0, sizeof(membership));
 	membership.imr_multiaddr.s_addr = inet_addr(kGroup);
 	membership.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -108,33 +126,31 @@ main(int argc, char** argv)
 		PrintErrorAndExit("IP_ADD_MEMBERSHIP");
 	}
 
-	int sendFd = socket(AF_INET, SOCK_DGRAM, 0);
+	sendFd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sendFd < 0)
 		PrintErrorAndExit("socket send");
 
-	unsigned char loop = 1;
+	loop = 1;
 	setsockopt(sendFd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
-	int ttl = 1;
+	ttl = 1;
 	setsockopt(sendFd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl));
 
-	struct sockaddr_in destination;
 	memset(&destination, 0, sizeof(destination));
 	destination.sin_family = AF_INET;
 	destination.sin_port = htons(kPort);
 	destination.sin_addr.s_addr = inet_addr(kGroup);
 
-	char payload[kPayload];
 	memset(payload, 'U', sizeof(payload));
 
 	printf("recv socket %d joined %s:%u, SO_RCVBUF=%d, not reading\n",
-		receiveFd, kGroup, kPort, kReceiveBytes);
+		receiveFd, kGroup, (unsigned)kPort, kReceiveBytes);
 	printf("flooding for %d seconds (arg1 to change)\n", seconds);
 	printf("unpatched: used pages climb after the FIFO fills\n");
 	printf("patched:   used pages stay flat after the FIFO fills\n");
 
-	uint64 sent = 0;
-	time_t start = time(NULL);
-	time_t lastPrint = start;
+	sent = 0;
+	start = time(NULL);
+	lastPrint = start;
 
 	while (time(NULL) - start < seconds) {
 		if (sendto(sendFd, payload, sizeof(payload), 0,
@@ -145,7 +161,7 @@ main(int argc, char** argv)
 		} else
 			sent++;
 
-		time_t now = time(NULL);
+		now = time(NULL);
 		if (now != lastPrint) {
 			PrintMemory(sent);
 			lastPrint = now;

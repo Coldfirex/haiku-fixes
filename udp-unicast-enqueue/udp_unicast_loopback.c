@@ -13,7 +13,7 @@
  *		iperf3 -s
  *		iperf3 -c localhost -u -b 0 -t 20
  *
- * Build on Haiku:
+ * Build on Haiku (gcc 2.95 or gcc 13):
  *		make
  * Run:
  *		./udp_unicast_loopback
@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #ifdef __HAIKU__
@@ -34,9 +36,11 @@
 	typedef uint16_t uint16;
 #endif
 
+
 static const uint16 kPort = 42425;
 static const int kPayload = 1472;
 static const int kDatagrams = 256;
+
 
 static void
 PrintErrorAndExit(const char* what)
@@ -45,17 +49,28 @@ PrintErrorAndExit(const char* what)
 	exit(1);
 }
 
+
 int
 main(int argc, char** argv)
 {
+	int fd;
+	int i;
+	int sent;
+	int received;
+	int mismatch;
+	struct sockaddr_in local;
+	struct timeval timeout;
+	char payload[1472];
+	char incoming[1472];
+	ssize_t bytes;
+
 	(void)argc;
 	(void)argv;
 
-	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0)
 		PrintErrorAndExit("socket");
 
-	struct sockaddr_in local;
 	memset(&local, 0, sizeof(local));
 	local.sin_family = AF_INET;
 	local.sin_port = htons(kPort);
@@ -63,19 +78,17 @@ main(int argc, char** argv)
 	if (bind(fd, (struct sockaddr*)&local, sizeof(local)) < 0)
 		PrintErrorAndExit("bind");
 
-	struct timeval timeout;
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
-	char payload[kPayload];
 	memset(payload, 0x5a, sizeof(payload));
 
-	int sent = 0;
-	int received = 0;
-	int mismatch = 0;
+	sent = 0;
+	received = 0;
+	mismatch = 0;
 
-	for (int i = 0; i < kDatagrams; i++) {
+	for (i = 0; i < kDatagrams; i++) {
 		payload[0] = (char)i;
 		if (sendto(fd, payload, sizeof(payload), 0,
 				(struct sockaddr*)&local, sizeof(local)) < 0) {
@@ -84,9 +97,7 @@ main(int argc, char** argv)
 		}
 		sent++;
 
-		char incoming[kPayload];
-		ssize_t bytes = recvfrom(fd, incoming, sizeof(incoming), 0, NULL,
-			NULL);
+		bytes = recvfrom(fd, incoming, sizeof(incoming), 0, NULL, NULL);
 		if (bytes != (ssize_t)sizeof(payload)) {
 			perror("recvfrom");
 			continue;

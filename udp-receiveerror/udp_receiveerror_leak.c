@@ -12,7 +12,7 @@
  * "original" packet is IPv4 + only 3 payload bytes. After ICMP/IPv4
  * strip the UDP module sees size < 4 and used to return without free.
  *
- * Build on Haiku:
+ * Build on Haiku (gcc 2.95 or gcc 13):
  *		make
  * Run:
  *		./udp_receiveerror_leak
@@ -51,6 +51,7 @@
 #	define ICMP_PORT_UNREACH 3
 #endif
 
+
 static uint16
 InternetChecksum(const void* data, size_t length)
 {
@@ -67,6 +68,7 @@ InternetChecksum(const void* data, size_t length)
 	sum += sum >> 16;
 	return (uint16)~sum;
 }
+
 
 static void
 PrintMemory(uint64 sent)
@@ -85,6 +87,7 @@ PrintMemory(uint64 sent)
 	printf("sent=%llu\n", (unsigned long long)sent);
 }
 
+
 static void
 PrintErrorAndExit(const char* what)
 {
@@ -92,11 +95,24 @@ PrintErrorAndExit(const char* what)
 	exit(1);
 }
 
+
 int
 main(int argc, char** argv)
 {
-	const char* destinationName = "127.0.0.1";
-	int seconds = 20;
+	const char* destinationName;
+	int seconds;
+	int fd;
+	struct in_addr destination;
+	unsigned char packet[8 + 20 + 3];
+	struct ip* inner;
+	struct sockaddr_in to;
+	uint64 sent;
+	time_t start;
+	time_t lastPrint;
+	time_t now;
+
+	destinationName = "127.0.0.1";
+	seconds = 20;
 
 	if (argc > 1)
 		destinationName = argv[1];
@@ -105,25 +121,23 @@ main(int argc, char** argv)
 	if (seconds < 1)
 		seconds = 1;
 
-	struct in_addr destination;
 	if (inet_aton(destinationName, &destination) == 0) {
 		fprintf(stderr, "bad address %s\n", destinationName);
 		return 1;
 	}
 
-	int fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (fd < 0)
 		PrintErrorAndExit("socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)");
 
 	/* ICMP header (8) + original IPv4 header (20) + 3 bytes.
 	   UDP ReceiveError bails out when leftover size < 4. */
-	unsigned char packet[8 + 20 + 3];
 	memset(packet, 0, sizeof(packet));
 
 	packet[0] = ICMP_DEST_UNREACH;
 	packet[1] = ICMP_PORT_UNREACH;
 
-	struct ip* inner = (struct ip*)(packet + 8);
+	inner = (struct ip*)(packet + 8);
 	inner->ip_hl = 5;
 	inner->ip_v = 4;
 	inner->ip_len = htons(20 + 3);
@@ -141,7 +155,6 @@ main(int argc, char** argv)
 	*(uint16*)(packet + 2) = 0;
 	*(uint16*)(packet + 2) = InternetChecksum(packet, sizeof(packet));
 
-	struct sockaddr_in to;
 	memset(&to, 0, sizeof(to));
 	to.sin_family = AF_INET;
 	to.sin_addr = destination;
@@ -153,9 +166,9 @@ main(int argc, char** argv)
 	printf("patched:   used pages stay flat\n");
 	printf("if socket() failed, this test needs raw ICMP\n");
 
-	uint64 sent = 0;
-	time_t start = time(NULL);
-	time_t lastPrint = start;
+	sent = 0;
+	start = time(NULL);
+	lastPrint = start;
 
 	while (time(NULL) - start < seconds) {
 		if (sendto(fd, packet, sizeof(packet), 0,
@@ -166,7 +179,7 @@ main(int argc, char** argv)
 		} else
 			sent++;
 
-		time_t now = time(NULL);
+		now = time(NULL);
 		if (now != lastPrint) {
 			PrintMemory(sent);
 			lastPrint = now;
