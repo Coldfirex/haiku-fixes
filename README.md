@@ -26,7 +26,7 @@ ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL in
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-mutex-uninit/ submitted Gerrit 11776; commandLock leak if interrupt setup fails
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
-virtio-gpu-clone-fd/     accelerant clone path closed fd twice
+virtio-gpu-clone-fd/     patch 3 local; accelerant double-close; virtio_gpu_clone.c success path
 virtio-gpu-open-shared-area/ shared info area leak if open() fails
 ```
 
@@ -36,6 +36,9 @@ Gerrit tracking lives in each submitted folder as `STATUS`
 - Patch 1 merged: https://review.haiku-os.org/c/haiku/+/11771
   https://github.com/haiku/haiku/commit/0438319c127429a416086d1220f79ff94d71f2d0
 - Patch 2 submitted: https://review.haiku-os.org/c/haiku/+/11776
+- Patch 3 local: virtio-gpu-clone-fd (accelerant). Jam `virtio_gpu.accelerant`.
+  Overlay `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`.
+  Do not use `on-haiku.sh go`. Guest steps in that folder README.
 
 ## Apply a patch
 
@@ -83,6 +86,6 @@ paths. Confirm with a rebuild. The membership test also exercises the
 get_route / get_interface path that leaked references. The refs patch
 also NULL-inits `multicast_address` so the destructor delete is safe.
 
-Virtio, virtio_gpu, TCP, ICMP error-reply, and the other ARP changes are
-driver/stack error paths. They have no userspace flooder in this tree;
-confirm with a rebuild and the failing path.
+`virtio-gpu-clone-fd` has `virtio_gpu_clone.c` for the clone *success*
+path (`make && ./virtio_gpu_clone 50`). That does not hit `err2`.
+Other virtio / TCP / ICMP / ARP error paths stay rebuild-only.
