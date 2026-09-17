@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: virtio-net
+branch: master
+patchset:
+commit:
+subject: virtio_net: free device id if publish_device fails
+bug:
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: virtio_net register_child_devices; overlay drivers/bin + dev/net (not graphics/); do not bundle virtio-tx-freelist; do not amend 11771 11776 11783

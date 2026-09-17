@@ -1,9 +1,13 @@
 From: Alan Shearer
 Subject: virtio_net: free device id if publish_device fails
 
-create_id() allocates a bit in a per-generator map (max 64). The id is
-only a /dev/net/virtio/N path suffix. If publish_device() fails the bit
-was never returned, so repeated failed probes could exhaust the generator.
+create_id() reserves a bit in a per-generator bitmap, limited to 64
+IDs. The ID is used only as the /dev/net/virtio/N suffix. If
+publish_device() fails, the bit was not released, so repeated failed
+probes could exhaust the generator.
+
+Do not check or return free_id(); keep the original publish_device
+status.
 
 ---
  src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp | 2 ++
@@ -13,11 +17,11 @@ diff --git a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp b/sr
 --- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
 +++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
 @@ -1027,6 +1027,8 @@
- 
- 	status = sDeviceManager->publish_device(info->node, name,
- 		VIRTIO_NET_DEVICE_MODULE_NAME);
+
+	status = sDeviceManager->publish_device(info->node, name,
+		VIRTIO_NET_DEVICE_MODULE_NAME);
 +	if (status != B_OK)
 +		sDeviceManager->free_id(VIRTIO_NET_DEVICE_ID_GENERATOR, id);
- 
- 	return status;
+
+	return status;
  }

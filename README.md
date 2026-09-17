@@ -11,7 +11,7 @@ https://www.haiku-os.org/development/coding-guidelines/
 udp-deliverdata/         DeliverData clone leak when FIFO is full
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
 virtio-tx-freelist/      TX BufInfo leak + mutex teardown on init fail
-virtio-free-id/          device id leak on publish_device fail
+virtio-free-id/          virtio_net: free_id if publish_device fails (local)
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 icmp-error-reply/        reply buffer leak if get_domain/prepend fails
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
@@ -27,26 +27,123 @@ ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
 virtio-gpu-mutex-uninit/ merged Gerrit 11776 / 768d4e6c; commandLock leak if interrupt setup fails
 virtio-gpu-clone-fd/     submitted Gerrit 11783; accelerant double-close; do not live-run virtio_gpu_clone
-virtio-gpu-open-shared-area/ shared info area leak if open() fails
+virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 ```
 
-Gerrit tracking lives in each submitted folder as `STATUS`
-(`local` / `submitted` / `merged` / `abandoned`).
+Gerrit tracking lives in each submitted folder as `STATUS`.
+Do not send the GitHub `.patch` files to review.haiku-os.org as-is.
 
-- Patch 1 merged: https://review.haiku-os.org/c/haiku/+/11771
-  https://github.com/haiku/haiku/commit/0438319c127429a416086d1220f79ff94d71f2d0
-- Patch 2 merged: https://review.haiku-os.org/c/haiku/+/11776
-  haiku.git `768d4e6cba315d55c9469c85d9219243408152d7`
-- Patch 3 submitted: https://review.haiku-os.org/c/haiku/+/11783
-  Change-Id `I42d3007704c57958050eba997ba4537718e5f619`
-  Jam `virtio_gpu.accelerant`.
-  Overlay `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`.
-  Do not use `on-haiku.sh go`. Do not run `virtio_gpu_clone` on a live desktop.
+virtio_gpu notes that burned us on GPU patches 1–3. They also apply
+to `virtio-free-id` (virtio_net) and `virtio-gpu-open-shared-area`.
+Those two are separate leftover locals — do not number them as GPU 4
+unless you mean the GPU series only. Steps:
 
-## Apply a patch
+- virtio_net id leak: `virtio-free-id/README.md`
+- GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
 
-From a Haiku source tree:
+Shared rules:
+
+- Guest trees: `/boot/home/Desktop/sources/{haiku,haiku-fixes}`
+- Always `export HAIKU_SRC` (helpers do not search Desktop)
+- `chmod +x work.sh gerrit.sh on-haiku.sh`
+- Do **not** use `on-haiku.sh go` for this series
+- GPU kernel overlay (11771 / 11776 / open-shared-area):
+  `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
+- GPU accelerant overlay (11783 only):
+  `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
+- virtio_net overlay (`virtio-free-id` / `virtio-tx-freelist`):
+  `~/config/non-packaged/add-ons/kernel/drivers/bin/virtio_net` + `dev/net` symlink
+- `gerrit.sh` may be missing from the guest clone; commit/push by hand
+- Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
+- New commit + new Change-Id per issue; do not amend 11771, 11776, or 11783
+
+## Test a Gerrit change on the guest
+
+After `bootstrap` + `configure` once:
+
+```
+./on-haiku.sh try 11584
+# reboot
+screenmode 1920 1080 32
+./on-haiku.sh test-log
+./on-haiku.sh untry
+# reboot to packaged modules
+```
+
+`try` fetches the latest patch set, `git apply`s it (no commit), jams the
+touched add-ons, and overlays kernel driver + accelerant into
+`~/config/non-packaged`. Kernel modules still need a reboot.
+
+## Local apply / build / test
+
+`work.sh` is meant to run **on the machine that has the Haiku git tree**
+(the guest, or a Linux host that cross-builds). It does not talk to
+Gerrit. `gerrit.sh` commits one issue inside that tree and pushes to
+`refs/for/master` (see `virtio-gpu-detach-backing/README.md`).
+
+```
+export HAIKU_SRC=$HOME/haiku
+export HAIKU_OUTPUT=$HOME/haiku/generated   # after configure
+
+./work.sh list
+./work.sh check                            # all patches, apply --check
+./work.sh all udp-unicast-enqueue          # check, apply, jam udp, run test
+./work.sh apply arp-reject-learn
+./work.sh reverse arp-reject-learn
+./work.sh jam ipv4-multicast-filter
+./work.sh test-build
+./work.sh test udp-deliverdata
+```
+
+Jam targets and test binaries are in `MANIFEST`. Issues with no test
+binary are rebuild-only (error-path leaks). After `jam` you still have
+to get the new add-on into the running image (non-packaged overlay or
+reboot into a rebuilt image).
+
+One-off without the script, from a Haiku source tree:
 
 ```
 git apply /path/to/<folder>/<name>.patch
 ```
+
+## Run a userspace test (Haiku)
+
+```
+cd udp-deliverdata
+make
+./udp_deliverdata_leak 60
+```
+
+Unpatched: `used pages` climbs after the socket FIFO fills.
+Patched: pages flatten.
+
+`udp-receiveerror` needs raw ICMP (`SOCK_RAW`). Default target is `127.0.0.1`.
+
+`udp-unicast-enqueue` has a localhost send/recv check (`make && ./udp_unicast_loopback`).
+That only proves ownership and the loopback path still delivers. Measure
+#18730 with:
+
+```
+iperf3 -s
+iperf3 -c localhost -u -b 0 -t 20
+```
+
+`arp-reject-learn` talks to the ARP generic syscall (`make && ./arp_reject_learn`).
+Needs an IPv4 ethernet interface so the ARP module is loaded.
+Unpatched: GET_ENTRY fails after SET reject then SET without reject.
+Patched: prints `reject lifted`.
+
+`ipv4-multicast-filter` uses setsockopt (`make && ./ipv4_multicast_filter`).
+Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
+Patched: the second call returns EADDRNOTAVAIL.
+
+`ipv4-multicast-filtermode` is a constructor default. Confirm with a rebuild.
+
+`ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
+paths. Confirm with a rebuild. The membership test also exercises the
+get_route / get_interface path that leaked references. The refs patch
+also NULL-inits `multicast_address` so the destructor delete is safe.
+
+Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
+error paths. They have no userspace flooder in this tree; confirm with
+a rebuild and the failing path.
