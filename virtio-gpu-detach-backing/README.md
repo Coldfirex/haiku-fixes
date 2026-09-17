@@ -1,16 +1,16 @@
 # virtio_gpu: initialize detach_backing command
 
-Patch 1 of the virtio_gpu series. Status: **submitted**.
+Patch 1 of the virtio_gpu series. Status: **merged**.
 
-- Gerrit: https://review.haiku-os.org/c/haiku/+/11771 (NEW, Code-Review +2)
+- Gerrit: https://review.haiku-os.org/c/haiku/+/11771 (MERGED)
+- haiku.git: `0438319c127429a416086d1220f79ff94d71f2d0`
 - Change-Id: `I043945302ef10c2a2911faf037ca534759bd3ee0`
-- Patch set 1: `4163d8e4b7467e050693cd352082550454cafaff`
 - Topic: `virtio-gpu`
 - Submitted: 2026-09-16
+- Merged: 2026-09-17 by korli (Code-Review +2 waddlesplash)
 
-See `STATUS` in this folder. Flip `state` to `merged` and fill `hrev` /
-`haiku-commit` when Gerrit lands it. Do not treat the GitHub `.patch` as
-the Gerrit upload; that change already lives on review.haiku-os.org.
+See `STATUS` in this folder. The change is in haiku master; do not
+re-push it. The GitHub `.patch` is the originally submitted hunk.
 
 Patch: `virtio-gpu-detach-backing.patch`
 
@@ -30,11 +30,7 @@ Rebuild-only. No userspace flooder.
 
 ## Gerrit
 
-Already uploaded. Do not push a second change for this hunk, and do not
-upload the GitHub `.patch` as-is.
+Merged. Do not push this hunk again.
 
 https://review.haiku-os.org/c/haiku/+/11771
-
-If you need a new patch set on the same Change-Id, amend the existing
-commit in the Haiku tree (keep `I043945302ef10c2a2911faf037ca534759bd3ee0`)
-and push to `refs/for/master`.
+https://github.com/haiku/haiku/commit/0438319c127429a416086d1220f79ff94d71f2d0
