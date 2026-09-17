@@ -1,16 +1,16 @@
-state: submitted
+state: merged
 gerrit: https://review.haiku-os.org/c/haiku/+/11776
 change-id: I8eca66481988b3edb9b3e839e7feec0bfe86819c
 topic: virtio-gpu
 branch: master
 patchset: 1
-commit:
+commit: 768d4e6cba315d55c9469c85d9219243408152d7
 subject: virtio_gpu: destroy commandLock if interrupt setup fails
 bug:
 submitted: 2026-09-17
-code-review:
-merged:
-submitter:
+code-review: korli +2
+merged: 2026-09-17
+submitter: waddlesplash
 hrev:
-haiku-commit:
-note: smoke-tested on guest at hrev60116; overlay drivers/graphics/virtio_gpu; err3 mutex_destroy only
+haiku-commit: 768d4e6cba315d55c9469c85d9219243408152d7
+note: merged as 768d4e6c; Verified over hrev60116; do not re-push

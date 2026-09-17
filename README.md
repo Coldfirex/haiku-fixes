@@ -24,9 +24,9 @@ ipv4-multicast-filter/   UnblockSource/DropSSM call Remove, not Add
 ipv4-multicast-filtermode/ init MulticastGroupInterface fFilterMode
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
-virtio-gpu-mutex-uninit/ submitted Gerrit 11776; commandLock leak if interrupt setup fails
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
-virtio-gpu-clone-fd/     patch 3 local; accelerant double-close; virtio_gpu_clone.c success path
+virtio-gpu-mutex-uninit/ merged Gerrit 11776 / 768d4e6c; commandLock leak if interrupt setup fails
+virtio-gpu-clone-fd/     submitted Gerrit 11783; accelerant double-close; do not live-run virtio_gpu_clone
 virtio-gpu-open-shared-area/ shared info area leak if open() fails
 ```
 
@@ -35,10 +35,13 @@ Gerrit tracking lives in each submitted folder as `STATUS`
 
 - Patch 1 merged: https://review.haiku-os.org/c/haiku/+/11771
   https://github.com/haiku/haiku/commit/0438319c127429a416086d1220f79ff94d71f2d0
-- Patch 2 submitted: https://review.haiku-os.org/c/haiku/+/11776
-- Patch 3 local: virtio-gpu-clone-fd (accelerant). Jam `virtio_gpu.accelerant`.
+- Patch 2 merged: https://review.haiku-os.org/c/haiku/+/11776
+  haiku.git `768d4e6cba315d55c9469c85d9219243408152d7`
+- Patch 3 submitted: https://review.haiku-os.org/c/haiku/+/11783
+  Change-Id `I42d3007704c57958050eba997ba4537718e5f619`
+  Jam `virtio_gpu.accelerant`.
   Overlay `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`.
-  Do not use `on-haiku.sh go`. Guest steps in that folder README.
+  Do not use `on-haiku.sh go`. Do not run `virtio_gpu_clone` on a live desktop.
 
 ## Apply a patch
 
@@ -47,45 +50,3 @@ From a Haiku source tree:
 ```
 git apply /path/to/<folder>/<name>.patch
 ```
-
-## Run a userspace test (Haiku)
-
-```
-cd udp-deliverdata
-make
-./udp_deliverdata_leak 60
-```
-
-Unpatched: `used pages` climbs after the socket FIFO fills.
-Patched: pages flatten.
-
-`udp-receiveerror` needs raw ICMP (`SOCK_RAW`). Default target is `127.0.0.1`.
-
-`udp-unicast-enqueue` has a localhost send/recv check (`make && ./udp_unicast_loopback`).
-That only proves ownership and the loopback path still delivers. Measure
-#18730 with:
-
-```
-iperf3 -s
-iperf3 -c localhost -u -b 0 -t 20
-```
-
-`arp-reject-learn` talks to the ARP generic syscall (`make && ./arp_reject_learn`).
-Needs an IPv4 ethernet interface so the ARP module is loaded.
-Unpatched: GET_ENTRY fails after SET reject then SET without reject.
-Patched: prints `reject lifted`.
-
-`ipv4-multicast-filter` uses setsockopt (`make && ./ipv4_multicast_filter`).
-Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
-Patched: the second call returns EADDRNOTAVAIL.
-
-`ipv4-multicast-filtermode` is a constructor default. Confirm with a rebuild.
-
-`ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
-paths. Confirm with a rebuild. The membership test also exercises the
-get_route / get_interface path that leaked references. The refs patch
-also NULL-inits `multicast_address` so the destructor delete is safe.
-
-`virtio-gpu-clone-fd` has `virtio_gpu_clone.c` for the clone *success*
-path (`make && ./virtio_gpu_clone 50`). That does not hit `err2`.
-Other virtio / TCP / ICMP / ARP error paths stay rebuild-only.
