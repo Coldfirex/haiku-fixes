@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #ifdef __HAIKU__
@@ -64,42 +65,69 @@ count_open_fds(void)
 
 
 static int
-find_virtio_dev(char *cloneInfo, size_t cloneInfoSize)
+find_virtio_dev_in(const char *dirPath, char *cloneInfo, size_t cloneInfoSize)
 {
 	DIR *dir;
 	struct dirent *ent;
-	const char *leaf;
+	char child[256];
+	struct stat st;
 
-	dir = opendir("/dev/graphics");
-	if (dir == NULL) {
-		perror("opendir /dev/graphics");
+	dir = opendir(dirPath);
+	if (dir == NULL)
 		return -1;
-	}
 
-	leaf = NULL;
 	while ((ent = readdir(dir)) != NULL) {
-		if (strstr(ent->d_name, "virtio") != NULL) {
-			leaf = ent->d_name;
-			break;
+		if (strcmp(ent->d_name, ".") == 0
+			|| strcmp(ent->d_name, "..") == 0)
+			continue;
+
+		if (snprintf(child, sizeof(child), "%s/%s", dirPath,
+			ent->d_name) >= (int)sizeof(child))
+			continue;
+
+		if (stat(child, &st) != 0)
+			continue;
+
+		if (S_ISDIR(st.st_mode)) {
+			if (find_virtio_dev_in(child, cloneInfo,
+				cloneInfoSize) == 0) {
+				closedir(dir);
+				return 0;
+			}
+			continue;
 		}
-	}
 
-	if (leaf == NULL) {
-		closedir(dir);
-		fprintf(stderr, "no virtio node under /dev/graphics\n");
-		return -1;
-	}
+		if (strstr(child, "virtio") == NULL)
+			continue;
+		if (strncmp(child, "/dev/", 5) != 0)
+			continue;
 
-	/* CLONE_ACCELERANT prepends "/dev/" itself. */
-	if (snprintf(cloneInfo, cloneInfoSize, "graphics/%s", leaf)
-		>= (int)cloneInfoSize) {
+		/* CLONE_ACCELERANT prepends "/dev/" itself. */
+		if (snprintf(cloneInfo, cloneInfoSize, "%s", child + 5)
+			>= (int)cloneInfoSize) {
+			closedir(dir);
+			fprintf(stderr, "device name too long: %s\n", child);
+			return -1;
+		}
+
 		closedir(dir);
-		fprintf(stderr, "device name too long\n");
-		return -1;
+		return 0;
 	}
 
 	closedir(dir);
-	return 0;
+	return -1;
+}
+
+
+static int
+find_virtio_dev(char *cloneInfo, size_t cloneInfoSize)
+{
+	if (find_virtio_dev_in("/dev/graphics", cloneInfo, cloneInfoSize) == 0)
+		return 0;
+
+	fprintf(stderr, "no virtio device node under /dev/graphics\n");
+	fprintf(stderr, "ls -lR /dev/graphics\n");
+	return -1;
 }
 
 
