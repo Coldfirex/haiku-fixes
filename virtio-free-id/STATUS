@@ -1,16 +1,16 @@
-state: local
-gerrit:
-change-id:
+state: submitted
+gerrit: https://review.haiku-os.org/c/haiku/+/11784
+change-id: Ic1a3fe547841207d5968a71e7bea0c8e8b70214f
 topic: virtio-net
 branch: master
-patchset:
-commit:
+patchset: 1
+commit: 3770f9ed87bf8f94d84fed7f840acba20dbdb5ed
 subject: virtio_net: free device id if publish_device fails
 bug:
-submitted:
+submitted: 2026-09-17
 code-review:
 merged:
 submitter:
 hrev:
 haiku-commit:
-note: virtio_net register_child_devices; overlay drivers/bin + dev/net (not graphics/); do not bundle virtio-tx-freelist; do not amend 11771 11776 11783
+note: virtio_net register_child_devices; overlay drivers/network/virtio_net; smoke-tested overlay + ping; do not bundle virtio-tx-freelist; do not amend 11771 11776 11783
