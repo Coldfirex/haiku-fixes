@@ -6,9 +6,6 @@ IDs. The ID is used only as the /dev/net/virtio/N suffix. If
 publish_device() fails, the bit was not released, so repeated failed
 probes could exhaust the generator.
 
-Do not check or return free_id(); keep the original publish_device
-status.
-
 ---
  src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp | 2 ++
  1 file changed, 2 insertions(+)
