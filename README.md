@@ -22,7 +22,7 @@ arp-reject-learn/        #18816 reject never cleared on learn
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM call Remove, not Add
 ipv4-multicast-filtermode/ init MulticastGroupInterface fFilterMode
-ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor
+ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-mutex-uninit/ submitted Gerrit 11776; commandLock leak if interrupt setup fails
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
@@ -80,7 +80,8 @@ Patched: the second call returns EADDRNOTAVAIL.
 
 `ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
 paths. Confirm with a rebuild. The membership test also exercises the
-get_route / get_interface path that leaked references.
+get_route / get_interface path that leaked references. The refs patch
+also NULL-inits `multicast_address` so the destructor delete is safe.
 
 Virtio, virtio_gpu, TCP, ICMP error-reply, and the other ARP changes are
 driver/stack error paths. They have no userspace flooder in this tree;
