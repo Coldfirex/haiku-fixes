@@ -24,16 +24,18 @@ ipv4-multicast-filter/   UnblockSource/DropSSM call Remove, not Add
 ipv4-multicast-filtermode/ init MulticastGroupInterface fFilterMode
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
-virtio-gpu-mutex-uninit/ commandLock leak if interrupt setup fails
+virtio-gpu-mutex-uninit/ submitted Gerrit 11776; commandLock leak if interrupt setup fails
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
 virtio-gpu-clone-fd/     accelerant clone path closed fd twice
 virtio-gpu-open-shared-area/ shared info area leak if open() fails
 ```
 
 Gerrit tracking lives in each submitted folder as `STATUS`
-(`local` / `submitted` / `merged` / `abandoned`). Patch 1 is merged:
-https://review.haiku-os.org/c/haiku/+/11771
-https://github.com/haiku/haiku/commit/0438319c127429a416086d1220f79ff94d71f2d0
+(`local` / `submitted` / `merged` / `abandoned`).
+
+- Patch 1 merged: https://review.haiku-os.org/c/haiku/+/11771
+  https://github.com/haiku/haiku/commit/0438319c127429a416086d1220f79ff94d71f2d0
+- Patch 2 submitted: https://review.haiku-os.org/c/haiku/+/11776
 
 ## Apply a patch
 
