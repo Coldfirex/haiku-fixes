@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: virtio-gpu
+branch: master
+patchset:
+commit:
+subject: virtio_gpu accelerant: do not close clone fd twice
+bug:
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: patch 3; accelerant only; jam virtio_gpu.accelerant; overlay add-ons/accelerants/; virtio_gpu_clone.c is success-path only; err2 needs fail-injection; do not use on-haiku.sh go; do not amend 11771 or 11776

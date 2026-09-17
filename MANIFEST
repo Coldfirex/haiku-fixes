@@ -14,7 +14,7 @@ udp-loopback-checksum	udp		measure with iperf3 -u -b 0
 udp-receiveerror	udp	udp_receiveerror_leak		needs SOCK_RAW
 udp-unicast-enqueue	udp	udp_unicast_loopback		also iperf3 #18730
 virtio-free-id	virtio_net		publish_device fail; rebuild only
-virtio-gpu-clone-fd	virtio_gpu		rebuild only
+virtio-gpu-clone-fd	virtio_gpu.accelerant	virtio_gpu_clone	50	clone success path; overlay add-ons/accelerants/
 virtio-gpu-detach-backing	virtio_gpu		rebuild only
 virtio-gpu-mutex-uninit	virtio_gpu		rebuild only
 virtio-gpu-open-shared-area	virtio_gpu		rebuild only
