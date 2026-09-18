@@ -1,5 +1,5 @@
 From: Alan Shearer
-Subject: udp: free cloned buffer if DeliverData enqueue fails
+Subject: udp: free cloned buffer when DeliverData enqueue fails
 
 DeliverData clones the incoming datagram, deframes it, then Enqueue()s
 it. _Enqueue returns ENOBUFS when the socket receive buffer is full and
