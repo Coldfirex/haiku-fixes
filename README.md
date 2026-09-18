@@ -66,6 +66,9 @@ Shared rules:
 - IPv4 protocol overlay (`ipv4-multicast-*`):
   `~/config/non-packaged/add-ons/kernel/network/protocols/ipv4`
   (jam `ipv4`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/ipv4/ipv4`)
+- UDP protocol overlay (`udp-deliverdata` / `udp-receiveerror` / `udp-unicast-enqueue` / `udp-loopback-checksum`):
+  `~/config/non-packaged/add-ons/kernel/network/protocols/udp`
+  (jam `udp`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/udp/udp`)
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
 - New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, or 11791
@@ -91,12 +94,12 @@ touched add-ons, and overlays kernel driver + accelerant into
 
 `work.sh` is meant to run **on the machine that has the Haiku git tree**
 (the guest, or a Linux host that cross-builds). It does not talk to
-Gerrit. `gerrit.sh` commits one issue inside that tree and pushes to
+Gerrit. `gerrit.sh` commits one issue inside that Haiku tree and pushes to
 `refs/for/master`.
 
 ```
-export HAIKU_SRC=$HOME/haiku
-export HAIKU_OUTPUT=$HOME/haiku/generated   # after configure
+export HAIKU_SRC=/boot/home/Desktop/sources/haiku
+export HAIKU_OUTPUT=$HAIKU_SRC/generated
 
 ./work.sh list
 ./work.sh check                            # all patches, apply --check

@@ -1,0 +1,7 @@
+state: local
+gerrit:
+change-id:
+topic: udp
+branch: master
+subject: udp: free cloned buffer when DeliverData enqueue fails
+note: overlay kernel/network/protocols/udp. Jam target udp. Compare Enqueue with status < B_OK. Do not use on-haiku.sh go.
