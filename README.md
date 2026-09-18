@@ -16,7 +16,7 @@ tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 icmp-error-reply/        reply buffer leak if get_domain/prepend fails
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
 udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
-arp-request-buffer-dtor/ submitted Gerrit 11789; ~arp_entry leaked the request template
+arp-request-buffer-dtor/ merged Gerrit 11789 / 6c10ad5b; ~arp_entry leaked the request template
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
