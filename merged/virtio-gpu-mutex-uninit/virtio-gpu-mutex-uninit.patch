@@ -1,0 +1,23 @@
+From: Alan Shearer
+Subject: virtio_gpu: destroy commandLock if interrupt setup fails
+
+mutex_init() runs before setup_interrupt() / queue_setup_interrupt().
+Those failures jump to err3, which only deleted the command area and
+left commandLock initialized. err2 is also used when get_memory_map()
+fails, before the mutex exists, so destroy it only on err3.
+
+---
+ src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+--- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
++++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+@@ -581,6 +581,7 @@
+ 	return B_OK;
+ 
+ err3:
++	mutex_destroy(&info->commandLock);
+ err2:
+ 	delete_area(info->commandArea);
+ err1:

@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11771
+change-id: I043945302ef10c2a2911faf037ca534759bd3ee0
+topic: virtio-gpu
+branch: master
+patchset: 1
+commit: 4163d8e4b7467e050693cd352082550454cafaff
+subject: virtio_gpu: initialize detach_backing command
+bug:
+submitted: 2026-09-16
+code-review: +2 waddlesplash 2026-09-16
+merged: 2026-09-17
+submitter: korli
+hrev:
+haiku-commit: 0438319c127429a416086d1220f79ff94d71f2d0
+note: buildbot Verified+1 rebasing over hrev60114; landed on master after that tip

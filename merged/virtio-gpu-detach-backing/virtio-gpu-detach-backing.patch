@@ -1,0 +1,23 @@
+From: Alan Shearer
+Subject: virtio_gpu: initialize detach_backing command
+
+The command struct was uninitialized. send_cmd() overwrites fence_id
+but ORs flags, so hdr.flags, ctx_id, and padding could go to the
+device as stack garbage. Use {} like the other commands in this file.
+
+---
+ src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+--- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
++++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+@@ -247,7 +247,7 @@
+ virtio_gpu_detach_backing(virtio_gpu_driver_info* info, int resourceId)
+ {
+ 	CALLED();
+-	struct virtio_gpu_resource_detach_backing backing;
++	struct virtio_gpu_resource_detach_backing backing = {};
+ 	struct virtio_gpu_ctrl_hdr response = {};
+ 
+ 	backing.hdr.type = VIRTIO_GPU_CMD_RESOURCE_DETACH_BACKING;
