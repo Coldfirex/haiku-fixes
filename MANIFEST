@@ -2,21 +2,15 @@
 arp-protocol-teardown	arp		init-fail / uninit path; rebuild only
 arp-queued-send	arp		MarkValid send-fail; rebuild only
 arp-reject-learn	arp	arp_reject_learn		needs IPv4 ethernet
-arp-request-buffer-dtor	arp		rebuild only
 icmp-error-reply	icmp		error-reply leak; rebuild only
 ipv4-fragment-reassemble	ipv4		rebuild only
 ipv4-multicast-filter	ipv4	ipv4_multicast_filter		setsockopt Unblock/Drop
-ipv4-multicast-filtermode	ipv4		ctor default; rebuild only
 ipv4-multicast-refs	ipv4	ipv4_multicast_filter		same test hits get_route
 tcp-spawn-abort	tcp		listen _Spawn fail; rebuild only
 udp-deliverdata	udp	udp_deliverdata_leak	60	watch used pages
 udp-loopback-checksum	udp		measure with iperf3 -u -b 0
 udp-receiveerror	udp	udp_receiveerror_leak		needs SOCK_RAW
 udp-unicast-enqueue	udp	udp_unicast_loopback		also iperf3 #18730
-virtio-free-id	virtio_net		publish_device fail; rebuild only
-virtio-gpu-clone-fd	virtio_gpu.accelerant	virtio_gpu_clone	50	clone success path; overlay add-ons/accelerants/
-virtio-gpu-detach-backing	virtio_gpu		rebuild only
-virtio-gpu-mutex-uninit	virtio_gpu		rebuild only
 virtio-gpu-open-shared-area	virtio_gpu		rebuild only
 virtio-net-interrupt-uninit	virtio_net		queue irq teardown; apply after mutex
 virtio-net-mutex-uninit	virtio_net		init mutex teardown; rebuild only

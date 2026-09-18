@@ -7,29 +7,36 @@ Do not send the generated patches to review.haiku-os.org as-is.
 Patches follow the Haiku coding guidelines:
 https://www.haiku-os.org/development/coding-guidelines/
 
+Open and submitted (repo root):
+
 ```
 udp-deliverdata/         submitted Gerrit 11792; DeliverData clone leak when FIFO is full
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
 virtio-tx-freelist/      return TX BufInfo if queue_request_v fails
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
 virtio-net-interrupt-uninit/ free_interrupts if queue_setup_interrupt fails
-virtio-free-id/          merged Gerrit 11784 / bf90d383; virtio_net free_id if publish_device fails
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 icmp-error-reply/        reply buffer leak if get_domain/prepend fails
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
 udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
-arp-request-buffer-dtor/ merged Gerrit 11789 / 6c10ad5b; ~arp_entry leaked the request template
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
-ipv4-multicast-filtermode/ merged Gerrit 11791 / 8d435047; init fFilterMode to kInclude
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
-virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
-virtio-gpu-mutex-uninit/ merged Gerrit 11776 / 768d4e6c; commandLock leak if interrupt setup fails
-virtio-gpu-clone-fd/     merged Gerrit 11783 / 55d56e03; accelerant double-close
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
+```
+
+Merged upstream lives under [`merged/`](merged/README.md):
+
+```
+merged/virtio-gpu-detach-backing/   Gerrit 11771 / 0438319c
+merged/virtio-gpu-mutex-uninit/     Gerrit 11776 / 768d4e6c
+merged/virtio-gpu-clone-fd/         Gerrit 11783 / 55d56e03
+merged/virtio-free-id/              Gerrit 11784 / bf90d383
+merged/arp-request-buffer-dtor/     Gerrit 11789 / 6c10ad5b
+merged/ipv4-multicast-filtermode/   Gerrit 11791 / 8d435047
 ```
 
 Gerrit tracking lives in each submitted folder as `STATUS`.
@@ -43,13 +50,13 @@ to leftover virtio_net locals and `virtio-gpu-open-shared-area`.
 Do not number those as GPU 4 unless you mean the GPU series only.
 Steps:
 
-- virtio_net id leak: `virtio-free-id/README.md` (merged 11784)
+- virtio_net id leak: `merged/virtio-free-id/README.md` (merged 11784)
 - virtio_net TX slot leak: `virtio-tx-freelist/README.md`
 - virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
 - virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
 - GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
-- ARP request buffer: `arp-request-buffer-dtor/README.md`
-- IPv4 filter mode: `ipv4-multicast-filtermode/README.md`
+- ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
+- IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
 - UDP DeliverData enqueue free: `udp-deliverdata/README.md` (submitted 11792)
 
 Shared rules:
@@ -62,7 +69,7 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
-- virtio_net overlay (`virtio-free-id` / `virtio-tx-freelist` / `virtio-net-mutex-uninit` / `virtio-net-interrupt-uninit`):
+- virtio_net overlay (`virtio-tx-freelist` / `virtio-net-mutex-uninit` / `virtio-net-interrupt-uninit`):
   `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 - ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
   (jam target is `'<module>arp'`, not userspace `arp`)
