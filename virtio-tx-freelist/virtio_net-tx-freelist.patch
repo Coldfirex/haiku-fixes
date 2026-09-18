@@ -1,0 +1,33 @@
+From: Alan Shearer
+Subject: virtio_net: return TX BufInfo to the free list if enqueue fails
+
+The send path takes a BufInfo off txFreeList and passes it to
+queue_request_v(). On failure the request is not queued, so txDone
+never returns the slot. The buffer was left off the list and the TX
+pool shrank until transmit stalled.
+
+Put the BufInfo back before dropping txLock.
+
+---
+ src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
+--- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
++++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
+@@ -773,12 +773,13 @@
+ 	// queue the virtio_net_hdr + buffer data
+ 	status_t status = info->virtio->queue_request_v(info->txQueues[0],
+ 		entries, 2, 0, buf);
+-	mutex_unlock(&info->txLock);
+-
+ 	if (status != B_OK) {
++		info->txFreeList.Add(buf);
++		mutex_unlock(&info->txLock);
+ 		ERROR("tx queueing on queue %d failed (%s)\n", 0, strerror(status));
+ 		return status;
+ 	}
++	mutex_unlock(&info->txLock);
+ 
+ 	sBufferModule->free(buffer);
+ 	return B_OK;

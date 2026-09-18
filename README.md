@@ -10,7 +10,8 @@ https://www.haiku-os.org/development/coding-guidelines/
 ```
 udp-deliverdata/         DeliverData clone leak when FIFO is full
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
-virtio-tx-freelist/      TX BufInfo leak + mutex teardown on init fail
+virtio-tx-freelist/      return TX BufInfo if queue_request_v fails
+virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
 virtio-free-id/          merged Gerrit 11784 / bf90d383; virtio_net free_id if publish_device fails
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 icmp-error-reply/        reply buffer leak if get_domain/prepend fails
@@ -37,11 +38,13 @@ See also https://github.com/Coldfirex/haiku-fixes/issues/1 (Network prefs
 gateway blank after ifconfig down; not ARP).
 
 virtio_gpu notes that burned us on GPU patches 1–3. They also apply
-to `virtio-free-id` (virtio_net) and `virtio-gpu-open-shared-area`.
-Those two are separate leftover locals — do not number them as GPU 4
-unless you mean the GPU series only. Steps:
+to leftover virtio_net locals and `virtio-gpu-open-shared-area`.
+Do not number those as GPU 4 unless you mean the GPU series only.
+Steps:
 
-- virtio_net id leak: `virtio-free-id/README.md`
+- virtio_net id leak: `virtio-free-id/README.md` (merged 11784)
+- virtio_net TX slot leak: `virtio-tx-freelist/README.md`
+- virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
 - GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
 - ARP request buffer: `arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `ipv4-multicast-filtermode/README.md`
@@ -56,7 +59,7 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
-- virtio_net overlay (`virtio-free-id` / `virtio-tx-freelist`):
+- virtio_net overlay (`virtio-free-id` / `virtio-tx-freelist` / `virtio-net-mutex-uninit`):
   `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 - ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
   (jam target is `'<module>arp'`, not userspace `arp`)

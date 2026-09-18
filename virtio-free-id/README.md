@@ -29,7 +29,8 @@ We never had local copies of those. Do not add them.
 `virtio-gpu-open-shared-area` is a different leak (`open()` shared-info
 area + uninit area ids). Keep that folder. It is not 11786.
 
-`virtio-tx-freelist` is a different virtio_net TX/init leak. Keep it.
+`virtio-tx-freelist` and `virtio-net-mutex-uninit` are different
+virtio_net leaks (split from the old combined TX+mutex patch). Keep both.
 
 ## Overlay that loaded (historical)
 

@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: virtio-net
+branch: master
+patchset:
+commit:
+subject: virtio_net: destroy TX/RX mutexes if interrupt setup fails
+bug:
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: split from virtio_net-tx-freelist-and-mutex-uninit; same pattern as virtio_gpu 11776. Overlay kernel/drivers/network/virtio_net. Do not amend 11784.
