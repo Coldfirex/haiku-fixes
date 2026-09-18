@@ -1,0 +1,16 @@
+state: submitted
+gerrit: https://review.haiku-os.org/c/haiku/+/11789
+change-id: I14706b727db2fe8be38681096793dbf067d703d0
+topic: arp
+branch: master
+patchset: 1
+commit:
+subject: arp: free request_buffer when the cache entry is destroyed
+bug:
+submitted: 2026-09-18
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: submitted; overlay kernel/network/datalink_protocols/arp. Jam target is <module>arp not userspace arp. Not #18816. Do not re-push unless amending this Change-Id.
