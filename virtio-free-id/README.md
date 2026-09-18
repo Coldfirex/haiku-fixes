@@ -1,38 +1,38 @@
 # virtio_net: free device id if publish_device fails
 
-Status: **submitted**.
+Status: **merged**.
 
 - Gerrit: https://review.haiku-os.org/c/haiku/+/11784
 - Change-Id: `Ic1a3fe547841207d5968a71e7bea0c8e8b70214f`
 - Topic: `virtio-net`
-- Submitted: 2026-09-17
+- haiku.git: `bf90d383c30ecaa3a85ea9938b049680dbc78145`
+- Merged: 2026-09-18
+- Reviewed-by: Jérôme Duval (korli)
 
-This is **not** virtio_gpu patch 4. GPU series:
+Do not re-push 11784.
 
-- GPU 1: 11771 **MERGED** `0438319c127429a416086d1220f79ff94d71f2d0`
-- GPU 2: 11776 **MERGED** `768d4e6cba315d55c9469c85d9219243408152d7`
-- GPU 3: 11783 **MERGED** `55d56e03a0834af356f883d3e148284cd9d286e9`
-- GPU leftover (local): `virtio-gpu-open-shared-area`
+## Same bug, other drivers (not ours)
 
-Do not amend 11771 / 11776 / 11783. Do not re-push 11784 unless Gerrit
-asks for a new patch set.
+korli followed 11784 with
+https://review.haiku-os.org/c/haiku/+/11786
+(`I378eb5ebefebb3306c74b0d30bc6fe5fcce69d09`, still NEW as of 2026-09-18):
 
-## Commit message used on Gerrit
+- virtio_gpu `register_child_devices` (publish_device)
+- virtio_block, virtio_input
+- nvme_disk, mmc_disk
+- usb_ecm
+- scsi sim_interface, ata ATAModule, i2c I2CModule
+- ACPI EC / ac / battery / lid / thermal / als, pch_thermal
 
-```
-virtio_net: free device id if publish_device fails
+We never had local copies of those. Do not add them.
 
-create_id() reserves a bit in a per-generator bitmap, limited to 64
-IDs. The ID is used only as the /dev/net/virtio/N suffix. If
-publish_device() fails, the bit was not released, so repeated failed
-probes could exhaust the generator.
-```
+`virtio-gpu-open-shared-area` is a different leak (`open()` shared-info
+area + uninit area ids). Keep that folder. It is not 11786.
 
-## Overlay that loaded
+`virtio-tx-freelist` is a different virtio_net TX/init leak. Keep it.
+
+## Overlay that loaded (historical)
 
 `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 
-`drivers/bin` + `dev/net` did not load. Reboot with `shutdown -r`.
-
-Smoke-tested 2026-09-17: listimage showed the non-packaged path,
-`/dev/net/virtio/0` up, ping 1.1.1.1 ok.
+After merge, drop the overlay and `shutdown -r` to run packaged.

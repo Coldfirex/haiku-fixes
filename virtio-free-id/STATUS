@@ -1,16 +1,16 @@
-state: submitted
+state: merged
 gerrit: https://review.haiku-os.org/c/haiku/+/11784
 change-id: Ic1a3fe547841207d5968a71e7bea0c8e8b70214f
 topic: virtio-net
 branch: master
 patchset: 1
-commit: 3770f9ed87bf8f94d84fed7f840acba20dbdb5ed
+commit: bf90d383c30ecaa3a85ea9938b049680dbc78145
 subject: virtio_net: free device id if publish_device fails
 bug:
 submitted: 2026-09-17
-code-review:
-merged:
+code-review: +2 korli
+merged: 2026-09-18
 submitter:
 hrev:
-haiku-commit:
-note: virtio_net register_child_devices; overlay drivers/network/virtio_net; smoke-tested overlay + ping; do not bundle virtio-tx-freelist; do not amend 11771 11776 11783
+haiku-commit: bf90d383c30ecaa3a85ea9938b049680dbc78145
+note: merged; overlay drivers/network/virtio_net. Follow-up for other drivers is korli 11786 (not ours). Do not re-push.
