@@ -21,7 +21,7 @@ arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
-ipv4-multicast-filtermode/ init MulticastGroupInterface fFilterMode
+ipv4-multicast-filtermode/ init fFilterMode to kInclude
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
@@ -146,7 +146,9 @@ Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
 Patched: the second call returns EADDRNOTAVAIL, and ADD_SOURCE after the
 last DROP_SOURCE succeeds (group was left, not left dangling).
 
-`ipv4-multicast-filtermode` is a constructor default. Confirm with a rebuild.
+`ipv4-multicast-filtermode` is a constructor default (`kInclude`).
+Uninitialized mode makes `IsEmpty()` lie; `Clear()` can then
+`LeaveGroup()` after a failed `JoinGroup()`. Confirm with a rebuild.
 
 `ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
 paths. Confirm with a rebuild. The membership test also exercises the
