@@ -1,0 +1,60 @@
+From: Alan Shearer
+Subject: Network prefs: keep saved gateway when live default route is gone
+
+InterfaceAddressView fills Gateway from GetDefaultGateway() on the live
+routing table. ifconfig down deletes that route; the interfaces file
+still has the static gateway. The field goes blank, and Apply writes
+the empty value back (GetMessage omits an unset gateway).
+
+If the live lookup fails, show the saved BNetworkInterfaceAddressSettings
+gateway. On Apply in Static mode, keep the previous saved gateway when
+the field is empty instead of dropping it.
+
+Does not restore the live default route. That is net_server.
+
+Coldfirex/haiku-fixes#1
+https://dev.haiku-os.org/ticket/9695
+https://dev.haiku-os.org/ticket/16349
+
+diff --git a/src/preferences/network/InterfaceAddressView.cpp b/src/preferences/network/InterfaceAddressView.cpp
+--- a/src/preferences/network/InterfaceAddressView.cpp
++++ b/src/preferences/network/InterfaceAddressView.cpp
+@@ -241,8 +241,18 @@
+ 	BNetworkAddress gateway;
+ 	if (fInterface.GetDefaultGateway(fFamily, gateway) == B_OK)
+ 		fGatewayField->SetText(gateway.ToString());
+-	else
+-		fGatewayField->SetText(NULL);
++	else {
++		// Live table has no default route. ifconfig down drops it;
++		// the saved profile may still have a static gateway.
++		BNetworkInterfaceSettings saved(interfaceSettings);
++		int32 savedIndex = saved.FindFirstAddress(fFamily);
++		if (savedIndex >= 0
++			&& !saved.AddressAt(savedIndex).Gateway().IsEmpty()) {
++			fGatewayField->SetText(
++				saved.AddressAt(savedIndex).Gateway().ToString());
++		} else
++			fGatewayField->SetText(NULL);
++	}
+ }
+ 
+ 
+@@ -322,6 +332,8 @@
+ 	settings.SetFamily(fFamily);
+ 	settings.SetAutoConfigure(mode == kModeAuto);
+ 
++	BNetworkAddress previousGateway = settings.Gateway();
++
+ 	settings.Address().Unset();
+ 	settings.Mask().Unset();
+ 	settings.Peer().Unset();
+@@ -332,6 +344,8 @@
+ 		_SetAddress(settings.Address(), fAddressField->Text());
+ 		_SetAddress(settings.Mask(), fNetmaskField->Text());
+ 		_SetAddress(settings.Gateway(), fGatewayField->Text());
++		if (settings.Gateway().IsEmpty() && !previousGateway.IsEmpty())
++			settings.Gateway() = previousGateway;
+ 	}
+ }
+ 

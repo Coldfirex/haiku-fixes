@@ -1,0 +1,120 @@
+From: Alan Shearer
+Subject: net_server: restore static default route when the interface goes up
+
+ifconfig down invalidates every route on the interface, including
+RTF_DEFAULT. ifconfig up only rebuilds the host and subnet routes from
+InterfaceAddress. The saved gateway lives in the interfaces file and is
+installed only from _ConfigureInterface (boot, settings write, or a new
+/dev/net node). IFF_UP is not one of those paths.
+
+Watch B_NETWORK_INTERFACE_CHANGED. On a down-to-up transition, if the
+profile is static and still has a gateway, add that default route again.
+Leave DHCP / auto_config alone.
+
+Coldfirex/haiku-fixes#1
+https://dev.haiku-os.org/ticket/9695
+https://dev.haiku-os.org/ticket/16349
+
+diff --git a/src/servers/net/NetServer.cpp b/src/servers/net/NetServer.cpp
+--- a/src/servers/net/NetServer.cpp
++++ b/src/servers/net/NetServer.cpp
+@@ -93,6 +93,7 @@
+ 			void				_BringUpInterfaces();
+ 			void				_StartServices();
+ 			status_t			_HandleDeviceMonitor(BMessage* message);
++			status_t			_RestoreStaticRoutes(const char* name);
+ 
+ 			status_t			_AutoJoinNetwork(const BMessage& message);
+ 			status_t			_JoinNetwork(const BMessage& message,
+@@ -149,6 +150,7 @@
+ NetServer::~NetServer()
+ {
+ 	BPrivate::BPathMonitor::StopWatching("/dev/net", this);
++	BNetworkRoster::Default().StopWatching(this);
+ }
+ 
+ 
+@@ -161,6 +163,8 @@
+ 
+ 	BPrivate::BPathMonitor::StartWatching("/dev/net",
+ 		B_WATCH_FILES_ONLY | B_WATCH_RECURSIVELY, this);
++	BNetworkRoster::Default().StartWatching(this,
++		B_WATCH_NETWORK_INTERFACE_CHANGES);
+ }
+ 
+ 
+@@ -296,6 +300,27 @@
+ 			break;
+ 		}
+ 
++		case B_NETWORK_MONITOR:
++		{
++			int32 opcode;
++			if (message->FindInt32("opcode", &opcode) != B_OK
++				|| opcode != B_NETWORK_INTERFACE_CHANGED)
++				break;
++
++			const char* name = NULL;
++			if (message->FindString("interface", &name) != B_OK
++				|| name == NULL)
++				break;
++
++			int32 oldFlags = 0;
++			int32 newFlags = 0;
++			message->FindInt32("old flags", &oldFlags);
++			message->FindInt32("new flags", &newFlags);
++			if ((oldFlags & IFF_UP) == 0 && (newFlags & IFF_UP) != 0)
++				_RestoreStaticRoutes(name);
++			break;
++		}
++
+ 		default:
+ 			BApplication::MessageReceived(message);
+ 			return;
+@@ -917,6 +942,46 @@
+ }
+ 
+ 
++status_t
++NetServer::_RestoreStaticRoutes(const char* name)
++{
++	BMessage interface;
++	if (fSettings.GetInterface(name, interface) != B_OK)
++		return B_NAME_NOT_FOUND;
++
++	bool disabled = false;
++	if (interface.FindBool("disabled", &disabled) == B_OK && disabled)
++		return B_OK;
++
++	BNetworkInterface nic(name);
++	if (!nic.Exists() || (nic.Flags() & IFF_UP) == 0)
++		return B_OK;
++
++	BMessage addressMessage;
++	for (int32 index = 0; interface.FindMessage("address", index,
++			&addressMessage) == B_OK; index++) {
++		BNetworkInterfaceAddressSettings addressSettings(addressMessage);
++		if (addressSettings.IsAutoConfigure()
++			|| addressSettings.Gateway().IsEmpty())
++			continue;
++
++		BNetworkAddress current;
++		if (nic.GetDefaultGateway(addressSettings.Family(), current) == B_OK
++			&& current == addressSettings.Gateway())
++			continue;
++
++		nic.RemoveDefaultRoute(addressSettings.Family());
++		status_t status = nic.AddDefaultRoute(addressSettings.Gateway());
++		if (status != B_OK) {
++			fprintf(stderr, "%s: Could not restore route for %s: %s\n",
++				Name(), name, strerror(status));
++		}
++	}
++
++	return B_OK;
++}
++
++
+ status_t
+ NetServer::_HandleDeviceMonitor(BMessage* message)
+ {
