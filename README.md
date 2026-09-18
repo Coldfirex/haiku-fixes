@@ -12,6 +12,7 @@ udp-deliverdata/         submitted Gerrit 11792; DeliverData clone leak when FIF
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
 virtio-tx-freelist/      return TX BufInfo if queue_request_v fails
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
+virtio-net-interrupt-uninit/ free_interrupts if queue_setup_interrupt fails
 virtio-free-id/          merged Gerrit 11784 / bf90d383; virtio_net free_id if publish_device fails
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 icmp-error-reply/        reply buffer leak if get_domain/prepend fails
@@ -45,6 +46,7 @@ Steps:
 - virtio_net id leak: `virtio-free-id/README.md` (merged 11784)
 - virtio_net TX slot leak: `virtio-tx-freelist/README.md`
 - virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
+- virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
 - GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
 - ARP request buffer: `arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `ipv4-multicast-filtermode/README.md`
@@ -60,7 +62,7 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
-- virtio_net overlay (`virtio-free-id` / `virtio-tx-freelist` / `virtio-net-mutex-uninit`):
+- virtio_net overlay (`virtio-free-id` / `virtio-tx-freelist` / `virtio-net-mutex-uninit` / `virtio-net-interrupt-uninit`):
   `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 - ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
   (jam target is `'<module>arp'`, not userspace `arp`)

@@ -18,5 +18,6 @@ virtio-gpu-clone-fd	virtio_gpu.accelerant	virtio_gpu_clone	50	clone success path
 virtio-gpu-detach-backing	virtio_gpu		rebuild only
 virtio-gpu-mutex-uninit	virtio_gpu		rebuild only
 virtio-gpu-open-shared-area	virtio_gpu		rebuild only
+virtio-net-interrupt-uninit	virtio_net		queue irq teardown; apply after mutex
 virtio-net-mutex-uninit	virtio_net		init mutex teardown; rebuild only
 virtio-tx-freelist	virtio_net		TX BufInfo leak; rebuild only

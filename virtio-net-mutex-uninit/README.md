@@ -12,6 +12,10 @@ exist, so this adds `err7`.
 
 Same pattern as virtio_gpu Gerrit 11776.
 
+Does not call `free_interrupts()` if `setup_interrupt()` succeeded and
+a later `queue_setup_interrupt()` failed. That follow-up is
+`virtio-net-interrupt-uninit/`. Keep them separate.
+
 Rebuild-only. Overlay that loaded:
 
 `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
