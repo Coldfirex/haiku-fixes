@@ -26,6 +26,8 @@ ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGrou
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
+network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
+net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 ```
 
 Merged upstream lives under [`merged/`](merged/README.md):
@@ -58,6 +60,8 @@ Steps:
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
 - UDP DeliverData enqueue free: `udp-deliverdata/README.md` (submitted 11792)
+- Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
+- net_server restore gateway on up: `net-server-reapply-gateway/README.md`
 
 Shared rules:
 

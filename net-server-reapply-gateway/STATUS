@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: network-gateway
+branch: master
+patchset:
+commit:
+subject: net_server: restore static default route when the interface goes up
+bug: https://github.com/Coldfirex/haiku-fixes/issues/1
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: static gateway only. Watch B_NETWORK_INTERFACE_CHANGED. Jam net_server and restart it. DHCP left for #9695.

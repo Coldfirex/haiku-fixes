@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: network-gateway
+branch: master
+patchset:
+commit:
+subject: Network prefs: keep saved gateway when live default route is gone
+bug: https://github.com/Coldfirex/haiku-fixes/issues/1
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: display/Apply only. Does not restore the live default route. Overlay not used; jam Network.
