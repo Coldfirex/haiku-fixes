@@ -1,7 +1,16 @@
-state: local
-gerrit:
-change-id:
+state: submitted
+gerrit: https://review.haiku-os.org/c/haiku/+/11792
+change-id: Ifc524e94fdc09f1ffc7a7c236189f131ec1a2c86
 topic: udp
 branch: master
+patchset: 1
+commit: 0776b8d2e52c0fb5e6c075b895d8a775873f7fd5
 subject: udp: free cloned buffer when DeliverData enqueue fails
-note: overlay kernel/network/protocols/udp. Jam target udp. Compare Enqueue with status < B_OK. Do not use on-haiku.sh go.
+bug:
+submitted: 2026-09-18
+code-review: +2 waddlesplash
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: submitted; overlay kernel/network/protocols/udp. Jam target udp. Compare Enqueue with status < B_OK. Do not re-push.

@@ -8,7 +8,7 @@ Patches follow the Haiku coding guidelines:
 https://www.haiku-os.org/development/coding-guidelines/
 
 ```
-udp-deliverdata/         DeliverData clone leak when FIFO is full
+udp-deliverdata/         submitted Gerrit 11792; DeliverData clone leak when FIFO is full
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
 virtio-tx-freelist/      return TX BufInfo if queue_request_v fails
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
@@ -48,6 +48,7 @@ Steps:
 - GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
 - ARP request buffer: `arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `ipv4-multicast-filtermode/README.md`
+- UDP DeliverData enqueue free: `udp-deliverdata/README.md` (submitted 11792)
 
 Shared rules:
 
@@ -71,7 +72,7 @@ Shared rules:
   (jam `udp`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/udp/udp`)
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, or 11791
+- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, or 11792
 
 ## Test a Gerrit change on the guest
 
