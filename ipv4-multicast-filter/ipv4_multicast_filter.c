@@ -11,6 +11,8 @@
  * Unpatched: a second IP_UNBLOCK_SOURCE or IP_DROP_SOURCE_MEMBERSHIP
  * still returns 0 because the source never left the set.
  * Patched: the second call returns EADDRNOTAVAIL.
+ * After the last IP_DROP_SOURCE_MEMBERSHIP the group is gone, so
+ * IP_ADD_SOURCE_MEMBERSHIP of the same (group, source) must work again.
  *
  * Build on Haiku (gcc 2.95 or gcc 13):
  *		make
@@ -127,6 +129,17 @@ TestDropSource()
 			sizeof(req)) != 0) {
 		close(fd);
 		return Fail("IP_DROP_SOURCE_MEMBERSHIP");
+	}
+
+	if (setsockopt(fd, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, &req,
+			sizeof(req)) != 0) {
+		close(fd);
+		return Fail("IP_ADD_SOURCE_MEMBERSHIP after drop");
+	}
+	if (setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, &req,
+			sizeof(req)) != 0) {
+		close(fd);
+		return Fail("IP_DROP_SOURCE_MEMBERSHIP after re-add");
 	}
 
 	status = setsockopt(fd, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, &req,
