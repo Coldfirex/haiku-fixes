@@ -21,7 +21,7 @@ arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
-ipv4-multicast-filtermode/ init fFilterMode to kInclude
+ipv4-multicast-filtermode/ merged Gerrit 11791 / 8d435047; init fFilterMode to kInclude
 ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-detach-backing/ merged Gerrit 11771 / 0438319c; zero-init DETACH_BACKING
@@ -44,6 +44,7 @@ unless you mean the GPU series only. Steps:
 - virtio_net id leak: `virtio-free-id/README.md`
 - GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
 - ARP request buffer: `arp-request-buffer-dtor/README.md`
+- IPv4 filter mode: `ipv4-multicast-filtermode/README.md`
 
 Shared rules:
 
@@ -59,9 +60,12 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 - ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
   (jam target is `'<module>arp'`, not userspace `arp`)
+- IPv4 protocol overlay (`ipv4-multicast-*`):
+  `~/config/non-packaged/add-ons/kernel/network/protocols/ipv4`
+  (jam `ipv4`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/ipv4/ipv4`)
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, or 11789
+- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, or 11791
 
 ## Test a Gerrit change on the guest
 
@@ -146,9 +150,8 @@ Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
 Patched: the second call returns EADDRNOTAVAIL, and ADD_SOURCE after the
 last DROP_SOURCE succeeds (group was left, not left dangling).
 
-`ipv4-multicast-filtermode` is a constructor default (`kInclude`).
-Uninitialized mode makes `IsEmpty()` lie; `Clear()` can then
-`LeaveGroup()` after a failed `JoinGroup()`. Confirm with a rebuild.
+`ipv4-multicast-filtermode` merged as Gerrit 11791. Constructor default
+(`kInclude`). Rebuild-only. Drop the ipv4 overlay after merge.
 
 `ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
 paths. Confirm with a rebuild. The membership test also exercises the
