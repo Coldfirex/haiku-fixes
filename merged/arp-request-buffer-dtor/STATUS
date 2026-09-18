@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11789
+change-id: I14706b727db2fe8be38681096793dbf067d703d0
+topic: arp
+branch: master
+patchset: 2
+commit: 6c10ad5bd40b85d1a1fa07b2cfcabd43a9eb5033
+subject: arp: free request_buffer when the cache entry is destroyed
+bug:
+submitted: 2026-09-18
+code-review: +2 waddlesplash
+merged: 2026-09-18
+submitter: waddlesplash
+hrev:
+haiku-commit: 6c10ad5bd40b85d1a1fa07b2cfcabd43a9eb5033
+note: merged; overlay kernel/network/datalink_protocols/arp. Jam target is <module>arp not userspace arp. Not #18816. Do not re-push.

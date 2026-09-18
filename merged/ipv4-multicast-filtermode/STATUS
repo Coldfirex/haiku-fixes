@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11791
+change-id: I46c4bf647e930401239999a4c787b2c52e443a61
+topic: ipv4-multicast
+branch: master
+patchset: 2
+commit: 8d43504781e3f254c170420ba18c8ca80dbb8c16
+subject: ipv4: initialize MulticastGroupInterface filter mode to include
+bug:
+submitted: 2026-09-18
+code-review: +2 waddlesplash
+merged: 2026-09-18
+submitter: Coldfirex
+hrev:
+haiku-commit: 8d43504781e3f254c170420ba18c8ca80dbb8c16
+note: merged; overlay protocols/ipv4. Do not re-push. Next leftover is ipv4-multicast-filter (Remove + last-source LeaveGroup).
