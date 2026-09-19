@@ -4,13 +4,13 @@ change-id: Ifc524e94fdc09f1ffc7a7c236189f131ec1a2c86
 topic: udp
 branch: master
 patchset: 1
-commit: 0776b8d2e52c0fb5e6c075b895d8a775873f7fd5
+commit:
 subject: udp: free cloned buffer when DeliverData enqueue fails
 bug:
 submitted: 2026-09-18
 code-review: +2 waddlesplash
 merged:
-submitter:
+submitter: Coldfirex
 hrev:
 haiku-commit:
-note: submitted; overlay kernel/network/protocols/udp. Jam target udp. Compare Enqueue with status < B_OK. Do not re-push.
+note: NEW on Gerrit; Verified+1 buildbot. Overlay kernel/network/protocols/udp. Do not re-push unless asked. Next UDP leftover is udp-receiveerror.

@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: virtio-gpu
+branch: master
+patchset:
+commit:
+subject: virtio_gpu: free shared info area if open() fails
+bug:
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: leftover virtio_gpu kernel change after 11783; not virtio-free-id; overlay kernel/drivers/graphics/virtio_gpu; do not use on-haiku.sh go; do not open() the device from a tester on a live desktop; do not amend 11771 11776 11783
