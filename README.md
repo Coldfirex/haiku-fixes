@@ -23,7 +23,8 @@ arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
-ipv4-multicast-refs/     put_route/put_interface; IP_MULTICAST_IF dtor + NULL init
+ipv4-multicast-refs/     put_route/put_interface on membership wrappers
+ipv4-multicast-if/       IP_MULTICAST_IF sockaddr dtor + ctor NULL
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
@@ -173,10 +174,11 @@ last DROP_SOURCE succeeds (group was left, not left dangling).
 `ipv4-multicast-filtermode` merged as Gerrit 11791. Constructor default
 (`kInclude`). Rebuild-only. Drop the ipv4 overlay after merge.
 
-`ipv4-multicast-refs` and `ipv4-fragment-reassemble` are stack error
-paths. Confirm with a rebuild. The membership test also exercises the
-get_route / get_interface path that leaked references. The refs patch
-also NULL-inits `multicast_address` so the destructor delete is safe.
+`ipv4-multicast-refs` puts the route/interface taken by the membership
+wrappers. `ipv4-multicast-if` deletes the IP_MULTICAST_IF sockaddr in
+the protocol destructor. Rebuild-only besides the existing membership
+test, which exercises get_route / get_interface. Apply refs and if
+separately; both target current master ipv4.cpp.
 
 Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
 error paths. They have no userspace flooder in this tree; confirm with
