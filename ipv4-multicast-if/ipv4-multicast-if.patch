@@ -1,0 +1,34 @@
+From: Alan Shearer
+Subject: ipv4: free IP_MULTICAST_IF address in the protocol destructor
+
+IP_MULTICAST_IF stores a heap sockaddr on ipv4_protocol. The
+destructor only deleted the raw socket wrapper, so a socket that set
+the option leaked that address on close. Initialize the pointer in the
+constructor so a protocol that never sets the option does not delete
+garbage.
+
+---
+ src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+@@ -165,7 +165,8 @@
+ 	ipv4_protocol()
+ 		:
+ 		raw(NULL),
+-		multicast_filter(this)
++		multicast_address(NULL),
++		multicast_filter(this)
+ 	{
+ 	}
+ 
+@@ -172,6 +173,7 @@
+ 	~ipv4_protocol()
+ 	{
+ 		delete raw;
++		delete multicast_address;
+ 	}
+ 
+ 	RawSocket*			raw;

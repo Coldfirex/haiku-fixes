@@ -1,47 +1,23 @@
 From: Alan Shearer
-Subject: ipv4: drop leaked multicast interface refs and IP_MULTICAST_IF
+Subject: ipv4: put multicast route and interface references
 
-get_multicast_interface() calls get_route() and never put_route().
-ipv4_delta_membership() and ipv4_generic_delta_membership() call
-get_interface() / get_interface_with_address() (both acquire an
-Interface) and never put_interface(). The file already notes both
-leaks. Every IP_ADD_MEMBERSHIP / MCAST_JOIN_GROUP leaves a route or
-interface reference behind.
+get_multicast_interface() calls get_route() and returns the route's
+interface without put_route(). ipv4_delta_membership() and
+ipv4_generic_delta_membership() call get_interface() /
+get_interface_with_address() and never put_interface(). The file
+already notes both leaks.
 
-Acquire the interface through get_interface(), put the route, and
-put_interface() on every exit of the two wrappers.
-
-IP_MULTICAST_IF stores a heap sockaddr on ipv4_protocol. The
-destructor only deleted the raw socket wrapper, so a socket that set
-the option leaked that address on close. Initialize the pointer to
-NULL so a socket that never set the option does not delete garbage.
+Take an interface reference, drop the route, and put_interface() on
+every exit of the two wrappers.
 
 ---
- src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
 --- a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
 +++ b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
-@@ -163,7 +163,8 @@
- 	ipv4_protocol()
- 		:
- 		raw(NULL),
--		multicast_filter(this)
-+		multicast_address(NULL),
-+		multicast_filter(this)
- 	{
- 	}
- 
-@@ -172,6 +173,7 @@
- 	~ipv4_protocol()
- 	{
- 		delete raw;
-+		delete multicast_address;
- 	}
- 
- 	RawSocket*			raw;
-@@ -997,14 +999,16 @@
+@@ -997,14 +997,16 @@
  static net_interface*
  get_multicast_interface(ipv4_protocol* protocol, const in_addr* address)
  {
@@ -60,7 +36,7 @@ diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/ke
  }
  
  
-@@ -1025,8 +1029,10 @@
+@@ -1025,8 +1027,10 @@
  	if (interface == NULL)
  		return B_DEVICE_NOT_FOUND;
  
@@ -72,7 +48,7 @@ diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/ke
  }
  
  
-@@ -1041,7 +1047,6 @@
+@@ -1041,7 +1045,6 @@
  
  	const in_addr* groupAddr = &((const sockaddr_in*)_groupAddr)->sin_addr;
  
@@ -80,7 +56,7 @@ diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/ke
  	net_interface* interface;
  	if (index == 0)
  		interface = get_multicast_interface(protocol, groupAddr);
-@@ -1055,7 +1060,9 @@
+@@ -1055,7 +1058,9 @@
  	if (_sourceAddr != NULL)
  		sourceAddr = &((const sockaddr_in*)_sourceAddr)->sin_addr;
  
