@@ -1,12 +1,11 @@
 From: Alan Shearer
-Subject: udp: free ICMP error buffer on ReceiveError early returns
+Subject: udp: free ICMP error buffer on early returns
 
-icmp_receive_data hands the original packet to error_received and does
-not free it. ReceiveError returned on short packets, missing domain
-support, or a failed header read without freeing. DeliverError also
-returned on broadcast/multicast without freeing.
+icmp_receive_data hands the packet to error_received and does not free
+it. ReceiveError leaked on short packets, missing domain support, and
+a failed header read. DeliverError leaked on broadcast/multicast.
 
-The success path and the QUENCH/default arm already call free.
+The delivery path and the QUENCH/default arm already free it.
 
 ---
  src/add-ons/kernel/network/protocols/udp/udp.cpp | 11 ++++++++---
