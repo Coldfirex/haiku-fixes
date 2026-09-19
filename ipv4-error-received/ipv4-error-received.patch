@@ -2,9 +2,10 @@ From: Alan Shearer
 Subject: ipv4: free error buffer if error_received does not hand it off
 
 icmp_receive_data transfers the quoted packet to the domain
-error_received hook. ipv4_error_received() returned on a bad header,
-a checksum failure, a non-local source, or a missing next protocol
-without freeing.
+error_received hook. ipv4_error_received() returned without
+freeing when the quoted header was bad, its checksum failed,
+the original source was not local, or there was no next
+protocol.
 
 Free the buffer on those paths. The success path still passes
 ownership to the next protocol.
