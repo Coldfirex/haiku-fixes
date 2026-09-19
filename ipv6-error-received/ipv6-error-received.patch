@@ -1,0 +1,55 @@
+From: Alan Shearer
+Subject: ipv6: free error buffer if error_received does not hand it off
+
+icmp6 delivers the quoted packet to the domain error_received hook.
+ipv6_error_received() returned on a bad header, a non-local source, or
+a missing next protocol without freeing.
+
+Free the buffer on those paths. The success path still passes
+ownership to the next protocol.
+
+---
+ src/add-ons/kernel/network/protocols/ipv6/ipv6.cpp | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv6/ipv6.cpp b/src/add-ons/kernel/network/protocols/ipv6/ipv6.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv6/ipv6.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv6/ipv6.cpp
+@@ -1588,15 +1588,19 @@
+ 		(int)error, buffer, buffer->size);
+ 
+ 	NetBufferHeaderReader<IPv6Header> bufferHeader(buffer);
+-	if (bufferHeader.Status() != B_OK)
++	if (bufferHeader.Status() != B_OK) {
++		gBufferModule->free(buffer);
+ 		return bufferHeader.Status();
++	}
+ 
+ 	IPv6Header& header = bufferHeader.Data();
+ 	TRACE_ONLY(dump_ipv6_header(header));
+ 
+ 	// We do not check the packet length, as we usually only get a part of it
+-	if (header.ProtocolVersion() != IPV6_VERSION)
++	if (header.ProtocolVersion() != IPV6_VERSION) {
++		gBufferModule->free(buffer);
+ 		return B_BAD_DATA;
++	}
+@@ -1612,8 +1616,10 @@
+ 	if (!sDatalinkModule->is_local_address(sDomain, buffer->source, NULL,
+ 			NULL)) {
+ 		TRACE("  ipv6_error_received(): packet was not for us");
++		gBufferModule->free(buffer);
+ 		return B_ERROR;
+ 	}
+@@ -1628,8 +1634,10 @@
+ 	bufferHeader.Remove(sizeof(IPv6Header));
+ 
+ 	net_protocol_module_info* protocol = receiving_protocol(buffer->protocol);
+-	if (protocol == NULL)
++	if (protocol == NULL) {
++		gBufferModule->free(buffer);
+ 		return B_ERROR;
++	}
+ 
+ 	// propagate error
+ 	return protocol->error_received(error, errorData, buffer);

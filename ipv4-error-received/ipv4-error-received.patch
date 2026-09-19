@@ -1,0 +1,61 @@
+From: Alan Shearer
+Subject: ipv4: free error buffer if error_received does not hand it off
+
+icmp_receive_data transfers the quoted packet to the domain
+error_received hook. ipv4_error_received() returned on a bad header,
+a checksum failure, a non-local source, or a missing next protocol
+without freeing.
+
+Free the buffer on those paths. The success path still passes
+ownership to the next protocol.
+
+---
+ src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+--- a/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp
+@@ -1909,8 +1909,10 @@
+ 		(int)error, buffer, buffer->size);
+ 
+ 	NetBufferHeaderReader<ipv4_header> bufferHeader(buffer);
+-	if (bufferHeader.Status() != B_OK)
++	if (bufferHeader.Status() != B_OK) {
++		gBufferModule->free(buffer);
+ 		return bufferHeader.Status();
++	}
+ 
+ 	ipv4_header& header = bufferHeader.Data();
+ 	TRACE_ONLY(dump_ipv4_header(header));
+@@ -1919,8 +1921,10 @@
+ 	// We do not check the packet length, as we usually only get a part of it
+ 	uint16 headerLength = header.HeaderLength();
+ 	if (header.version != IPV4_VERSION
+ 		|| headerLength < sizeof(ipv4_header)
+-		|| gBufferModule->checksum(buffer, 0, headerLength, true) != 0)
++		|| gBufferModule->checksum(buffer, 0, headerLength, true) != 0) {
++		gBufferModule->free(buffer);
+ 		return B_BAD_DATA;
++	}
+ 
+ 	// Restore addresses of the original buffer
+@@ -1942,8 +1946,10 @@
+ 			NULL)) {
+ 		TRACE("  ipv4_error_received(): packet was not for us %x -> %x",
+ 			ntohl(header.source), ntohl(header.destination));
++		gBufferModule->free(buffer);
+ 		return B_ERROR;
+ 	}
+@@ -1958,8 +1964,10 @@
+ 	bufferHeader.Remove(headerLength);
+ 
+ 	net_protocol_module_info* protocol = receiving_protocol(buffer->protocol);
+-	if (protocol == NULL)
++	if (protocol == NULL) {
++		gBufferModule->free(buffer);
+ 		return B_ERROR;
++	}
+ 
+ 	// propagate error
+ 	return protocol->error_received(error, errorData, buffer);
