@@ -3,6 +3,9 @@ arp-protocol-teardown	arp		init-fail / uninit path; rebuild only
 arp-queued-send	arp		MarkValid send-fail; rebuild only
 arp-reject-learn	arp	arp_reject_learn		needs IPv4 ethernet
 icmp-error-reply	icmp		error-reply leak; rebuild only
+ipv4-error-received	ipv4		error_received early free; rebuild only
+ipv6-error-received	ipv6		error_received early free; rebuild only
+tcp-error-received	tcp		error_received free; rebuild only
 ipv4-fragment-reassemble	ipv4		rebuild only
 ipv4-multicast-filter	ipv4	ipv4_multicast_filter		setsockopt Unblock/Drop
 ipv4-multicast-refs	ipv4	ipv4_multicast_filter		put_route/put_interface
