@@ -14,4 +14,3 @@ Do not re-push. Do not `git apply` them on current master.
 | udp-deliverdata | [11792](https://review.haiku-os.org/c/haiku/+/11792) | `1ca7d0a6` | udp: free cloned buffer when DeliverData enqueue fails |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).
-`udp-deliverdata` landed; STATUS at repo root still records 11792.
