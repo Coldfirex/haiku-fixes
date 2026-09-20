@@ -1,6 +1,6 @@
 # virtio_net: return TX buffer to free list on queue failure
 
-Status: **local**. Split out of `virtio_net-tx-freelist-and-mutex-uninit`.
+Status: **submitted** [Gerrit 11807](https://review.haiku-os.org/c/haiku/+/11807). Split out of `virtio_net-tx-freelist-and-mutex-uninit`.
 
 The mutex-destroy half is `virtio-net-mutex-uninit/` (same pattern as
 Gerrit 11776). Do not combine them again. Do not amend 11784.
