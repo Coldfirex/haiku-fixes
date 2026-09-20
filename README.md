@@ -10,7 +10,6 @@ https://www.haiku-os.org/development/coding-guidelines/
 Open and submitted (repo root):
 
 ```
-udp-deliverdata/         submitted Gerrit 11792; DeliverData clone leak when FIFO is full
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
 virtio-tx-freelist/      return TX BufInfo if queue_request_v fails
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
@@ -40,6 +39,7 @@ merged/virtio-gpu-clone-fd/         Gerrit 11783 / 55d56e03
 merged/virtio-free-id/              Gerrit 11784 / bf90d383
 merged/arp-request-buffer-dtor/     Gerrit 11789 / 6c10ad5b
 merged/ipv4-multicast-filtermode/   Gerrit 11791 / 8d435047
+merged/udp-deliverdata/             Gerrit 11792 / 1ca7d0a6
 ```
 
 Gerrit tracking lives in each submitted folder as `STATUS`.
@@ -60,7 +60,7 @@ Steps:
 - GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
-- UDP DeliverData enqueue free: `udp-deliverdata/README.md` (submitted 11792)
+- UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
 
@@ -81,7 +81,7 @@ Shared rules:
 - IPv4 protocol overlay (`ipv4-multicast-*`):
   `~/config/non-packaged/add-ons/kernel/network/protocols/ipv4`
   (jam `ipv4`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/ipv4/ipv4`)
-- UDP protocol overlay (`udp-deliverdata` / `udp-receiveerror` / `udp-unicast-enqueue` / `udp-loopback-checksum`):
+- UDP protocol overlay (`udp-receiveerror` / `udp-unicast-enqueue` / `udp-loopback-checksum`):
   `~/config/non-packaged/add-ons/kernel/network/protocols/udp`
   (jam `udp`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/udp/udp`)
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
@@ -141,7 +141,7 @@ git apply /path/to/<folder>/<name>.patch
 ## Run a userspace test (Haiku)
 
 ```
-cd udp-deliverdata
+cd merged/udp-deliverdata
 make
 ./udp_deliverdata_leak 60
 ```
