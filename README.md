@@ -26,6 +26,7 @@ ipv4-multicast-refs/     put_route/put_interface on membership wrappers
 ipv4-multicast-if/       IP_MULTICAST_IF sockaddr dtor + ctor NULL
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
+virtio-gpu-free-areas/   delete framebuffer + shared areas in free()
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 ```
@@ -57,7 +58,8 @@ Steps:
 - virtio_net TX slot leak: `virtio-tx-freelist/README.md`
 - virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
 - virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
-- GPU shared-area leak: `virtio-gpu-open-shared-area/README.md`
+- GPU shared-area leak on open fail: `virtio-gpu-open-shared-area/README.md`
+- GPU area leak on free: `virtio-gpu-free-areas/README.md`
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
 - UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
@@ -70,7 +72,7 @@ Shared rules:
 - Always `export HAIKU_SRC` (helpers do not search Desktop)
 - `chmod +x work.sh gerrit.sh on-haiku.sh`
 - Do **not** use `on-haiku.sh go` for this series
-- GPU kernel overlay (11771 / 11776 / open-shared-area):
+- GPU kernel overlay (11771 / 11776 / open-shared-area / free-areas):
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
