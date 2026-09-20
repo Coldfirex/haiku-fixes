@@ -16,19 +16,15 @@ queue failures cannot permanently exhaust the TX buffer pool.
 diff --git a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
 --- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
 +++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
-@@ -773,9 +773,10 @@
+@@ -773,8 +773,9 @@
  	// queue the virtio_net_hdr + buffer data
  	status_t status = info->virtio->queue_request_v(info->txQueues[0],
  		entries, 2, 0, buf);
 -	mutex_unlock(&info->txLock);
 -
- 	if (status != B_OK)
++	if (status != B_OK)
 +		info->txFreeList.Add(buf);
 +	mutex_unlock(&info->txLock);
-+	if (status != B_OK) {
+ 	if (status != B_OK) {
  		ERROR("tx queueing on queue %d failed (%s)\n", 0, strerror(status));
  		return status;
- 	}
- 
- 	sBufferModule->free(buffer);
- 	return B_OK;
