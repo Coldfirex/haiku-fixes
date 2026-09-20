@@ -5,7 +5,7 @@ topic: virtio-net
 branch: master
 patchset:
 commit:
-subject: virtio_net: return TX BufInfo to the free list if enqueue fails
+subject: virtio_net: return TX buffer to free list on queue failure
 bug:
 submitted:
 code-review:
