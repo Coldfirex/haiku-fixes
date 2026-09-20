@@ -8,9 +8,6 @@ uninit_device() only deletes the command area.
 
 Delete both areas in free() after the update thread has exited.
 
-Do not combine this with the open() failure-path cleanup
-(virtio-gpu-open-shared-area).
-
 ---
  src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 4 ++++
  1 file changed, 4 insertions(+)
