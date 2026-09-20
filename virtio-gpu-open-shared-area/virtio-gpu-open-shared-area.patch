@@ -1,21 +1,25 @@
 From: Alan Shearer
-Subject: virtio_gpu: free shared info area if open() fails
+Subject: virtio_gpu: clean up shared area when open fails
 
-open() created the shared-info area then jumped to error without
-deleting it. framebufferArea / sharedArea were also uninitialized if
-an earlier step failed, so delete_area() could see a garbage id.
+open() creates the shared-info area before completing device
+initialization. If a later step fails, the existing error path deletes
+the framebuffer area but leaves the shared-info area allocated.
 
-Initialize both area ids to -1 and delete the shared area on the
-error path.
+framebufferArea / sharedArea were left at zero when an earlier
+open() step failed, so the error path could call delete_area() on
+an area that had not been created.
+
+Initialize the area IDs to -1 in init_driver() and at the start of
+open(), and delete the shared-info area during open() cleanup.
 
 ---
- src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 6 ++++++
- 1 file changed, 6 insertions(+)
+ src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
 --- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
 +++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
-@@ -604,6 +604,9 @@
+@@ -568,6 +568,9 @@ virtio_gpu_open(void* _info, const char* path, int openMode, void** _cookie)
  	if (handle == NULL)
  		return B_NO_MEMORY;
  
@@ -25,8 +29,7 @@ diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add
  	info->commandDone = create_sem(1, "virtio_gpu_command");
  	if (info->commandDone < B_OK)
  		goto error;
-@@ -671,6 +674,9 @@
- 
+@@ -641,6 +644,8 @@ virtio_gpu_open(void* _info, const char* path, int openMode, void** _cookie)
  error:
  	delete_area(info->framebufferArea);
  	info->framebufferArea = -1;
@@ -35,3 +38,12 @@ diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add
  	delete_sem(info->commandDone);
  	info->commandDone = -1;
  	free(handle);
+@@ -806,6 +811,9 @@ virtio_gpu_init_driver(device_node* node, void** cookie)
+ 		return B_NO_MEMORY;
+ 
+ 	memset(info, 0, sizeof(*info));
++
++	info->framebufferArea = -1;
++	info->sharedArea = -1;
+ 
+ 	info->node = node;
