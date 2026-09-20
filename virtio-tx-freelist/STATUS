@@ -3,8 +3,8 @@ gerrit: https://review.haiku-os.org/c/haiku/+/11807
 change-id: Ic054c8cdef3eaa4637a3ea46ecd45655db34fe25
 topic: virtio-net
 branch: master
-patchset: 1
-commit: 5635b1231846eda5244efea4a9fe65d582fccb9f
+patchset: 2
+commit: a06f148f5eede91ccbc057030701ba041e8408d2
 subject: virtio_net: return TX buffer to free list on queue failure
 bug:
 submitted: 2026-09-20
@@ -13,4 +13,4 @@ merged:
 submitter: Coldfirex
 hrev:
 haiku-commit:
-note: guest commit 5635b123. Overlay kernel/drivers/network/virtio_net. Do not amend 11784. Mutex half is virtio-net-mutex-uninit.
+note: PS2 keeps blank line after mutex_unlock. Overlay kernel/drivers/network/virtio_net. Do not amend 11784. Mutex half is virtio-net-mutex-uninit.
