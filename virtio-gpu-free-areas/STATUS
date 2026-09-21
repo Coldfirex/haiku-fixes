@@ -13,4 +13,4 @@ merged:
 submitter:
 hrev:
 haiku-commit:
-note: success-path area leak; not open() failure path; overlay kernel/drivers/graphics/virtio_gpu; do not use on-haiku.sh go; do not open() the device from a tester on a live desktop; do not amend 11771 11776 11783
+note: success-path area leak; drain queues then delete areas; not open() failure path; no multi-open refcount; overlay kernel/drivers/graphics/virtio_gpu; do not use on-haiku.sh go; do not open() the device from a tester on a live desktop; do not amend 11771 11776 11783

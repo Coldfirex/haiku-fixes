@@ -7,8 +7,14 @@ deletes `commandDone`. `free()` waits for the thread, drains queues,
 and frees the handle. Neither path deletes `framebufferArea` or
 `sharedArea`. `uninit_device()` only deletes `commandArea`.
 
-Delete both areas in `free()` after `wait_for_thread()` so the update
-thread is no longer touching the framebuffer.
+Delete both areas in `free()` after `wait_for_thread()` and
+`virtio_gpu_drain_queues()` so the update thread is gone and
+completed queue entries are reclaimed before backing memory is
+released. This does not send DETACH_BACKING / RESOURCE_UNREF.
+
+The driver stores the areas on the single device cookie. Accelerant
+clones `sharedArea`; it does not get a second kernel `open()`. A
+second `open()` of the node is still not refcounted.
 
 Rebuild-only. Do not `open()` `/dev/graphics/...` from a tester on a
 live desktop.

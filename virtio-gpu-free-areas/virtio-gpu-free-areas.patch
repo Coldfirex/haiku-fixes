@@ -6,7 +6,12 @@ stops the update thread and deletes commandDone. free() waits for
 the thread and frees the handle, but never deletes those areas.
 uninit_device() only deletes the command area.
 
-Delete both areas in free() after the update thread has exited.
+Delete both areas in free() after the update thread has exited and
+completed virtqueue entries have been drained.
+
+The driver still uses one set of areas on the device cookie. A
+second open() is not refcounted; that is pre-existing and not
+fixed here.
 
 ---
  src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 4 ++++
@@ -15,14 +20,14 @@ Delete both areas in free() after the update thread has exited.
 diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
 --- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
 +++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
-@@ -674,6 +674,10 @@ virtio_gpu_free(void* cookie)
- 	int32 result;
+@@ -675,6 +675,10 @@ virtio_gpu_free(void* cookie)
  	wait_for_thread(info->updateThread, &result);
  	info->updateThread = -1;
+ 	virtio_gpu_drain_queues(info);
 +	delete_area(info->framebufferArea);
 +	info->framebufferArea = -1;
 +	delete_area(info->sharedArea);
 +	info->sharedArea = -1;
- 	virtio_gpu_drain_queues(info);
  	free(handle);
  	return B_OK;
+ }
