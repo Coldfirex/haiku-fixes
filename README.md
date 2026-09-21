@@ -11,7 +11,6 @@ Open and submitted (repo root):
 
 ```
 udp-receiveerror/        ReceiveError / DeliverError early-return leak
-virtio-tx-freelist/      return TX BufInfo if queue_request_v fails
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
 virtio-net-interrupt-uninit/ free_interrupts if queue_setup_interrupt fails
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
@@ -41,6 +40,7 @@ merged/virtio-free-id/              Gerrit 11784 / bf90d383
 merged/arp-request-buffer-dtor/     Gerrit 11789 / 6c10ad5b
 merged/ipv4-multicast-filtermode/   Gerrit 11791 / 8d435047
 merged/udp-deliverdata/             Gerrit 11792 / 1ca7d0a6
+merged/virtio-tx-freelist/          Gerrit 11807 / d42d1ebd
 ```
 
 Gerrit tracking lives in each submitted folder as `STATUS`.
@@ -55,7 +55,7 @@ Do not number those as GPU 4 unless you mean the GPU series only.
 Steps:
 
 - virtio_net id leak: `merged/virtio-free-id/README.md` (merged 11784)
-- virtio_net TX slot leak: `virtio-tx-freelist/README.md`
+- virtio_net TX slot leak: `merged/virtio-tx-freelist/README.md` (merged 11807 / d42d1ebd)
 - virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
 - virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
 - GPU shared-area leak on open fail: `virtio-gpu-open-shared-area/README.md`
@@ -76,7 +76,7 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
-- virtio_net overlay (`virtio-tx-freelist` / `virtio-net-mutex-uninit` / `virtio-net-interrupt-uninit`):
+- virtio_net overlay (`virtio-net-mutex-uninit` / `virtio-net-interrupt-uninit`):
   `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 - ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
   (jam target is `'<module>arp'`, not userspace `arp`)
@@ -88,7 +88,7 @@ Shared rules:
   (jam `udp`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/udp/udp`)
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, or 11792
+- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, or 11807
 
 ## Test a Gerrit change on the guest
 
@@ -167,11 +167,6 @@ Needs an IPv4 ethernet interface so the ARP module is loaded.
 Unpatched: GET_ENTRY fails after SET reject then SET without reject.
 Patched: prints `reject lifted`.
 That is the #18816 fix; it is not in Gerrit 11789.
-
-`ipv4-multicast-filter` uses setsockopt (`make && ./ipv4_multicast_filter`).
-Unpatched: a second IP_UNBLOCK_SOURCE / IP_DROP_SOURCE_MEMBERSHIP returns 0.
-Patched: the second call returns EADDRNOTAVAIL, and ADD_SOURCE after the
-last DROP_SOURCE succeeds (group was left, not left dangling).
 
 `ipv4-multicast-filtermode` merged as Gerrit 11791. Constructor default
 (`kInclude`). Rebuild-only. Drop the ipv4 overlay after merge.
