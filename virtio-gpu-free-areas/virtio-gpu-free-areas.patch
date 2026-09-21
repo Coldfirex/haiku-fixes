@@ -9,10 +9,6 @@ uninit_device() only deletes the command area.
 Delete both areas in free() after the update thread has exited and
 completed virtqueue entries have been drained.
 
-The driver still uses one set of areas on the device cookie. A
-second open() is not refcounted; that is pre-existing and not
-fixed here.
-
 ---
  src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 4 ++++
  1 file changed, 4 insertions(+)
