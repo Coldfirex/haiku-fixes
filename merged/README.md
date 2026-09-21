@@ -12,5 +12,6 @@ Do not re-push. Do not `git apply` them on current master.
 | arp-request-buffer-dtor | [11789](https://review.haiku-os.org/c/haiku/+/11789) | `6c10ad5b` | arp: free request_buffer when the cache entry is destroyed |
 | ipv4-multicast-filtermode | [11791](https://review.haiku-os.org/c/haiku/+/11791) | `8d435047` | ipv4: initialize MulticastGroupInterface filter mode to include |
 | udp-deliverdata | [11792](https://review.haiku-os.org/c/haiku/+/11792) | `1ca7d0a6` | udp: free cloned buffer when DeliverData enqueue fails |
+| virtio-tx-freelist | [11807](https://review.haiku-os.org/c/haiku/+/11807) | `d42d1ebd` | virtio_net: return TX buffer to free list on queue failure |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).

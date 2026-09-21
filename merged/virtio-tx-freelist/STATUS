@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11807
+change-id: Ic054c8cdef3eaa4637a3ea46ecd45655db34fe25
+topic: virtio-net
+branch: master
+patchset: 3
+commit: d42d1ebd449dc0f548ce92b6074b7424384ebaae
+subject: virtio_net: return TX buffer to free list on queue failure
+bug:
+submitted: 2026-09-20
+code-review: +2 korli
+merged: 2026-09-21
+submitter: waddlesplash
+hrev:
+haiku-commit: d42d1ebd449dc0f548ce92b6074b7424384ebaae
+note: merged. Do not re-push or apply on current master. Do not amend 11784. Mutex half is still virtio-net-mutex-uninit.
