@@ -9,7 +9,7 @@ tcp-error-received	tcp		error_received free; rebuild only
 ipv4-fragment-reassemble	ipv4		rebuild only
 ipv4-multicast-filter	ipv4	ipv4_multicast_filter		setsockopt Unblock/Drop
 ipv4-multicast-refs	ipv4	ipv4_multicast_filter		put_route/put_interface
-ipv4-multicast-if	ipv4		IP_MULTICAST_IF dtor; rebuild only
+ipv4-multicast-if	ipv4		IP_MULTICAST_IF dtor free; rebuild only
 tcp-spawn-abort	tcp		listen _Spawn fail; rebuild only
 udp-deliverdata	udp	udp_deliverdata_leak	60	watch used pages
 udp-loopback-checksum	udp		measure with iperf3 -u -b 0

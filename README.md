@@ -22,7 +22,7 @@ arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
 ipv4-multicast-refs/     put_route/put_interface on membership wrappers
-ipv4-multicast-if/       IP_MULTICAST_IF sockaddr dtor + ctor NULL
+ipv4-multicast-if/       IP_MULTICAST_IF sockaddr leak in protocol dtor
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 virtio-gpu-free-areas/   delete framebuffer + shared areas in free()
@@ -173,9 +173,10 @@ That is the #18816 fix; it is not in Gerrit 11789.
 
 `ipv4-multicast-refs` puts the route/interface taken by the membership
 wrappers. `ipv4-multicast-if` deletes the IP_MULTICAST_IF sockaddr in
-the protocol destructor. Rebuild-only besides the existing membership
-test, which exercises get_route / get_interface. Apply refs and if
-separately; both target current master ipv4.cpp.
+the protocol destructor only. ipv4_init_protocol() already NULLs the
+pointer; do not add a constructor init. Rebuild-only besides the
+existing membership test, which exercises get_route / get_interface.
+Apply refs and if separately; both target current master ipv4.cpp.
 
 Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
 error paths. They have no userspace flooder in this tree; confirm with
