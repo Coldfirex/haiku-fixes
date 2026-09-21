@@ -22,7 +22,7 @@ arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
 ipv4-multicast-refs/     put_route/put_interface on membership wrappers
-ipv4-multicast-if/       IP_MULTICAST_IF sockaddr leak in protocol dtor
+ipv4-multicast-if/       submitted Gerrit 11827; IP_MULTICAST_IF dtor free
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 virtio-gpu-free-areas/   delete framebuffer + shared areas in free()
@@ -62,6 +62,7 @@ Steps:
 - GPU area leak on free: `virtio-gpu-free-areas/README.md`
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
+- IPv4 IP_MULTICAST_IF dtor: `ipv4-multicast-if/README.md` (submitted 11827, CR+2)
 - UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
@@ -88,7 +89,7 @@ Shared rules:
   (jam `udp`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/udp/udp`)
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, or 11807
+- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, or 11827
 
 ## Test a Gerrit change on the guest
 
@@ -172,11 +173,9 @@ That is the #18816 fix; it is not in Gerrit 11789.
 (`kInclude`). Rebuild-only. Drop the ipv4 overlay after merge.
 
 `ipv4-multicast-refs` puts the route/interface taken by the membership
-wrappers. `ipv4-multicast-if` deletes the IP_MULTICAST_IF sockaddr in
-the protocol destructor only. ipv4_init_protocol() already NULLs the
-pointer; do not add a constructor init. Rebuild-only besides the
-existing membership test, which exercises get_route / get_interface.
-Apply refs and if separately; both target current master ipv4.cpp.
+wrappers. `ipv4-multicast-if` is Gerrit 11827 (CR+2). Destructor only;
+ipv4_init_protocol() already NULLs the pointer. Smoke test needs
+`-lnetwork`. Apply refs and if separately; both target current master ipv4.cpp.
 
 Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
 error paths. They have no userspace flooder in this tree; confirm with
