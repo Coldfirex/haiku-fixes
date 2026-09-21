@@ -1,6 +1,6 @@
 # virtio_gpu: delete framebuffer and shared areas in free()
 
-Status: **local**. Separate from `virtio-gpu-open-shared-area`.
+Status: **submitted** Gerrit 11824 (https://review.haiku-os.org/c/haiku/+/11824). Change-Id: If1271be06991f36104ab285ba1eb0e1d3f05c6d0. Separate from `virtio-gpu-open-shared-area`.
 
 After a successful `open()`, `close()` stops the update thread and
 deletes `commandDone`. `free()` waits for the thread, drains queues,
