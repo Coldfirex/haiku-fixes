@@ -22,7 +22,6 @@ arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
 ipv4-multicast-refs/     put_route/put_interface on membership wrappers
-ipv4-multicast-if/       submitted Gerrit 11827; IP_MULTICAST_IF dtor free
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 virtio-gpu-free-areas/   delete framebuffer + shared areas in free()
@@ -41,6 +40,7 @@ merged/arp-request-buffer-dtor/     Gerrit 11789 / 6c10ad5b
 merged/ipv4-multicast-filtermode/   Gerrit 11791 / 8d435047
 merged/udp-deliverdata/             Gerrit 11792 / 1ca7d0a6
 merged/virtio-tx-freelist/          Gerrit 11807 / d42d1ebd
+merged/ipv4-multicast-if/          Gerrit 11827 / 04c75f4b
 ```
 
 Gerrit tracking lives in each submitted folder as `STATUS`.
@@ -62,7 +62,7 @@ Steps:
 - GPU area leak on free: `virtio-gpu-free-areas/README.md`
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
-- IPv4 IP_MULTICAST_IF dtor: `ipv4-multicast-if/README.md` (submitted 11827, CR+2)
+- IPv4 IP_MULTICAST_IF dtor: `merged/ipv4-multicast-if/README.md` (merged 11827 / 04c75f4b)
 - UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
@@ -81,7 +81,7 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
 - ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
   (jam target is `'<module>arp'`, not userspace `arp`)
-- IPv4 protocol overlay (`ipv4-multicast-*`):
+- IPv4 protocol overlay (remaining `ipv4-multicast-*` locals only):
   `~/config/non-packaged/add-ons/kernel/network/protocols/ipv4`
   (jam `ipv4`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/ipv4/ipv4`)
 - UDP protocol overlay (`udp-receiveerror` / `udp-unicast-enqueue` / `udp-loopback-checksum`):
@@ -172,10 +172,11 @@ That is the #18816 fix; it is not in Gerrit 11789.
 `ipv4-multicast-filtermode` merged as Gerrit 11791. Constructor default
 (`kInclude`). Rebuild-only. Drop the ipv4 overlay after merge.
 
+`ipv4-multicast-if` merged as Gerrit 11827 / `04c75f4b`. Do not apply on
+current master. Drop the ipv4 overlay.
+
 `ipv4-multicast-refs` puts the route/interface taken by the membership
-wrappers. `ipv4-multicast-if` is Gerrit 11827 (CR+2). Destructor only;
-ipv4_init_protocol() already NULLs the pointer. Smoke test needs
-`-lnetwork`. Apply refs and if separately; both target current master ipv4.cpp.
+wrappers. Still local. Apply separately from the merged if/filtermode patches.
 
 Virtio, TCP, ICMP error-reply, and the other ARP changes are stack
 error paths. They have no userspace flooder in this tree; confirm with
