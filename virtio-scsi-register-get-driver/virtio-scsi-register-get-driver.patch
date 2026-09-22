@@ -1,0 +1,36 @@
+From: Alan Shearer <alan@localhost>
+Date: Tue, 22 Sep 2026 04:54:00 -0500
+Subject: [PATCH] virtio_scsi: check get_driver in register_device
+
+virtio_scsi_register_device calls get_driver then immediately
+read_device_config on the returned interface. A failed get_driver
+leaves virtio NULL and KDLs.
+
+---
+ src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp b/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp
+index 5ff9b7b0f34d..b2c0d0d0d0d0 100644
+--- a/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp
++++ b/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp
+@@ -196,10 +196,15 @@ virtio_scsi_register_device(device_node *parent)
+ 	virtio_device* virtioDevice = NULL;
+ 	struct virtio_scsi_config config;
+ 
+-	gDeviceManager->get_driver(parent, (driver_module_info **)&virtio,
++	status_t status = gDeviceManager->get_driver(parent,
++		(driver_module_info **)&virtio,
+ 		(void **)&virtioDevice);
++	if (status != B_OK)
++		return status;
++	if (virtio == NULL)
++		return B_BAD_VALUE;
+ 
+-	status_t status = virtio->read_device_config(virtioDevice, 0, &config,
++	status = virtio->read_device_config(virtioDevice, 0, &config,
+ 		sizeof(struct virtio_scsi_config));
+ 	if (status != B_OK)
+ 		return status;
+-- 
+2.45.2
