@@ -1,0 +1,74 @@
+From: Alan Shearer <alan@localhost>
+Date: Tue, 22 Sep 2026 04:46:00 -0500
+Subject: [PATCH] virtio_scsi: check get_parent_node / get_driver
+
+register_device and VirtioSCSIController immediately use the virtio
+interface returned by get_driver. A NULL parent or failed get_driver
+is a null dereference / KDL.
+
+Return the error (or leave fStatus set) instead of calling through
+a NULL pointer.
+
+---
+ src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp | 18 ++++++++++++++++--
+ src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp          |  7 ++++++-
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+
+diff --git a/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp b/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp
+index d49a176efc46..a1b0c0d0d0d0 100644
+--- a/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp
++++ b/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp
+@@ -48,14 +48,28 @@ VirtioSCSIController::VirtioSCSIController(device_node *node)
+ 		return;
+ 
+ 	// get the Virtio device from our parent's parent
+ 	device_node *parent = gDeviceManager->get_parent_node(node);
++	if (parent == NULL)
++		return;
++
+ 	device_node *virtioParent = gDeviceManager->get_parent_node(parent);
+ 	gDeviceManager->put_node(parent);
++	if (virtioParent == NULL)
++		return;
+ 
+-	gDeviceManager->get_driver(virtioParent, (driver_module_info **)&fVirtio,
++	fStatus = gDeviceManager->get_driver(virtioParent,
++		(driver_module_info **)&fVirtio,
+ 		(void **)&fVirtioDevice);
+ 	gDeviceManager->put_node(virtioParent);
++	if (fStatus != B_OK)
++		return;
++	if (fVirtio == NULL) {
++		fStatus = B_BAD_VALUE;
++		return;
++	}
+ 
+ 	fVirtio->negotiate_features(fVirtioDevice,
+ 		VIRTIO_SCSI_F_CHANGE /*VIRTIO_SCSI_F_HOTPLUG*/,
+ 		&fFeatures, &get_feature_name);
+ 
+ 	fStatus = fVirtio->read_device_config(fVirtioDevice, 0, &fConfig,
+diff --git a/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp b/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp
+index 5ff9b7b0f34d..b2c0d0d0d0d0 100644
+--- a/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp
++++ b/src/add-ons/kernel/busses/scsi/virtio/virtio_scsi.cpp
+@@ -196,10 +196,15 @@ virtio_scsi_register_device(device_node *parent)
+ 	virtio_device* virtioDevice = NULL;
+ 	struct virtio_scsi_config config;
+ 
+-	gDeviceManager->get_driver(parent, (driver_module_info **)&virtio,
++	status_t status = gDeviceManager->get_driver(parent,
++		(driver_module_info **)&virtio,
+ 		(void **)&virtioDevice);
++	if (status != B_OK)
++		return status;
++	if (virtio == NULL)
++		return B_BAD_VALUE;
+ 
+-	status_t status = virtio->read_device_config(virtioDevice, 0, &config,
++	status = virtio->read_device_config(virtioDevice, 0, &config,
+ 		sizeof(struct virtio_scsi_config));
+ 	if (status != B_OK)
+ 		return status;
+-- 
+2.45.2

@@ -1,0 +1,45 @@
+From: Alan Shearer <alan@localhost>
+Date: Tue, 22 Sep 2026 04:38:00 -0500
+Subject: [PATCH] virtio_block: delete DMAResource in uninit_driver
+
+DMAResource is allocated in virtio_block_init_driver. It is only
+deleted in virtio_block_uninit_device. If init_device returns early
+(config read or alloc_queues) the device manager does not call
+uninit_device, so the DMAResource is leaked when the driver node is
+torn down.
+
+Delete both heap objects from uninit_driver as well, and NULL the
+pointers in uninit_device so a later uninit_driver is not a
+double-delete.
+
+---
+ src/add-ons/kernel/drivers/disk/virtual/virtio_block/virtio_block.cpp | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/add-ons/kernel/drivers/disk/virtual/virtio_block/virtio_block.cpp b/src/add-ons/kernel/drivers/disk/virtual/virtio_block/virtio_block.cpp
+index 9eb71254daec..b1c0d0d0d0d0 100644
+--- a/src/add-ons/kernel/drivers/disk/virtual/virtio_block/virtio_block.cpp
++++ b/src/add-ons/kernel/drivers/disk/virtual/virtio_block/virtio_block.cpp
+@@ -318,7 +318,9 @@ virtio_block_uninit_device(void* _cookie)
+ 	virtio_block_driver_info* info = (virtio_block_driver_info*)_cookie;
+ 
+ 	delete info->io_scheduler;
++	info->io_scheduler = NULL;
+ 	delete info->dma_resource;
++	info->dma_resource = NULL;
+ }
+ 
+ 
+@@ -599,6 +601,10 @@ virtio_block_uninit_driver(void *_cookie)
+ 	CALLED();
+ 	virtio_block_driver_info* info = (virtio_block_driver_info*)_cookie;
+ 	mutex_destroy(&info->lock);
++	delete info->io_scheduler;
++	info->io_scheduler = NULL;
++	delete info->dma_resource;
++	info->dma_resource = NULL;
+ 	delete_area(info->bufferArea);
+ 	free(info);
+ }
+-- 
+2.45.2
