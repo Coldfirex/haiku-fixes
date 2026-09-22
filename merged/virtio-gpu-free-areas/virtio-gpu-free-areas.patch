@@ -1,0 +1,29 @@
+From: Alan Shearer
+Subject: virtio_gpu: delete framebuffer and shared areas in free()
+
+open() creates the framebuffer and shared-info areas. close() only
+stops the update thread and deletes commandDone. free() waits for
+the thread and frees the handle, but never deletes those areas.
+uninit_device() only deletes the command area.
+
+Delete both areas in free() after the update thread has exited and
+completed virtqueue entries have been drained.
+
+---
+ src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+--- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
++++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+@@ -675,6 +675,10 @@ virtio_gpu_free(void* cookie)
+ 	wait_for_thread(info->updateThread, &result);
+ 	info->updateThread = -1;
+ 	virtio_gpu_drain_queues(info);
++	delete_area(info->framebufferArea);
++	info->framebufferArea = -1;
++	delete_area(info->sharedArea);
++	info->sharedArea = -1;
+ 	free(handle);
+ 	return B_OK;
+ }

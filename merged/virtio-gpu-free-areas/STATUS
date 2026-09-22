@@ -1,0 +1,16 @@
+state: merged
+gerrit: 11824
+change-id: If1271be06991f36104ab285ba1eb0e1d3f05c6d0
+topic: virtio-gpu
+branch: master
+patchset: 1
+commit:
+subject: virtio_gpu: delete framebuffer and shared areas in free()
+bug:
+submitted: 2026-09-21
+code-review:
+merged: 2026-09-22
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: merged. Do not re-push. Do not apply on current master. Overlay kernel/drivers/graphics/virtio_gpu no longer needed for this change. Do not amend 11771 11776 11783.
