@@ -13,5 +13,6 @@ Do not re-push. Do not `git apply` them on current master.
 | ipv4-multicast-filtermode | [11791](https://review.haiku-os.org/c/haiku/+/11791) | `8d435047` | ipv4: initialize MulticastGroupInterface filter mode to include |
 | udp-deliverdata | [11792](https://review.haiku-os.org/c/haiku/+/11792) | `1ca7d0a6` | udp: free cloned buffer when DeliverData enqueue fails |
 | virtio-tx-freelist | [11807](https://review.haiku-os.org/c/haiku/+/11807) | `d42d1ebd` | virtio_net: return TX buffer to free list on queue failure |
+| ipv4-multicast-if | [11827](https://review.haiku-os.org/c/haiku/+/11827) | `04c75f4b` | ipv4: free IP_MULTICAST_IF address in protocol destructor |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).

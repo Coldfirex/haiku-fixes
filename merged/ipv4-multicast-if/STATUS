@@ -1,0 +1,16 @@
+state: merged
+gerrit: 11827
+change-id: I646a3c8c43d42a4c6669dbf7e3871492c97770ec
+topic: ipv4-multicast
+branch: master
+patchset: 2
+commit: 04c75f4b79d7f663840ed365c632222bba3bab86
+subject: ipv4: free IP_MULTICAST_IF address in protocol destructor
+bug:
+submitted: 2026-09-21
+code-review: +2 waddlesplash
+merged: 2026-09-22
+submitter: Coldfirex
+hrev:
+haiku-commit: 04c75f4b79d7f663840ed365c632222bba3bab86
+note: merged. Do not re-push. Do not apply on current master. Overlay protocols/ipv4 no longer needed.
