@@ -1,0 +1,48 @@
+From: Alan Shearer <alan@localhost>
+Date: Tue, 22 Sep 2026 04:54:00 -0500
+Subject: [PATCH] virtio_scsi: check get_parent_node / get_driver in ctor
+
+VirtioSCSIController walks node -> parent -> virtio parent, then
+calls negotiate_features on fVirtio. A NULL parent or failed
+get_driver KDLs before InitCheck can reject the object.
+
+Leave fStatus set so sim_init_bus deletes the controller.
+
+---
+ src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp b/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp
+index d49a176efc46..a1b0c0d0d0d0 100644
+--- a/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp
++++ b/src/add-ons/kernel/busses/scsi/virtio/VirtioSCSIController.cpp
+@@ -48,14 +48,28 @@ VirtioSCSIController::VirtioSCSIController(device_node *node)
+ 		return;
+ 
+ 	// get the Virtio device from our parent's parent
+ 	device_node *parent = gDeviceManager->get_parent_node(node);
++	if (parent == NULL)
++		return;
++
+ 	device_node *virtioParent = gDeviceManager->get_parent_node(parent);
+ 	gDeviceManager->put_node(parent);
++	if (virtioParent == NULL)
++		return;
+ 
+-	gDeviceManager->get_driver(virtioParent, (driver_module_info **)&fVirtio,
++	fStatus = gDeviceManager->get_driver(virtioParent,
++		(driver_module_info **)&fVirtio,
+ 		(void **)&fVirtioDevice);
+ 	gDeviceManager->put_node(virtioParent);
++	if (fStatus != B_OK)
++		return;
++	if (fVirtio == NULL) {
++		fStatus = B_BAD_VALUE;
++		return;
++	}
+ 
+ 	fVirtio->negotiate_features(fVirtioDevice,
+ 		VIRTIO_SCSI_F_CHANGE /*VIRTIO_SCSI_F_HOTPLUG*/,
+ 		&fFeatures, &get_feature_name);
+-- 
+2.45.2
