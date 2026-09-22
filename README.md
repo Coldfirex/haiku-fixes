@@ -27,6 +27,10 @@ virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open(
 virtio-gpu-free-areas/   delete framebuffer + shared areas in free()
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
+virtio-block-uninit-dma/ DMAResource leak if init_device fails before cookie
+virtio-block-blksize-zero/ host blk_size == 0 divide-by-zero in set_capacity
+virtio-block-get-driver/ NULL parent / get_driver KDL in init_device
+virtio-scsi-get-driver/  NULL parent / get_driver KDL in register + ctor
 ```
 
 Merged upstream lives under [`merged/`](merged/README.md):
@@ -66,6 +70,10 @@ Steps:
 - UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
+- virtio_block DMAResource teardown: `virtio-block-uninit-dma/README.md`
+- virtio_block zero blk_size: `virtio-block-blksize-zero/README.md`
+- virtio_block get_driver: `virtio-block-get-driver/README.md`
+- virtio_scsi get_driver: `virtio-scsi-get-driver/README.md`
 
 Shared rules:
 
@@ -87,6 +95,8 @@ Shared rules:
 - UDP protocol overlay (`udp-receiveerror` / `udp-unicast-enqueue` / `udp-loopback-checksum`):
   `~/config/non-packaged/add-ons/kernel/network/protocols/udp`
   (jam `udp`; binary under `generated/objects/haiku/x86_64/release/add-ons/kernel/network/protocols/udp/udp`)
+- virtio_block overlay: `~/config/non-packaged/add-ons/kernel/drivers/disk/virtual/virtio_block`
+- virtio_scsi overlay: `~/config/non-packaged/add-ons/kernel/busses/scsi/virtio`
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
 - New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, or 11827
