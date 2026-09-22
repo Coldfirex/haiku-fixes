@@ -1,1 +1,16 @@
-local
+state: submitted
+gerrit: 11833
+change-id: Iece7b48993135c9f5792fb627635c4efdf78f46a
+topic: virtio-block
+branch: master
+patchset: 1
+commit: ab1baf5f6ecb5a7ea5c51a199075eecfd4721d73
+subject: virtio_block: ignore zero virtio blk_size
+bug:
+submitted: 2026-09-22
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: waddlesplash PS1 comment - does zero blk_size happen; print warning if so. Do not amend other changes.
