@@ -1,11 +1,11 @@
 From: Alan Shearer <alan@localhost>
 Date: Tue, 22 Sep 2026 04:38:00 -0500
-Subject: [PATCH] virtio_block: ignore zero virtio blk_size
+Subject: virtio_block: ignore zero blk_size
 
 set_capacity divides capacity by config.blk_size when
-VIRTIO_BLK_F_BLK_SIZE is negotiated. A host that advertises the
-feature with blk_size == 0 divides by zero (KDL), including from the
-config-change interrupt.
+VIRTIO_BLK_F_BLK_SIZE is negotiated. A host that advertises
+the feature with blk_size == 0 divides by zero and KDLs,
+including from the config-change interrupt.
 
 Keep the 512-byte default when the advertised size is zero.
 
@@ -27,5 +27,3 @@ index 9eb71254daec..c2c0d0d0d0d0 100644
  		blockSize = info->config.blk_size;
  	uint64 capacity = info->config.capacity * 512 / blockSize;
  	uint32 physicalBlockSize = blockSize;
--- 
-2.45.2
