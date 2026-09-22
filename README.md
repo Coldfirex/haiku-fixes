@@ -24,7 +24,6 @@ ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGrou
 ipv4-multicast-refs/     put_route/put_interface on membership wrappers
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
-virtio-gpu-free-areas/   delete framebuffer + shared areas in free()
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 virtio-block-uninit-dma/ DMAResource leak if init_device fails before cookie
@@ -45,6 +44,7 @@ merged/arp-request-buffer-dtor/     Gerrit 11789 / 6c10ad5b
 merged/ipv4-multicast-filtermode/   Gerrit 11791 / 8d435047
 merged/udp-deliverdata/             Gerrit 11792 / 1ca7d0a6
 merged/virtio-tx-freelist/          Gerrit 11807 / d42d1ebd
+merged/virtio-gpu-free-areas/       Gerrit 11824
 merged/ipv4-multicast-if/          Gerrit 11827 / 04c75f4b
 ```
 
@@ -64,7 +64,7 @@ Steps:
 - virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
 - virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
 - GPU shared-area leak on open fail: `virtio-gpu-open-shared-area/README.md`
-- GPU area leak on free: `virtio-gpu-free-areas/README.md`
+- GPU area leak on free: `merged/virtio-gpu-free-areas/README.md` (merged 11824)
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
 - IPv4 IP_MULTICAST_IF dtor: `merged/ipv4-multicast-if/README.md` (merged 11827 / 04c75f4b)
@@ -83,7 +83,7 @@ Shared rules:
 - Always `export HAIKU_SRC` (helpers do not search Desktop)
 - `chmod +x work.sh gerrit.sh on-haiku.sh`
 - Do **not** use `on-haiku.sh go` for this series
-- GPU kernel overlay (11771 / 11776 / open-shared-area / free-areas):
+- GPU kernel overlay (11771 / 11776 / open-shared-area):
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
@@ -101,7 +101,7 @@ Shared rules:
 - virtio_scsi overlay: `~/config/non-packaged/add-ons/kernel/busses/scsi/virtio`
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, or 11827
+- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
 
 ## Test a Gerrit change on the guest
 
@@ -186,6 +186,9 @@ That is the #18816 fix; it is not in Gerrit 11789.
 
 `ipv4-multicast-if` merged as Gerrit 11827 / `04c75f4b`. Do not apply on
 current master. Drop the ipv4 overlay.
+
+`virtio-gpu-free-areas` merged as Gerrit 11824. Do not apply on current
+master. Drop the virtio_gpu kernel overlay if it was only for 11824.
 
 `ipv4-multicast-refs` puts the route/interface taken by the membership
 wrappers. Still local. Apply separately from the merged if/filtermode patches.
