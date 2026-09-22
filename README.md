@@ -30,7 +30,8 @@ net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 virtio-block-uninit-dma/ DMAResource leak if init_device fails before cookie
 virtio-block-blksize-zero/ host blk_size == 0 divide-by-zero in set_capacity
 virtio-block-get-driver/ NULL parent / get_driver KDL in init_device
-virtio-scsi-get-driver/  NULL parent / get_driver KDL in register + ctor
+virtio-scsi-register-get-driver/     get_driver check in register_device
+virtio-scsi-controller-get-driver/   get_parent_node / get_driver check in ctor
 ```
 
 Merged upstream lives under [`merged/`](merged/README.md):
@@ -73,7 +74,8 @@ Steps:
 - virtio_block DMAResource teardown: `virtio-block-uninit-dma/README.md`
 - virtio_block zero blk_size: `virtio-block-blksize-zero/README.md`
 - virtio_block get_driver: `virtio-block-get-driver/README.md`
-- virtio_scsi get_driver: `virtio-scsi-get-driver/README.md`
+- virtio_scsi register get_driver: `virtio-scsi-register-get-driver/README.md`
+- virtio_scsi controller get_driver: `virtio-scsi-controller-get-driver/README.md`
 
 Shared rules:
 
