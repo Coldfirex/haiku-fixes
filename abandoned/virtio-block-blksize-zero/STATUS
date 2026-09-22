@@ -1,0 +1,17 @@
+state: abandoned
+gerrit: 11833
+change-id: Iece7b48993135c9f5792fb627635c4efdf78f46a
+topic: virtio-block
+branch: master
+patchset: 1
+commit: ab1baf5f6ecb5a7ea5c51a199075eecfd4721d73
+subject: virtio_block: ignore zero virtio blk_size
+bug:
+submitted: 2026-09-22
+abandoned: 2026-09-22
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: waddlesplash; spec 5.2.5 has no fallback for blk_size==0; QEMU never sends 0. Do not re-push.

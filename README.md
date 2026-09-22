@@ -27,13 +27,19 @@ virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open(
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 virtio-block-uninit-dma/ DMAResource leak if init_device fails before cookie
-virtio-block-blksize-zero/ host blk_size == 0 divide-by-zero in set_capacity
 virtio-block-get-driver/ NULL parent / get_driver KDL in init_device
 virtio-scsi-register-get-driver/     get_driver check in register_device
 virtio-scsi-controller-get-driver/   get_parent_node / get_driver check in ctor
 ```
 
-Merged upstream lives under [`merged/`](merged/README.md):
+Merged upstream lives under [`merged/`](merged/README.md).
+Abandoned Gerrit changes live under [`abandoned/`](abandoned/README.md):
+
+```
+abandoned/virtio-block-blksize-zero/  Gerrit 11833 (spec has no blk_size==0 fallback)
+```
+
+Merged:
 
 ```
 merged/virtio-gpu-detach-backing/   Gerrit 11771 / 0438319c
@@ -72,10 +78,10 @@ Steps:
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
 - virtio_block DMAResource teardown: `virtio-block-uninit-dma/README.md`
-- virtio_block zero blk_size: `virtio-block-blksize-zero/README.md`
 - virtio_block get_driver: `virtio-block-get-driver/README.md`
 - virtio_scsi register get_driver: `virtio-scsi-register-get-driver/README.md`
 - virtio_scsi controller get_driver: `virtio-scsi-controller-get-driver/README.md`
+- virtio_block zero blk_size (abandoned 11833): `abandoned/virtio-block-blksize-zero/README.md`
 
 Shared rules:
 
@@ -102,6 +108,7 @@ Shared rules:
 - `gerrit.sh` may be missing from the guest clone; commit/push by hand
 - Do not `open()` the GPU / run `virtio_gpu_clone` on a live desktop
 - New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
+- Do not re-push abandoned/ (11833) or merged/
 
 ## Test a Gerrit change on the guest
 
