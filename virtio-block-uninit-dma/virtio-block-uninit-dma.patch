@@ -2,21 +2,16 @@ From: Alan Shearer <alan@localhost>
 Date: Wed, 23 Sep 2026 09:15:00 -0500
 Subject: [PATCH] virtio_block: delete DMAResource and IOScheduler in uninit_driver
 
-DMAResource is allocated in virtio_block_init_driver. IOScheduler is
-allocated later in virtio_block_set_capacity (called from init_device
-after a successful config read). Both are only deleted in
-virtio_block_uninit_device.
+DMAResource is created in init_driver. IOScheduler is created in
+set_capacity after a successful config read. Only uninit_device
+deletes them.
 
-uninit_device runs only if init_device set *_cookie. That assignment
-is after read_device_config and alloc_queues, so those early returns
-never call uninit_device. register_child_devices failing after
-init_driver (create_id / publish_device) is the same: teardown is
-uninit_driver only. alloc_queues failing after set_capacity also
-leaves IOScheduler allocated.
+uninit_device runs only if init_device set *_cookie (after config
+read and alloc_queues). create_id / publish_device failure after
+init_driver is the same: teardown is uninit_driver only.
 
-Delete both objects from uninit_driver as a fallback. NULL the
-pointers in uninit_device so a later uninit_driver on the success
-unload path is not a double-delete.
+Delete both in uninit_driver. NULL the pointers in uninit_device so
+the normal unload path is not a double-delete.
 
 ---
  src/add-ons/kernel/drivers/disk/virtual/virtio_block/virtio_block.cpp | 8 +++++++-
