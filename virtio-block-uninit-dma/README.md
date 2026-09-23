@@ -8,8 +8,9 @@ deletes them.
 config read and `alloc_queues`). Publish/`create_id` failure after
 `init_driver` is the same: teardown is `uninit_driver` only.
 
-Delete both in `uninit_driver`. NULL them in `uninit_device` so the
-normal unload path is not a double-delete.
+Call `uninit_device` from `uninit_driver`. NULL the pointers in
+`uninit_device` so a second call on the normal unload path is not a
+double-delete.
 
 Not 11833. Overlay:
 `~/config/non-packaged/add-ons/kernel/drivers/disk/virtual/virtio_block`
