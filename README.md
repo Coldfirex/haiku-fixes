@@ -26,7 +26,7 @@ ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
-virtio-block-uninit-dma/ DMAResource leak if init_device fails before cookie
+virtio-block-uninit-dma/ DMAResource + IOScheduler if uninit_device skipped
 ```
 
 Do-not-submit locals live under [`hold/`](hold/README.md):
@@ -83,7 +83,7 @@ Steps:
 - UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
-- virtio_block DMAResource teardown: `virtio-block-uninit-dma/README.md`
+- virtio_block DMAResource/IOScheduler teardown: `virtio-block-uninit-dma/README.md`
 - virtio get_driver checks (hold): `hold/README.md`
 - virtio_block zero blk_size (abandoned 11833): `abandoned/virtio-block-blksize-zero/README.md`
 
