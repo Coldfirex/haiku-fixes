@@ -8,9 +8,9 @@ commit: 3d63dd3b1b1daf6c9492336b860850f14ac7f267
 subject: virtio_block: delete DMAResource and IOScheduler in uninit_driver
 bug:
 submitted: 2026-09-23
-code-review: waddlesplash +1
+code-review: waddlesplash +1, korli +2
 merged:
-submitter:
+submitter: Coldfirex
 hrev:
 haiku-commit:
-note: uninit_driver calls uninit_device; NULL pointers for dual-hook unload; not 11833; do not amend
+note: https://review.haiku-os.org/c/haiku/+/11843 PS4. Submit-ready, not merged. Not 11833. Do not amend.

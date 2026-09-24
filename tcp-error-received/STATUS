@@ -3,14 +3,14 @@ gerrit: 11847
 change-id: I59d4f5a2d2cc247be9daa95817aee54e2bac7343
 topic: tcp
 branch: master
-patchset: 1
+patchset: 2
 commit:
 subject: tcp: free error buffer when ErrorReceived returns B_OK
 bug:
 submitted: 2026-09-24
-code-review:
+code-review: korli +2
 merged:
 submitter: Coldfirex
 hrev:
 haiku-commit:
-note: korli wants free in ErrorReceived() before B_OK, not in tcp_error_received(). PS2 patch on GitHub. Amend 11847 only.
+note: https://review.haiku-os.org/c/haiku/+/11847 PS2. Free in ErrorReceived() before B_OK. Submit-ready, not merged. Do not amend.
