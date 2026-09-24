@@ -1,8 +1,7 @@
 # virtio_gpu: clean up shared area when open fails
 
-Status: **local**. Kernel-only leftover requested on 11824.
-Not `virtio-free-id` (that is virtio_net).
-Not `virtio-gpu-free-areas` (success-path `free()` leak; 11824 MERGED).
+Status: **local**. Follow-up to korli review on 11824.
+Not `virtio-free-id` (virtio_net). Not `virtio-gpu-free-areas` (11824 MERGED).
 
 - 11771 detach-backing MERGED
 - 11776 mutex-uninit MERGED
@@ -12,20 +11,33 @@ Not `virtio-gpu-free-areas` (success-path `free()` leak; 11824 MERGED).
 
 Do not amend 11771 / 11776 / 11783 / 11824. New Change-Id.
 Do not `open()` `/dev/graphics/...` from a tester on a live desktop.
+Do not patch `commandDone` here.
 
 Overlay after jam + reboot:
 
 `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 
-Not `drivers/bin`, not `accelerants/`.
+Not `drivers/bin`, not `accelerants/`. Do not use `on-haiku.sh go`.
 
-`open()` creates the shared-info area then `goto error` without
-`delete_area(sharedArea)`. `sharedArea` / `framebufferArea` were left
-at zero by `memset` in `init_driver()`, so an earlier failure called
-`delete_area(0)`. Init both ids to `-1` in `init_driver()` and at the
-start of `open()`, and delete the shared area on the error path.
+General method: repo-root `GUEST-WORKFLOW.md`.
 
-The success-path leak (`free()` never deletes the areas) is
-`virtio-gpu-free-areas/`. Apply that separately.
+## Smoke (no device-open tester)
 
-See `STATUS` and `virtio-gpu-open-shared-area.patch`.
+Error-path leak is not safe to force on a live app_server session.
+Baseline and patched runs are boot + mode switch only.
+
+After overlay reboot:
+
+```
+listimage | grep virtio_gpu
+listarea | grep virtio_gpu
+```
+
+Must show `.../config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`.
+Expect `virtio_gpu shared info` and `virtio_gpu framebuffer` areas.
+Two Screen Preferences mode switches. No KDL. Syslog must not grow
+`detach_backing failed` / `attach_backing failed` from this change.
+
+## Gerrit
+
+Topic `virtio-gpu`. New Change-Id. Body is the .patch text above `---`.
