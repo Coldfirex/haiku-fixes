@@ -6,8 +6,9 @@ AddressSet::Add() after confirming the source is present. Add() is a
 no-op when the address is already in the set, so IP_UNBLOCK_SOURCE and
 IP_DROP_SOURCE_MEMBERSHIP never change the filter.
 
-Remove the source instead. A second unblock/drop then returns
-EADDRNOTAVAIL, which is the POSIX result.
+Remove the source instead. A second IP_UNBLOCK_SOURCE or
+IP_DROP_SOURCE_MEMBERSHIP for that source then returns
+EADDRNOTAVAIL.
 
 GetState() already JoinGroup()s when the first IP_ADD_SOURCE_MEMBERSHIP
 creates the filter. Drop() calls LeaveGroup() for IP_DROP_MEMBERSHIP.
