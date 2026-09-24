@@ -1,16 +1,16 @@
-state: local
-gerrit:
+state: submitted
+gerrit: 11847
 change-id:
 topic: tcp
 branch: master
-patchset:
+patchset: 1
 commit:
 subject: tcp: free error buffer when ErrorReceived returns B_OK
 bug:
-submitted:
+submitted: 2026-09-24
 code-review:
 merged:
 submitter: Coldfirex
 hrev:
 haiku-commit:
-note: 2026-09-24 free only if ErrorReceived returns B_OK. Commit wording updated. Tester is KDL/path check only. Not on Gerrit.
+note: Gerrit 11847. Free only if ErrorReceived returns B_OK. Do not amend. Do not restack old free-on-error hunks.
