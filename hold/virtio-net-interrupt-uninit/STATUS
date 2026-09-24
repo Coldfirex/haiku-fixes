@@ -1,0 +1,7 @@
+state: hold
+gerrit:
+change-id:
+topic: virtio-net
+branch: master
+subject: virtio_net: free interrupts if queue interrupt setup fails
+note: VirtioQueue::SetupInterrupt always returns B_OK. Not Gerrit. After mutex-uninit if ever submitted.
