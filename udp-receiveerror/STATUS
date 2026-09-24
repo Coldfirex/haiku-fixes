@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: udp
+branch: master
+patchset:
+commit:
+subject: udp: free error buffer on early returns
+bug:
+submitted:
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: wording-only refresh 2026-09-24. Not on Gerrit yet. Do not amend 11792.

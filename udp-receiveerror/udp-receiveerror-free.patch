@@ -8,7 +8,8 @@ hook and does not free it. UDP leaked it on:
 * ReceiveError if the buffer was short, had no domain support, or
   the UDP header read failed
 
-The delivery path and the QUENCH/default arm already free it.
+DeliverError() already frees unicast buffers. udp_error_received()
+already frees QUENCH and unknown errors.
 
 ---
  src/add-ons/kernel/network/protocols/udp/udp.cpp | 11 ++++++++---
@@ -35,7 +36,7 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
  
 -	// We only really need the port information
 -	if (buffer->size < 4)
-+	// error_received() owns the buffer.
++	// error_received() takes ownership of the buffer.
 +	if (buffer->size < 4) {
 +		gBufferModule->free(buffer);
  		return B_BAD_VALUE;
