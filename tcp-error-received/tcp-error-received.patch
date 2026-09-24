@@ -5,24 +5,22 @@ TCPEndpoint::ErrorReceived() does not queue the buffer. It returns
 B_OK for B_NET_ERROR_MESSAGE_SIZE (PMTU) and B_ERROR otherwise.
 Returning B_OK without free leaves that buffer unowned.
 
-For other return values, device_consumer_thread retains ownership
-and frees the buffer when receive_data() returns an error.
-
-Free only on the B_OK path. Do not free and then return an error.
+Free in ErrorReceived() before that B_OK, at the last successful
+handler. tcp_error_received() must not assume ErrorReceived() is a
+leaf. Do not free on B_ERROR; the caller still owns the buffer.
 
 ---
- src/add-ons/kernel/network/protocols/tcp/tcp.cpp | 2 ++
- 1 file changed, 2 insertions(+)
+ src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/src/add-ons/kernel/network/protocols/tcp/tcp.cpp b/src/add-ons/kernel/network/protocols/tcp/tcp.cpp
---- a/src/add-ons/kernel/network/protocols/tcp/tcp.cpp
-+++ b/src/add-ons/kernel/network/protocols/tcp/tcp.cpp
-@@ -794,6 +794,8 @@
- 	status_t status = endpoint->ErrorReceived(error, errorData, data);
- 
- 	gSocketModule->release_socket(endpoint->socket);
-+	if (status == B_OK)
+diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
+--- a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
++++ b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
+@@ -2057,6 +2057,7 @@
+ 			fSendMaxSegmentSize = newMaxSegmentSize;
+ 			gStackModule->set_timer(&fRetransmitTimer, 0);
+ 		}
 +		gBufferModule->free(data);
- 	return status;
- }
+ 		return B_OK;
+ 	}
  
