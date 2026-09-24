@@ -4,6 +4,11 @@ One folder per issue. The patch and its test (if any) live together.
 These are notes and reproducers, not a Haiku Gerrit submission.
 Do not send the generated patches to review.haiku-os.org as-is.
 
+**How to pull, baseline on packaged modules, apply, overlay, retest,
+and upload to Gerrit:** [`GUEST-WORKFLOW.md`](GUEST-WORKFLOW.md).
+Stock numbers are taken *before* any file is copied into
+`~/config/non-packaged`. Do not use an issue folder as the howto.
+
 Patches follow the Haiku coding guidelines:
 https://www.haiku-os.org/development/coding-guidelines/
 
@@ -93,6 +98,7 @@ Shared rules:
 - Always `export HAIKU_SRC` (helpers do not search Desktop)
 - `chmod +x work.sh gerrit.sh on-haiku.sh`
 - Do **not** use `on-haiku.sh go` for this series
+- Full order (packaged baseline first): `GUEST-WORKFLOW.md`
 - GPU kernel overlay (11771 / 11776 / open-shared-area):
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
