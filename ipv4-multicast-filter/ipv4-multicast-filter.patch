@@ -33,7 +33,7 @@ diff --git a/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp b/src/add-o
  }
  
  
-@@ -114,7 +114,9 @@
+@@ -114,6 +114,8 @@
  	if (!fAddresses.Has(sourceAddress))
  		return EADDRNOTAVAIL;
  
