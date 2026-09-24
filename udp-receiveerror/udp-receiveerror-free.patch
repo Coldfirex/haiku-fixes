@@ -64,3 +64,4 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
 +		return B_OK;
  	}
  
+ 	net_domain* domain = buffer->interface_address->domain;
