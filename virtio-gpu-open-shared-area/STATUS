@@ -1,16 +1,16 @@
-state: local
-gerrit:
-change-id:
+state: submitted
+gerrit: 11851
+change-id: I74e10a4eafd2a6e030e8c7e273bd98222884e5cb
 topic: virtio-gpu
 branch: master
-patchset:
-commit:
+patchset: 1
+commit: 9714f63756b1afaa074b47e20abd60b78ea8d9ea
 subject: virtio_gpu: clean up shared area when open fails
 bug:
-submitted:
+submitted: 2026-09-24
 code-review:
 merged:
-submitter:
+submitter: Coldfirex
 hrev:
 haiku-commit:
-note: follow-up to korli review on 11824; sentinels in init_driver and open plus delete sharedArea on open error; commandDone create_sem fail vs delete_sem is a separate patch; not virtio-free-id; 11824 is virtio-gpu-free-areas MERGED; overlay kernel/drivers/graphics/virtio_gpu; do not use on-haiku.sh go; do not open() the device from a tester on a live desktop; do not amend 11771 11776 11783 11824
+note: https://review.haiku-os.org/c/haiku/+/11851 PS1. Follow-up to 11824 review. Init area IDs to -1; delete sharedArea on open fail. Do not amend 11771 11776 11783 11824.
