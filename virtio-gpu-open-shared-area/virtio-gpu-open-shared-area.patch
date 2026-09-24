@@ -31,7 +31,7 @@ diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add
  	info->commandDone = create_sem(1, "virtio_gpu_command");
  	if (info->commandDone < B_OK)
  		goto error;
-@@ -641,6 +644,8 @@ virtio_gpu_open(void* _info, const char* path, int openMode, void** _cookie)
+@@ -642,6 +645,8 @@ virtio_gpu_open(void* _info, const char* path, int openMode, void** _cookie)
  error:
  	delete_area(info->framebufferArea);
  	info->framebufferArea = -1;
@@ -40,7 +40,7 @@ diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add
  	delete_sem(info->commandDone);
  	info->commandDone = -1;
  	free(handle);
-@@ -806,6 +811,9 @@ virtio_gpu_init_driver(device_node* node, void** cookie)
+@@ -810,8 +815,11 @@ virtio_gpu_init_driver(device_node* node, void** cookie)
  		return B_NO_MEMORY;
  
  	memset(info, 0, sizeof(*info));
@@ -49,3 +49,8 @@ diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add
 +	info->sharedArea = -1;
  
  	info->node = node;
+ 
+ 	*cookie = info;
+ 	return B_OK;
+-- 
+2.45.2
