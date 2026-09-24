@@ -13,4 +13,4 @@ merged:
 submitter: Coldfirex
 hrev:
 haiku-commit:
-note: wording-only refresh 2026-09-24. Not on Gerrit yet. Do not amend 11792.
+note: 2026-09-24 first overlay KDL double-free in loop consumer free_buffer (deadbeef). Patch is now free+B_OK. Not on Gerrit. Do not amend 11792.
