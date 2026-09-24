@@ -15,7 +15,6 @@ https://www.haiku-os.org/development/coding-guidelines/
 Open and submitted (repo root):
 
 ```
-udp-receiveerror/        ReceiveError / DeliverError early-return leak
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
 virtio-net-interrupt-uninit/ free_interrupts if queue_setup_interrupt fails
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
@@ -43,10 +42,11 @@ hold/virtio-scsi-controller-get-driver/
 ```
 
 Merged upstream lives under [`merged/`](merged/README.md).
-Abandoned Gerrit changes live under [`abandoned/`](abandoned/README.md):
+Abandoned changes live under [`abandoned/`](abandoned/README.md):
 
 ```
 abandoned/virtio-block-blksize-zero/  Gerrit 11833 (spec has no blk_size==0 fallback)
+abandoned/udp-receiveerror/           never submitted; consumer already frees on error
 ```
 
 Merged:
@@ -86,6 +86,7 @@ Steps:
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
 - IPv4 IP_MULTICAST_IF dtor: `merged/ipv4-multicast-if/README.md` (merged 11827 / 04c75f4b)
 - UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
+- UDP ReceiveError early return (abandoned): `abandoned/udp-receiveerror/README.md`
 - Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
 - net_server restore gateway on up: `net-server-reapply-gateway/README.md`
 - virtio_block DMAResource/IOScheduler teardown: `virtio-block-uninit-dma/README.md`
@@ -109,9 +110,9 @@ Shared rules:
   (jam target is `'<module>arp'`, not userspace `arp`)
 - IPv4 protocol overlay (remaining `ipv4-multicast-*` locals only):
   `~/config/non-packaged/add-ons/kernel/network/protocols/ipv4`
-- UDP protocol overlay (`udp-receiveerror` / `udp-unicast-enqueue` / `udp-loopback-checksum`):
+- UDP protocol overlay (`udp-unicast-enqueue` / `udp-loopback-checksum`):
   `~/config/non-packaged/add-ons/kernel/network/protocols/udp`
 - virtio_block overlay: `~/config/non-packaged/add-ons/kernel/drivers/disk/virtual/virtio_block`
 - virtio_scsi overlay: `~/config/non-packaged/add-ons/kernel/busses/scsi/virtio`
 - New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
-- Do not re-push abandoned/ (11833), merged/, or hold/
+- Do not re-push abandoned/ (11833, udp-receiveerror), merged/, or hold/
