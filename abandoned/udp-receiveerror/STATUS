@@ -1,0 +1,17 @@
+state: abandoned
+gerrit:
+change-id:
+topic: udp
+branch: master
+patchset:
+commit:
+subject: udp: free error buffer on early returns
+bug:
+submitted:
+abandoned: 2026-09-24
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: Not a leak. loop consumer free_buffer on receive_data error. First overlay KDL GPF deadbeef. 60s A/B patched used_pages worse than stock. Never on Gerrit. Do not re-push. Do not amend 11792.
