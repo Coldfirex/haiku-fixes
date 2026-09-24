@@ -1,0 +1,16 @@
+state: submitted
+gerrit: 11850
+change-id: I6adf8cfe6d03e5dcfea0ce8cce7d1a01109d6500
+topic: ipv4-multicast
+branch: master
+patchset: 1
+commit: bd35115d2d584952a829c7d2e99f49dec1109427
+subject: ipv4: UnblockSource/DropSSM must remove the source address
+bug:
+submitted: 2026-09-24
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: UnblockSource/DropSSM Remove; last SSM source LeaveGroup. Overlay protocols/ipv4. Do not amend 11791 or 11827. New Change-Id.
