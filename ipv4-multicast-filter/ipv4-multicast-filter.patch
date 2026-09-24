@@ -11,9 +11,9 @@ EADDRNOTAVAIL, which is the POSIX result.
 
 GetState() already JoinGroup()s when the first IP_ADD_SOURCE_MEMBERSHIP
 creates the filter. Drop() calls LeaveGroup() for IP_DROP_MEMBERSHIP.
-DropSSM() must do the same after it removes the last include-mode
-source, or ReturnState() deletes the GroupInterface while
-sMulticastState and the interface still hold it.
+DropSSM() must LeaveGroup() after it removes the last include-mode
+source. Otherwise the group stays joined on the interface after
+ReturnState() deletes the GroupInterface.
 
 ---
  src/add-ons/kernel/network/protocols/ipv4/multicast.cpp | 6 ++++--
@@ -42,4 +42,3 @@ diff --git a/src/add-ons/kernel/network/protocols/ipv4/multicast.cpp b/src/add-o
 +		Addressing::LeaveGroup(this);
  	return B_OK;
  }
- 
