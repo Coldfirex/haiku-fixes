@@ -1,15 +1,16 @@
 # virtio_gpu: clean up shared area when open fails
 
-Status: **local**. Kernel-only leftover after 11783.
+Status: **local**. Kernel-only leftover requested on 11824.
 Not `virtio-free-id` (that is virtio_net).
-Not `virtio-gpu-free-areas` (success-path `free()` leak).
+Not `virtio-gpu-free-areas` (success-path `free()` leak; 11824 MERGED).
 
 - 11771 detach-backing MERGED
 - 11776 mutex-uninit MERGED
 - 11783 clone-fd MERGED (accelerant)
-- This change: `virtio_gpu_open()` shared-area leak
+- 11824 free-areas MERGED
+- This change: `virtio_gpu_open()` shared-area leak + area-id sentinels
 
-Do not amend 11771 / 11776 / 11783. New Change-Id.
+Do not amend 11771 / 11776 / 11783 / 11824. New Change-Id.
 Do not `open()` `/dev/graphics/...` from a tester on a live desktop.
 
 Overlay after jam + reboot:

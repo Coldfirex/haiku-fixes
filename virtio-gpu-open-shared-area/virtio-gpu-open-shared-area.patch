@@ -12,6 +12,10 @@ an area that had not been created.
 Initialize the area IDs to -1 in init_driver() and at the start of
 open(), and delete the shared-info area during open() cleanup.
 
+Follow-up to review on change 11824: initialize the area IDs
+in init_driver()/open() and delete the shared-info area on
+the open() error path.
+
 ---
  src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 8 ++++++++
  1 file changed, 8 insertions(+)
