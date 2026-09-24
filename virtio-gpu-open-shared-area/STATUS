@@ -13,4 +13,4 @@ merged:
 submitter:
 hrev:
 haiku-commit:
-note: follow-up to korli review on 11824; sentinels in init_driver and open plus delete sharedArea on open error; not virtio-free-id; 11824 is virtio-gpu-free-areas MERGED; overlay kernel/drivers/graphics/virtio_gpu; do not use on-haiku.sh go; do not open() the device from a tester on a live desktop; do not amend 11771 11776 11783 11824
+note: follow-up to korli review on 11824; sentinels in init_driver and open plus delete sharedArea on open error; commandDone create_sem fail vs delete_sem is a separate patch; not virtio-free-id; 11824 is virtio-gpu-free-areas MERGED; overlay kernel/drivers/graphics/virtio_gpu; do not use on-haiku.sh go; do not open() the device from a tester on a live desktop; do not amend 11771 11776 11783 11824
