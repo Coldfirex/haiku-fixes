@@ -15,6 +15,7 @@ https://www.haiku-os.org/development/coding-guidelines/
 Open and submitted (repo root):
 
 ```
+tcp-error-received/      free quoted buffer only if ErrorReceived returns B_OK (PMTU)
 virtio-net-mutex-uninit/ destroy rxLock/txLock if interrupt setup fails
 virtio-net-interrupt-uninit/ free_interrupts if queue_setup_interrupt fails
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
@@ -47,6 +48,8 @@ Abandoned changes live under [`abandoned/`](abandoned/README.md):
 ```
 abandoned/virtio-block-blksize-zero/  Gerrit 11833 (spec has no blk_size==0 fallback)
 abandoned/udp-receiveerror/           never submitted; consumer already frees on error
+abandoned/ipv4-error-received/        never submitted; consumer already frees on error
+abandoned/ipv6-error-received/        never submitted; consumer already frees on error
 ```
 
 Merged:
@@ -71,48 +74,13 @@ Do not submit `hold/` or re-push `abandoned/` / `merged/`.
 See also https://github.com/Coldfirex/haiku-fixes/issues/1 (Network prefs
 gateway blank after ifconfig down; not ARP).
 
-virtio_gpu notes that burned us on GPU patches 1–3. They also apply
-to leftover virtio_net locals and `virtio-gpu-open-shared-area`.
-Do not number those as GPU 4 unless you mean the GPU series only.
-Steps:
-
-- virtio_net id leak: `merged/virtio-free-id/README.md` (merged 11784)
-- virtio_net TX slot leak: `merged/virtio-tx-freelist/README.md` (merged 11807 / d42d1ebd)
-- virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
-- virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
-- GPU shared-area leak on open fail: `virtio-gpu-open-shared-area/README.md`
-- GPU area leak on free: `merged/virtio-gpu-free-areas/README.md` (merged 11824)
-- ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
-- IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
-- IPv4 IP_MULTICAST_IF dtor: `merged/ipv4-multicast-if/README.md` (merged 11827 / 04c75f4b)
-- UDP DeliverData enqueue free: `merged/udp-deliverdata/README.md` (merged 11792 / 1ca7d0a6)
-- UDP ReceiveError early return (abandoned): `abandoned/udp-receiveerror/README.md`
-- Network prefs saved gateway: `network-prefs-gateway-fallback/README.md`
-- net_server restore gateway on up: `net-server-reapply-gateway/README.md`
-- virtio_block DMAResource/IOScheduler teardown: `virtio-block-uninit-dma/README.md`
-- virtio get_driver checks (hold): `hold/README.md`
-- virtio_block zero blk_size (abandoned 11833): `abandoned/virtio-block-blksize-zero/README.md`
-
 Shared rules:
 
 - Guest trees: `/boot/home/Desktop/sources/{haiku,haiku-fixes}`
-- Always `export HAIKU_SRC` (helpers do not search Desktop)
-- `chmod +x work.sh gerrit.sh on-haiku.sh`
-- Do **not** use `on-haiku.sh go` for this series
 - Full order (packaged baseline first): `GUEST-WORKFLOW.md`
-- GPU kernel overlay (11771 / 11776 / open-shared-area):
-  `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
-- GPU accelerant overlay (11783 only):
-  `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
-- virtio_net overlay (`virtio-net-mutex-uninit` / `virtio-net-interrupt-uninit`):
-  `~/config/non-packaged/add-ons/kernel/drivers/network/virtio_net`
-- ARP kernel overlay: `~/config/non-packaged/add-ons/kernel/network/datalink_protocols/arp`
-  (jam target is `'<module>arp'`, not userspace `arp`)
-- IPv4 protocol overlay (remaining `ipv4-multicast-*` locals only):
-  `~/config/non-packaged/add-ons/kernel/network/protocols/ipv4`
+- TCP protocol overlay (`tcp-error-received` / `tcp-spawn-abort`):
+  `~/config/non-packaged/add-ons/kernel/network/protocols/tcp`
 - UDP protocol overlay (`udp-unicast-enqueue` / `udp-loopback-checksum`):
   `~/config/non-packaged/add-ons/kernel/network/protocols/udp`
-- virtio_block overlay: `~/config/non-packaged/add-ons/kernel/drivers/disk/virtual/virtio_block`
-- virtio_scsi overlay: `~/config/non-packaged/add-ons/kernel/busses/scsi/virtio`
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
-- Do not re-push abandoned/ (11833, udp-receiveerror), merged/, or hold/
+- Do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
+- Do not re-push abandoned/ (11833, udp-receiveerror, ipv4-error-received, ipv6-error-received), merged/, or hold/
