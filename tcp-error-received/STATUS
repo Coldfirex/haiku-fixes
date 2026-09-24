@@ -1,6 +1,6 @@
 state: submitted
 gerrit: 11847
-change-id:
+change-id: I59d4f5a2d2cc247be9daa95817aee54e2bac7343
 topic: tcp
 branch: master
 patchset: 1
@@ -13,4 +13,4 @@ merged:
 submitter: Coldfirex
 hrev:
 haiku-commit:
-note: Gerrit 11847. Free only if ErrorReceived returns B_OK. Do not amend. Do not restack old free-on-error hunks.
+note: https://review.haiku-os.org/c/haiku/+/11847 PS1. Free only if ErrorReceived returns B_OK. Do not amend.
