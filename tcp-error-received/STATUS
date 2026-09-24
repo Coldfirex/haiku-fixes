@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: tcp
+branch: master
+patchset:
+commit:
+subject: tcp: free error buffer when ErrorReceived returns B_OK
+bug:
+submitted:
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: 2026-09-24 rewritten after udp-receiveerror KDL. Free only if ErrorReceived returns B_OK. Not on Gerrit.

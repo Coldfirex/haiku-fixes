@@ -1,0 +1,9 @@
+state: abandoned
+gerrit:
+change-id:
+topic: ipv6
+branch: master
+subject: ipv6: free error buffer if error_received does not hand it off
+abandoned: 2026-09-24
+submitter: Coldfirex
+note: Same as ipv4-error-received / udp-receiveerror. Consumer frees on error. Never Gerrit.

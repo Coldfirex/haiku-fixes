@@ -1,0 +1,9 @@
+state: abandoned
+gerrit:
+change-id:
+topic: ipv4
+branch: master
+subject: ipv4: free error buffer if error_received does not hand it off
+abandoned: 2026-09-24
+submitter: Coldfirex
+note: All added frees were on error returns. device_consumer_thread already frees those. Same class as udp-receiveerror. Never Gerrit. Do not re-push.
