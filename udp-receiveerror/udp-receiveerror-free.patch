@@ -8,12 +8,14 @@ hook and does not free it. UDP leaked it on:
 * ReceiveError if the buffer was short, had no domain support, or
   the UDP header read failed
 
-DeliverError() already frees unicast buffers. udp_error_received()
-already frees QUENCH and unknown errors.
+DeliverError() already frees unicast buffers and returns B_OK.
+udp_error_received() already frees QUENCH and unknown errors and
+returns B_OK. Early paths must do the same: free, then B_OK.
+Returning an error after free lets a caller free again.
 
 ---
- src/add-ons/kernel/network/protocols/udp/udp.cpp | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ src/add-ons/kernel/network/protocols/udp/udp.cpp | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kernel/network/protocols/udp/udp.cpp
 --- a/src/add-ons/kernel/network/protocols/udp/udp.cpp
@@ -23,9 +25,10 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
  UdpDomainSupport::DeliverError(status_t error, net_buffer* buffer)
  {
 -	if ((buffer->msg_flags & (MSG_BCAST | MSG_MCAST)) != 0)
+-		return B_ERROR;
 +	if ((buffer->msg_flags & (MSG_BCAST | MSG_MCAST)) != 0) {
 +		gBufferModule->free(buffer);
- 		return B_ERROR;
++		return B_OK;
 +	}
  
  	MutexLocker _(fLock);
@@ -36,25 +39,28 @@ diff --git a/src/add-ons/kernel/network/protocols/udp/udp.cpp b/src/add-ons/kern
  
 -	// We only really need the port information
 -	if (buffer->size < 4)
+-		return B_BAD_VALUE;
 +	// error_received() takes ownership of the buffer.
 +	if (buffer->size < 4) {
 +		gBufferModule->free(buffer);
- 		return B_BAD_VALUE;
++		return B_OK;
 +	}
  
  	UdpDomainSupport* domainSupport = _GetDomainSupport(buffer);
  	if (domainSupport == NULL) {
  		// we don't instantiate domain supports in the receiving path, as
  		// we are only interested in delivering data to existing sockets.
+-		return B_ERROR;
 +		gBufferModule->free(buffer);
- 		return B_ERROR;
++		return B_OK;
  	}
  	DomainSupportDeleter deleter(domainSupport);
-@@ -790,6 +795,7 @@
+@@ -790,7 +795,8 @@
  	udp_header header;
  	if (gBufferModule->read(buffer, 0, &header,
  			std::min((size_t)buffer->size, sizeof(udp_header))) != B_OK) {
+-		return B_BAD_VALUE;
 +		gBufferModule->free(buffer);
- 		return B_BAD_VALUE;
++		return B_OK;
  	}
  
