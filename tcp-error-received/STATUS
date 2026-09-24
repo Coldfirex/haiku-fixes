@@ -13,4 +13,4 @@ merged:
 submitter: Coldfirex
 hrev:
 haiku-commit:
-note: 2026-09-24 rewritten after udp-receiveerror KDL. Free only if ErrorReceived returns B_OK. Not on Gerrit.
+note: 2026-09-24 free only if ErrorReceived returns B_OK. Commit wording updated. Tester is KDL/path check only. Not on Gerrit.
