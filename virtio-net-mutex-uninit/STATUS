@@ -1,16 +1,16 @@
-state: local
-gerrit:
-change-id:
+state: submitted
+gerrit: 11858
+change-id: I166bb2f012cd4fc8c787b227a0befc77f43808ba
 topic: virtio-net
 branch: master
-patchset:
-commit:
+patchset: 1
+commit: a469679c2fff787ab20296d1f760f9cb8d2b89d5
 subject: virtio_net: destroy TX/RX mutexes if interrupt setup fails
 bug:
-submitted:
+submitted: 2026-09-25
 code-review:
 merged:
-submitter:
+submitter: Coldfirex
 hrev:
 haiku-commit:
-note: still applies to master @@ -434 (2026-09-25). Live path is PCI setup_interrupt fail (IRQ 0 / install_io_interrupt_handler). queue_setup_interrupt currently always B_OK. No QEMU syslog hit. Same pattern as virtio_gpu 11776. Overlay kernel/drivers/network/virtio_net. Do not amend 11784.
+note: PS1 a469679c. Overlay kernel/drivers/network/virtio_net. Do not amend 11784 or 11807. Do not fold virtio-net-interrupt-uninit into this CL.

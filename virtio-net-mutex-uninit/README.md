@@ -1,12 +1,18 @@
 # virtio_net: destroy TX/RX mutexes if interrupt setup fails
 
-Status: **local**. Split out of `virtio_net-tx-freelist-and-mutex-uninit`.
+Status: **submitted**.
 
-The TX free-list half is `virtio-tx-freelist/` (merged 11807). Do not
-combine them again. Do not amend 11784.
+- Gerrit: https://review.haiku-os.org/c/haiku/+/11858
+- Change-Id: `I166bb2f012cd4fc8c787b227a0befc77f43808ba`
+- Topic: `virtio-net`
+- Patch set: 1 (`a469679c2fff787ab20296d1f760f9cb8d2b89d5`)
+- Submitted: 2026-09-25
 
-Still applies verbatim to current Haiku master `virtio_net.cpp`
-(`@@ -434`). 11807 only touched `uninit_device`.
+Do not amend 11858 unless a reviewer asks. Do not amend 11784 or 11807.
+Do not fold `virtio-net-interrupt-uninit/` into this CL.
+
+Split out of `virtio_net-tx-freelist-and-mutex-uninit`.
+The TX free-list half is `merged/virtio-tx-freelist/` (11807).
 
 ## What is wrong
 
@@ -22,32 +28,20 @@ mutexes. This patch adds `err7` for the post-init path.
 
 Same pattern as virtio_gpu Gerrit 11776.
 
-## Live vs defensive
+## Live vs later follow-up
 
-- **Live:** PCI `setup_interrupt()` can return an error (`irq == 0`
-  "PCI IRQ not assigned", or `install_io_interrupt_handler()`). That
-  is a real bus-manager return, not a spec ghost. That is the
-  justification for this CL.
-- **Defensive:** `VirtioQueue::SetupInterrupt()` and the MMIO queue
-  hook currently always `return B_OK`. The RX/TX/ctrl
-  `queue_setup_interrupt()` gotos cannot fire on current master.
-  Leave them on `err7` anyway.
-- No `interrupt setup failed` / `PCI IRQ not assigned` /
-  `can't install interrupt handler` in captured QEMU/Proxmox
-  syslogs. Do not tell Gerrit this was reproduced on a working
-  virtio-net guest.
+- PCI `setup_interrupt()` can return an error (`irq == 0`
+  "PCI IRQ not assigned", or `install_io_interrupt_handler()`).
+  That is the justification for this CL.
+- `VirtioQueue::SetupInterrupt()` and the MMIO queue hook currently
+  always `return B_OK`. The RX/TX/ctrl `queue_setup_interrupt()`
+  checks cannot fire on current master; they still go to `err7`.
+- No `interrupt setup failed` in captured QEMU/Proxmox syslogs.
+  Do not tell Gerrit this was reproduced on a working virtio-net guest.
 
-Not the 11833 class of change. Do not claim a QEMU hit you do not
-have.
-
-## Keep separate
-
-Does not call `free_interrupts()` if `setup_interrupt()` succeeded
-and a later `queue_setup_interrupt()` failed. That follow-up is
-`virtio-net-interrupt-uninit/` and is mostly theoretical today
-(queue setup cannot fail). Keep them separate.
-
-Does not call `free_queues()` on `err1`–`err6`. Separate leftover.
+`virtio-net-interrupt-uninit/` (`free_interrupts` on queue-setup
+failure) stays local. `free_queues()` on `err1`–`err6` is a separate
+leftover.
 
 Rebuild-only. Overlay that loaded:
 
