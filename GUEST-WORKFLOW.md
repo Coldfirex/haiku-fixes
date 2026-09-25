@@ -187,14 +187,17 @@ A second apply fails with `patch does not apply`.
 cd /boot/home/Desktop/sources/haiku
 git diff --stat
 git add <the one file>
-git commit -m "<Subject from the .patch plus the body up to --->"
+git commit -F /tmp/<issue>.msg
 git log -1 --format=%B
 git push origin HEAD:refs/for/master%topic=<topic>
 git reset --hard origin/master
 ```
 
 `git log -1` must contain a new `Change-Id: I...`. Do not amend
-11771 11776 11783 11784 11789 11791 11792 11807 11824 11827 11843.
+11771 11776 11783 11784 11789 11791 11792 11807 11824 11827 11843 11851.
+
+Do not run bare `git commit` in the guest; Haiku often leaves
+`.git/COMMIT_EDITMSG` empty. Use `git commit -F` from the `.patch` body.
 
 Gerrit body is the bug and the fix only. Testers, overlay paths,
 and review asides stay on GitHub.
