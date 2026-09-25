@@ -23,3 +23,4 @@ virtio-tx-freelist	virtio_net		TX BufInfo leak; rebuild only
 virtio-rx-freelist	virtio_net		RX BufInfo refill; apply after tx-freelist
 network-prefs-gateway-fallback	Network		display/Apply saved gateway; rebuild Network
 net-server-reapply-gateway	net_server	net_server_reapply_gateway		bounces IFF_UP; needs static gw
+syslog-remote-forward	syslog_daemon	syslog_remote_sink	1514	needs syslog_server 127.0.0.1
