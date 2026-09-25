@@ -1,0 +1,16 @@
+state: merged
+gerrit: 11843
+change-id: Ieab2c05ab02b63baa081cecb21975d4214579751
+topic: virtio-block
+branch: master
+patchset: 4
+commit: 40f89b3f88e599424692a51c85ec323e6e05a609
+subject: virtio_block: delete DMAResource and IOScheduler in uninit_driver
+bug:
+submitted: 2026-09-23
+code-review: waddlesplash +1, korli +2
+merged: 2026-09-25
+submitter: Coldfirex
+hrev:
+haiku-commit: 40f89b3f88e599424692a51c85ec323e6e05a609
+note: merged. Not 11833. Do not re-push. Do not apply on current master. Do not amend 11843. Overlay kernel/drivers/disk/virtual/virtio_block no longer needed for this change.
