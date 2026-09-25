@@ -11,8 +11,8 @@ allocation), so add err7 for the post-init path.
 
 PCI virtio setup_interrupt() can return an error (IRQ unassigned
 or install_io_interrupt_handler). queue_setup_interrupt() currently
-always returns B_OK in the bus manager; those gotos stay as
-defense. Same pattern as virtio_gpu Gerrit 11776.
+always returns B_OK in the bus manager. Same pattern as virtio_gpu 
+Gerrit 11776.
 
 ---
  src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp | 11 ++++++++---
