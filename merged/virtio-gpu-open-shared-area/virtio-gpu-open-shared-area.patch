@@ -1,0 +1,56 @@
+From: Alan Shearer
+Subject: virtio_gpu: clean up shared area when open fails
+
+open() creates the shared-info area before completing device
+initialization. If a later step fails, the existing error path deletes
+the framebuffer area but leaves the shared-info area allocated.
+
+framebufferArea / sharedArea were left at zero when an earlier
+open() step failed, so the error path could call delete_area() on
+an area that had not been created.
+
+Initialize both area IDs to -1 before they can be used, and
+release the shared-info area on open failure.
+
+Follow-up to review on change 11824.
+
+---
+ src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+--- a/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
++++ b/src/add-ons/kernel/drivers/graphics/virtio/virtio_gpu.cpp
+@@ -568,6 +568,9 @@ virtio_gpu_open(void* _info, const char* path, int openMode, void** _cookie)
+ 	if (handle == NULL)
+ 		return B_NO_MEMORY;
+ 
++	info->sharedArea = -1;
++	info->framebufferArea = -1;
++
+ 	info->commandDone = create_sem(1, "virtio_gpu_command");
+ 	if (info->commandDone < B_OK)
+ 		goto error;
+@@ -642,6 +645,8 @@ virtio_gpu_open(void* _info, const char* path, int openMode, void** _cookie)
+ error:
+ 	delete_area(info->framebufferArea);
+ 	info->framebufferArea = -1;
++	delete_area(info->sharedArea);
++	info->sharedArea = -1;
+ 	delete_sem(info->commandDone);
+ 	info->commandDone = -1;
+ 	free(handle);
+@@ -810,8 +815,11 @@ virtio_gpu_init_driver(device_node* node, void** cookie)
+ 		return B_NO_MEMORY;
+ 
+ 	memset(info, 0, sizeof(*info));
++
++	info->framebufferArea = -1;
++	info->sharedArea = -1;
+ 
+ 	info->node = node;
+ 
+ 	*cookie = info;
+ 	return B_OK;
+-- 
+2.45.2

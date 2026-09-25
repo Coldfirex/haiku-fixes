@@ -28,7 +28,6 @@ arp-protocol-teardown/   handler leak on init fail; UAF on uninit
 ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
 ipv4-multicast-refs/     put_route/put_interface on membership wrappers
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
-virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open() fails
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 virtio-block-uninit-dma/ DMAResource + IOScheduler if uninit_device skipped
@@ -66,6 +65,7 @@ merged/udp-deliverdata/             Gerrit 11792 / 1ca7d0a6
 merged/virtio-tx-freelist/          Gerrit 11807 / d42d1ebd
 merged/virtio-gpu-free-areas/       Gerrit 11824
 merged/ipv4-multicast-if/          Gerrit 11827 / 04c75f4b
+merged/virtio-gpu-open-shared-area/ Gerrit 11851 / 83d859ac
 ```
 
 Gerrit tracking lives in each submitted folder as `STATUS`.
@@ -76,7 +76,7 @@ See also https://github.com/Coldfirex/haiku-fixes/issues/1 (Network prefs
 gateway blank after ifconfig down; not ARP).
 
 virtio_gpu notes that burned us on GPU patches 1-3. They also apply
-to leftover virtio_net locals and `virtio-gpu-open-shared-area`.
+to leftover virtio_net locals.
 Do not number those as GPU 4 unless you mean the GPU series only.
 Steps:
 
@@ -84,7 +84,7 @@ Steps:
 - virtio_net TX slot leak: `merged/virtio-tx-freelist/README.md` (merged 11807 / d42d1ebd)
 - virtio_net mutex teardown: `virtio-net-mutex-uninit/README.md`
 - virtio_net interrupt teardown: `virtio-net-interrupt-uninit/README.md`
-- GPU shared-area leak on open fail: `virtio-gpu-open-shared-area/README.md`
+- GPU shared-area leak on open fail: `merged/virtio-gpu-open-shared-area/README.md` (merged 11851 / 83d859ac)
 - GPU area leak on free: `merged/virtio-gpu-free-areas/README.md` (merged 11824)
 - ARP request buffer: `merged/arp-request-buffer-dtor/README.md`
 - IPv4 filter mode: `merged/ipv4-multicast-filtermode/README.md`
@@ -106,7 +106,7 @@ Shared rules:
 - `chmod +x work.sh gerrit.sh on-haiku.sh`
 - Do **not** use `on-haiku.sh go` for this series
 - Full order (packaged baseline first): `GUEST-WORKFLOW.md`
-- GPU kernel overlay (11771 / 11776 / open-shared-area):
+- GPU kernel overlay (historical 11771 / 11776 / 11824 / 11851):
   `~/config/non-packaged/add-ons/kernel/drivers/graphics/virtio_gpu`
 - GPU accelerant overlay (11783 only):
   `~/config/non-packaged/add-ons/accelerants/virtio_gpu.accelerant`
@@ -125,5 +125,5 @@ Shared rules:
 - syslog_daemon overlay (`syslog-remote-forward`):
   `~/config/non-packaged/servers/syslog_daemon` then restart
   `x-vnd.Haiku-SystemLogger`
-- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
+- New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, 11827, or 11851
 - Do not re-push abandoned/ (11833, udp-receiveerror, ipv4-error-received, ipv6-error-received), merged/, or hold/

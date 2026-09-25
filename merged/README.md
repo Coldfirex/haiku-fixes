@@ -15,5 +15,6 @@ Do not re-push. Do not `git apply` them on current master.
 | virtio-tx-freelist | [11807](https://review.haiku-os.org/c/haiku/+/11807) | `d42d1ebd` | virtio_net: return TX buffer to free list on queue failure |
 | ipv4-multicast-if | [11827](https://review.haiku-os.org/c/haiku/+/11827) | `04c75f4b` | ipv4: free IP_MULTICAST_IF address in protocol destructor |
 | virtio-gpu-free-areas | [11824](https://review.haiku-os.org/c/haiku/+/11824) | | virtio_gpu: delete framebuffer and shared areas in free() |
+| virtio-gpu-open-shared-area | [11851](https://review.haiku-os.org/c/haiku/+/11851) | `83d859ac` | virtio_gpu: clean up shared area when open fails |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).

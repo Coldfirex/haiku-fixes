@@ -1,0 +1,16 @@
+state: merged
+gerrit: 11851
+change-id: I74e10a4eafd2a6e030e8c7e273bd98222884e5cb
+topic: virtio-gpu
+branch: master
+patchset: 1
+commit: 83d859ac91d1390fa15ce3e8ece65e72d7ebe6bd
+subject: virtio_gpu: clean up shared area when open fails
+bug:
+submitted: 2026-09-24
+code-review: korli +2
+merged: 2026-09-25
+submitter: Coldfirex
+hrev:
+haiku-commit: 83d859ac91d1390fa15ce3e8ece65e72d7ebe6bd
+note: merged. Follow-up to 11824 review. Do not re-push. Do not apply on current master. Do not amend 11851. Overlay kernel/drivers/graphics/virtio_gpu no longer needed for this change.
