@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: syslog
+branch: master
+patchset:
+commit:
+subject: syslog_daemon: optional RFC 3164 UDP forward to a remote collector
+bug:
+submitted:
+code-review:
+merged:
+submitter: Coldfirex
+hrev:
+haiku-commit:
+note: v1 client only. Off unless syslog_server is set. No DNS/TCP/queue. Do not Gerrit until smoke-tested against a collector. discuss 13967.
