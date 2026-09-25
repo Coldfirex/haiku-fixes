@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: virtio-net
+branch: master
+patchset:
+commit:
+subject: virtio_net: free interrupts if queue interrupt setup fails
+bug:
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: follow-up to virtio-net-mutex-uninit; apply mutex first. queue_setup_interrupt currently always B_OK — do not Gerrit until that can fail. setup_interrupt fail stays on err7. Overlay kernel/drivers/network/virtio_net. Do not amend 11784.

@@ -1,14 +1,18 @@
 From: Alan Shearer
 Subject: virtio_net: destroy TX/RX mutexes if interrupt setup fails
 
-mutex_init() for rxLock and txLock runs before setup_interrupt() and
-queue_setup_interrupt(). Those failures jumped to err6, which deletes
-the TX BufInfo array but does not mutex_destroy().
+mutex_init() for rxLock and txLock runs before setup_interrupt().
+A failure there jumps to err6, which deletes the TX BufInfo array
+but does not mutex_destroy(). init_device failure does not call
+uninit_device(); uninit_driver only free()s the cookie.
 
 err6 is also the label used before the mutexes exist (TX BufInfo
 allocation), so add err7 for the post-init path.
 
-Same pattern as virtio_gpu Gerrit 11776.
+PCI virtio setup_interrupt() can return an error (IRQ unassigned
+or install_io_interrupt_handler). queue_setup_interrupt() currently
+always returns B_OK in the bus manager; those gotos stay as
+defense. Same pattern as virtio_gpu Gerrit 11776.
 
 ---
  src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp | 11 ++++++++---

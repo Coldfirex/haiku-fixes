@@ -13,4 +13,4 @@ merged:
 submitter:
 hrev:
 haiku-commit:
-note: split from virtio_net-tx-freelist-and-mutex-uninit; same pattern as virtio_gpu 11776. Overlay kernel/drivers/network/virtio_net. Do not amend 11784.
+note: still applies to master @@ -434 (2026-09-25). Live path is PCI setup_interrupt fail (IRQ 0 / install_io_interrupt_handler). queue_setup_interrupt currently always B_OK. No QEMU syslog hit. Same pattern as virtio_gpu 11776. Overlay kernel/drivers/network/virtio_net. Do not amend 11784.
