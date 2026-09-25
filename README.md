@@ -32,6 +32,7 @@ virtio-gpu-open-shared-area/ leftover GPU change; shared info area leak if open(
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 virtio-block-uninit-dma/ DMAResource + IOScheduler if uninit_device skipped
+syslog-remote-forward/   optional RFC 3164 UDP client in syslog_daemon
 ```
 
 Do-not-submit locals live under [`hold/`](hold/README.md):
@@ -96,6 +97,7 @@ Steps:
 - virtio_block DMAResource/IOScheduler teardown: `virtio-block-uninit-dma/README.md`
 - virtio get_driver checks (hold): `hold/README.md`
 - virtio_block zero blk_size (abandoned 11833): `abandoned/virtio-block-blksize-zero/README.md`
+- syslog UDP forwarder (local): `syslog-remote-forward/README.md`
 
 Shared rules:
 
@@ -120,5 +122,8 @@ Shared rules:
   `~/config/non-packaged/add-ons/kernel/network/protocols/tcp`
 - virtio_block overlay: `~/config/non-packaged/add-ons/kernel/drivers/disk/virtual/virtio_block`
 - virtio_scsi overlay: `~/config/non-packaged/add-ons/kernel/busses/scsi/virtio`
+- syslog_daemon overlay (`syslog-remote-forward`):
+  `~/config/non-packaged/servers/syslog_daemon` then restart
+  `x-vnd.Haiku-SystemLogger`
 - New commit + new Change-Id per issue; do not amend 11771, 11776, 11783, 11784, 11789, 11791, 11792, 11807, 11824, or 11827
 - Do not re-push abandoned/ (11833, udp-receiveerror, ipv4-error-received, ipv6-error-received), merged/, or hold/
