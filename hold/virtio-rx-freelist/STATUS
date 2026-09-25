@@ -1,0 +1,7 @@
+state: hold
+gerrit:
+change-id:
+topic: virtio-net
+branch: master
+subject: virtio_net: keep RX BufInfo if enqueue fails
+note: RX refill after dequeue should have ring room. drain is close path, not a leak. Not Gerrit.
