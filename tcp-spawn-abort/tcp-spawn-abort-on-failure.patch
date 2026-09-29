@@ -22,7 +22,6 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  	TRACE("Spawn()");
  
 -	// TODO: proper error handling!
-+	// On failure the child stays CLOSED so _ListenReceive can abort it.
 +	// Do not call set_aborted() here: we still hold fLock, and the
 +	// destructor would take the same lock.
  	if (ProtocolSocket::Open() != B_OK) {
@@ -57,7 +56,6 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
 -		segment, buffer);
 +	TCPEndpoint* child = (TCPEndpoint*)newSocket->first_protocol;
 +	int32 action = child->_Spawn(this, segment, buffer);
-+	// _Spawn failed after spawn_pending_socket already queued the child.
 +	if (child->State() == CLOSED)
 +		gSocketModule->set_aborted(newSocket);
 +	return action;
