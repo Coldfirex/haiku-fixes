@@ -1,15 +1,17 @@
 From: Alan Shearer
-Subject: arp: undo handler register if init fails
+Subject: arp: clear reject when we learn a real mapping
 
-Init registers the ARP handler, then the IPv4 handler, then
-allocates the protocol. If a later step fails, the handlers
-are left registered.
+A reject is supposed to last 20 seconds and go away if the
+host answers (#18816).  Updates never cleared REJECT, so it stuck.
 
-Uninit also deleted the protocol while cache entries still
-pointed at it.
+If the entry is not permanent and this update is not another
+reject, clear REJECT.
 
-Unregister the handlers if init fails. On uninit, remove
-cache entries that belong to this protocol.
+Also write the ARP header back before we reply. The reader
+might only have a copy.
+
+This covers the "packet from the host" part of #18816.
+It does not start the 20 second delete timer.
 
 ---
  src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 13 +++++++++++++
