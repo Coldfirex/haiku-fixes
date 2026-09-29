@@ -1,14 +1,14 @@
 From: Alan Shearer
-Subject: tcp: abort child socket if _Spawn fails after listen queue insert
+Subject: tcp: drop child socket if _Spawn fails
 
-spawn_pending_socket() already puts the child on pending_children and
-increments child_count. _Spawn() could then return DROP (open, bind,
-send path, or SYN-ACK failure) without removing that child, so the
-listen socket kept a dead half-open until it was closed.
+The child is already on the listen queue before _Spawn runs.
+If open, bind, or the SYN-ACK fails, _Spawn returns DROP and
+leaves that child sitting there.
 
-Mark the child CLOSED on those error paths and have _ListenReceive call
-set_aborted() after _Spawn returns. Abort is done there because _Spawn
-still holds the child fLock; the destructor also takes that lock.
+Set the child to CLOSED on those failures. After _Spawn
+returns, abort it if it is CLOSED.
+
+Do not abort inside _Spawn. It still holds the child's lock.
 
 ---
  src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 14 +++++++++++---
