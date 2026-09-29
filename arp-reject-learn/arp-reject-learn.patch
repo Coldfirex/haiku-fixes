@@ -1,22 +1,15 @@
 From: Alan Shearer
-Subject: arp: drop a non-permanent reject when a mapping is learned
+Subject: arp: undo handler register if init fails
 
-Rejected ARP entries are supposed to last 20 seconds (ARP_REJECT_TIMEOUT)
-and be cleared if the host is seen again (#18816).
+Init registers the ARP handler, then the IPv4 handler, then
+allocates the protocol. If a later step fails, the handlers
+are left registered.
 
-arp_update_entry() never applied the incoming flags to an existing
-entry. A later request, reply, or `arp -s` therefore left ARP_FLAG_REJECT
-set and called MarkFailed() again. Incoming traffic also reset
-timer_state to STALE (30 minutes), so a live host that kept ARPing
-refreshed the reject forever.
+Uninit also deleted the protocol while cache entries still
+pointed at it.
 
-Clear a non-permanent reject when the update itself is not a reject.
-OR in PUBLISH / PERMANENT / REJECT from the caller so ARP_SET_ENTRY
-can change those bits on an existing entry.
-
-Also write the reused ARP header back before sending a reply.
-NetBufferHeaderReader does not Sync(); if direct_access() fell back to
-a copy, the on-wire packet was still the original request.
+Unregister the handlers if init fails. On uninit, remove
+cache entries that belong to this protocol.
 
 ---
  src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 13 +++++++++++++
