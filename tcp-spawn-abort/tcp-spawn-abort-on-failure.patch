@@ -5,8 +5,8 @@ The child is already on the listen queue before _Spawn runs.
 If open, bind, or the SYN-ACK fails, _Spawn returns DROP and
 leaves that child sitting there.
 
-Set the child to CLOSED on those failures. After _Spawn
-returns, abort it if it is CLOSED.
+Set CLOSED on the later failures. After _Spawn returns, abort
+if the child is CLOSED.
 
 Do not abort inside _Spawn. It still holds the child's lock.
 
