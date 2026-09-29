@@ -1,14 +1,12 @@
 From: Alan Shearer
-Subject: ipv4: put multicast route and interface references
+Subject: ipv4: drop leftover multicast route and interface refs
 
-get_multicast_interface() calls get_route() and returns the route's
-interface without put_route(). ipv4_delta_membership() and
-ipv4_generic_delta_membership() call get_interface() /
-get_interface_with_address() and never put_interface(). The file
-already notes both leaks.
+get_multicast_interface() looks up a route and never releases
+it. The join/leave helpers look up an interface and never
+release that either. There are already TODOs on both.
 
-Take an interface reference, drop the route, and put_interface() on
-every exit of the two wrappers.
+Hold our own interface ref, release the route, and release
+the interface when the helper returns.
 
 ---
  src/add-ons/kernel/network/protocols/ipv4/ipv4.cpp | 16 ++++++++++------
