@@ -1,17 +1,15 @@
 From: Alan Shearer
-Subject: arp: unregister handlers on init failure; drop entries on uninit
+Subject: arp: undo handler register if init fails
 
-arp_init_protocol() registers the ARP frame handler, then the IPv4
-domain handler, then allocates the protocol object. Failure after the
-first register left those handlers installed with no protocol.
+Init registers the ARP handler, then the IPv4 handler, then
+allocates the protocol. If a later step fails, the handlers
+are left registered.
 
-Remote cache entries keep a raw protocol pointer for retransmission
-and for MarkValid(). arp_uninit_protocol() deleted that object without
-removing those entries. A later request timer or a late reply would
-dereference the freed arp_protocol (KDL).
+Uninit also deleted the protocol while cache entries still
+pointed at it.
 
-Unregister both handlers on any init failure. On uninit, schedule
-removal of every cache entry that still points at this protocol.
+Unregister the handlers if init fails. On uninit, remove
+cache entries that belong to this protocol.
 
 ---
  src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 41 +++++++++++++++++++++++++++++++----------
