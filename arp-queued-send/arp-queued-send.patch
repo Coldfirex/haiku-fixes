@@ -1,17 +1,10 @@
 From: Alan Shearer
-Subject: arp: do not dereference a NULL protocol when flushing the resolve queue
+Subject: arp: free queued packets if send fails
 
-Packets waiting for a MAC are queued on the arp_entry and sent from
-MarkValid() once the mapping is known.
+When the MAC is known we send the packets that were waiting.
+If send_data fails it does not take the buffer, so free it.
 
-protocol is only set in arp_start_resolve() and arp_set_local_entry().
-arp_update_entry() can MarkValid() an entry learned from a request or
-reply whose protocol pointer is still NULL. send_data() through
-protocol->next is then a NULL dereference (KDL).
-
-If the pointer is missing, drop the queue. If send_data() fails, the
-ethernet frame module does not take the buffer — free it, same as the
-ARP timer already does for request templates.
+If there is no protocol, just drop the queue.
 
 ---
  src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 16 ++++++++++++----
