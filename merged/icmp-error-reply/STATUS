@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11869
+change-id: I669c618158f6b60a9d8f9188a95c3eb550176093
+topic: icmp
+branch: master
+patchset:
+commit: a4aa8679c833d58299286367c89d65d3e1636a42
+subject: icmp: free error-reply buffer if domain lookup or prepend fails
+bug:
+submitted: 2026-09-27
+code-review: +2 Philippe Houdoin
+merged: 2026-09-28
+submitter: Coldfirex
+hrev:
+haiku-commit: a4aa8679c833d58299286367c89d65d3e1636a42
+note: merged. Do not re-push or apply on current master.

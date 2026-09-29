@@ -17,5 +17,8 @@ Do not re-push. Do not `git apply` them on current master.
 | virtio-gpu-free-areas | [11824](https://review.haiku-os.org/c/haiku/+/11824) | | virtio_gpu: delete framebuffer and shared areas in free() |
 | virtio-block-uninit-dma | [11843](https://review.haiku-os.org/c/haiku/+/11843) | `40f89b3f` | virtio_block: delete DMAResource and IOScheduler in uninit_driver |
 | virtio-gpu-open-shared-area | [11851](https://review.haiku-os.org/c/haiku/+/11851) | `83d859ac` | virtio_gpu: clean up shared area when open fails |
+| tcp-error-received | [11847](https://review.haiku-os.org/c/haiku/+/11847) | `6c12327e` | tcp: free error buffer when ErrorReceived returns B_OK |
+| virtio-net-mutex-uninit | [11858](https://review.haiku-os.org/c/haiku/+/11858) | `1832af68` | virtio_net: destroy TX/RX mutexes if interrupt setup fails |
+| icmp-error-reply | [11869](https://review.haiku-os.org/c/haiku/+/11869) | `a4aa8679` | icmp: free error-reply buffer if domain lookup or prepend fails |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).

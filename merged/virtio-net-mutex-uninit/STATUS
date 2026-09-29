@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11858
+change-id: I166bb2f012cd4fc8c787b227a0befc77f43808ba
+topic: virtio-net
+branch: master
+patchset: 1
+commit: 1832af6865180c636f822f1bcfcc2e55ed4b3b39
+subject: virtio_net: destroy TX/RX mutexes if interrupt setup fails
+bug:
+submitted: 2026-09-25
+code-review: +2 waddlesplash
+merged: 2026-09-29
+submitter: waddlesplash
+hrev:
+haiku-commit: 1832af6865180c636f822f1bcfcc2e55ed4b3b39
+note: merged. Do not re-push or apply on current master. Do not amend 11784 or 11807. Interrupt follow-up stays in hold/.

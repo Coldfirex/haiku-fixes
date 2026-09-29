@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11847
+change-id: I59d4f5a2d2cc247be9daa95817aee54e2bac7343
+topic: tcp
+branch: master
+patchset: 2
+commit: 6c12327ebd3412376001502c88c344ba7b990e82
+subject: tcp: free error buffer when ErrorReceived returns B_OK
+bug:
+submitted: 2026-09-24
+code-review: +2 korli
+merged: 2026-09-28
+submitter: Coldfirex
+hrev:
+haiku-commit: 6c12327ebd3412376001502c88c344ba7b990e82
+note: merged. Free in ErrorReceived() before B_OK. Do not free on B_ERROR. Do not re-push.
