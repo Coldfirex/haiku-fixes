@@ -1,0 +1,26 @@
+diff --git a/src/apps/mediaplayer/Controller.cpp b/src/apps/mediaplayer/Controller.cpp
+--- a/src/apps/mediaplayer/Controller.cpp
++++ b/src/apps/mediaplayer/Controller.cpp
+@@ -626,8 +626,11 @@ Controller::Stop()
+ 
+ 	BAutolock _(this);
+ 
+-	StopPlaying();
+-	SetPosition(0.0);
++	if (InitCheck() == B_OK) {
++		StopPlaying();
++		SetPosition(0.0);
++	}
+ 
+ 	fAutoplay = fAutoplaySetting;
+ }
+@@ -653,7 +656,8 @@ Controller::Pause()
+ 
+ 	BAutolock _(this);
+ 
+-	PausePlaying();
++	if (InitCheck() == B_OK)
++		PausePlaying();
+ 
+ 	fAutoplay = fAutoplaySetting;
+ }
