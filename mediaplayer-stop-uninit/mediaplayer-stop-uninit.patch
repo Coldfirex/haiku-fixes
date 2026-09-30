@@ -10,7 +10,7 @@ NULL. Stop() then seeks to 0 and crashes on that NULL.
 
 Do the same InitCheck() test TogglePlaying uses. Still set fAutoplay.
 
-#18714.
+#Fixes ticket#18714.
 
 ---
  src/apps/mediaplayer/Controller.cpp | 9 ++++++---
