@@ -1,3 +1,21 @@
+From: Alan Shearer
+Subject: MediaPlayer: don't stop if nothing is loaded
+
+Stop() and Pause() always talk to the playback manager. TogglePlaying
+already checks InitCheck() first. These two didn't.
+
+Open MediaPlayer with an empty playlist and press Esc. No file was
+ever opened, so the node chain was never set up and _LastState() is
+NULL. Stop() then seeks to 0 and crashes on that NULL.
+
+Do the same InitCheck() test TogglePlaying uses. Still set fAutoplay.
+
+#18714.
+
+---
+ src/apps/mediaplayer/Controller.cpp | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
 diff --git a/src/apps/mediaplayer/Controller.cpp b/src/apps/mediaplayer/Controller.cpp
 --- a/src/apps/mediaplayer/Controller.cpp
 +++ b/src/apps/mediaplayer/Controller.cpp

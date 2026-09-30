@@ -15,6 +15,7 @@ https://www.haiku-os.org/development/coding-guidelines/
 Open and submitted (repo root):
 
 ```
+mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
 udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
