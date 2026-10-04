@@ -1,0 +1,24 @@
+diff --git a/src/add-ons/kernel/network/protocols/ipv6/multicast.cpp b/src/add-ons/kernel/network/protocols/ipv6/multicast.cpp
+index da4071c..82817ea 100644
+--- a/src/add-ons/kernel/network/protocols/ipv6/multicast.cpp
++++ b/src/add-ons/kernel/network/protocols/ipv6/multicast.cpp
+@@ -78,7 +78,7 @@ MulticastGroupInterface<Addressing>::UnblockSource(
+ 	if (!fAddresses.Has(sourceAddress))
+ 		return EADDRNOTAVAIL;
+ 
+-	fAddresses.Add(sourceAddress);
++	fAddresses.Remove(sourceAddress);
+ 	return B_OK;
+ }
+ 
+@@ -103,7 +103,9 @@ MulticastGroupInterface<Addressing>::DropSSM(const AddressType &sourceAddress)
+ 	if (!fAddresses.Has(sourceAddress))
+ 		return EADDRNOTAVAIL;
+ 
+-	fAddresses.Add(sourceAddress);
++	fAddresses.Remove(sourceAddress);
++	if (fAddresses.IsEmpty())
++		Addressing::LeaveGroup(this);
+ 	return B_OK;
+ }
+ 
