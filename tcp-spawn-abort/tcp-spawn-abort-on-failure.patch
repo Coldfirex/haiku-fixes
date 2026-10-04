@@ -11,23 +11,13 @@ if the child is CLOSED.
 Do not abort inside _Spawn. It still holds the child's lock.
 
 ---
- src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
 --- a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
 +++ b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
-@@ -1552,7 +1552,9 @@
- 
- 	TRACE("Spawn()");
- 
--	// TODO: proper error handling!
-+	// Do not call set_aborted() here: we still hold fLock, and the
-+	// destructor would take the same lock.
- 	if (ProtocolSocket::Open() != B_OK) {
- 		T(Error(this, "opening failed", __LINE__));
- 		return DROP;
-@@ -1565,10 +1567,12 @@
+@@ -1565,10 +1565,12 @@
  
  	if (fManager->BindChild(this, buffer->destination) != B_OK) {
  		T(Error(this, "binding failed", __LINE__));
@@ -40,7 +30,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  		return DROP;
  	}
  
-@@ -1580,6 +1584,7 @@
+@@ -1580,6 +1582,7 @@
  	// send SYN+ACK
  	if (_SendAcknowledge() != B_OK) {
  		T(Error(this, "sending failed", __LINE__));
@@ -48,7 +38,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  		return DROP;
  	}
  
-@@ -1613,8 +1618,12 @@
+@@ -1613,8 +1616,14 @@
  		return DROP;
  	}
  
@@ -56,6 +46,8 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
 -		segment, buffer);
 +	TCPEndpoint* child = (TCPEndpoint*)newSocket->first_protocol;
 +	int32 action = child->_Spawn(this, segment, buffer);
++	// Do not abort inside _Spawn. It still holds the child lock, and
++	// the destructor takes that same lock.
 +	if (child->State() == CLOSED)
 +		gSocketModule->set_aborted(newSocket);
 +	return action;
