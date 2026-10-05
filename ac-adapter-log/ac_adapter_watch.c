@@ -2,9 +2,8 @@
  * Copyright 2026 Alan Shearer. All rights reserved.
  * Distributed under the terms of the MIT License.
  *
- * Prints the AC device and battery state, then waits on the AC device.
- * Unplug and replug the adapter. This should print, and syslog should
- * gain a KERN line from acpi_ac or acpi_battery.
+ * Print the AC and battery state, then wait.
+ * Unplug the adapter and check syslog.
  */
 
 
@@ -63,7 +62,7 @@ main(void)
 
 	fd = open("/dev/power/acpi_ac/0", O_RDONLY);
 	if (fd < 0) {
-		printf("no /dev/power/acpi_ac/0 (no ACPI0003). battery notify is the log path.\n");
+		printf("no /dev/power/acpi_ac/0. watch the battery line in syslog.\n");
 		return 0;
 	}
 
