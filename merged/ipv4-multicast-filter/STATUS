@@ -1,0 +1,16 @@
+state: merged
+gerrit: https://review.haiku-os.org/c/haiku/+/11850
+change-id: I6adf8cfe6d03e5dcfea0ce8cce7d1a01109d6500
+topic: ipv4-multicast
+branch: master
+patchset: 6
+commit: e6ecc742c177359506a572769de7ea62b341a00c
+subject: ipv4: UnblockSource/DropSSM must remove the source address
+bug:
+submitted: 2026-09-24
+code-review: +2 korli
+merged: 2026-10-05
+submitter: korli
+hrev:
+haiku-commit: e6ecc742c177359506a572769de7ea62b341a00c
+note: merged. IPv4 and IPv6 multicast.cpp Remove + last SSM LeaveGroup. Do not re-push. Do not apply on current master. Lock was 11883, not this change.

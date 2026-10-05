@@ -11,14 +11,8 @@ Do not re-push. Do not `git apply` them on current master.
 | virtio-free-id | [11784](https://review.haiku-os.org/c/haiku/+/11784) | `bf90d383` | virtio_net: free device id if publish_device fails |
 | arp-request-buffer-dtor | [11789](https://review.haiku-os.org/c/haiku/+/11789) | `6c10ad5b` | arp: free request_buffer when the cache entry is destroyed |
 | ipv4-multicast-filtermode | [11791](https://review.haiku-os.org/c/haiku/+/11791) | `8d435047` | ipv4: initialize MulticastGroupInterface filter mode to include |
+| ipv4-multicast-filter | [11850](https://review.haiku-os.org/c/haiku/+/11850) | `e6ecc742` | ipv4: UnblockSource/DropSSM must remove the source address |
 | udp-deliverdata | [11792](https://review.haiku-os.org/c/haiku/+/11792) | `1ca7d0a6` | udp: free cloned buffer when DeliverData enqueue fails |
-| virtio-tx-freelist | [11807](https://review.haiku-os.org/c/haiku/+/11807) | `d42d1ebd` | virtio_net: return TX buffer to free list on queue failure |
-| ipv4-multicast-if | [11827](https://review.haiku-os.org/c/haiku/+/11827) | `04c75f4b` | ipv4: free IP_MULTICAST_IF address in protocol destructor |
-| virtio-gpu-free-areas | [11824](https://review.haiku-os.org/c/haiku/+/11824) | | virtio_gpu: delete framebuffer and shared areas in free() |
-| virtio-block-uninit-dma | [11843](https://review.haiku-os.org/c/haiku/+/11843) | `40f89b3f` | virtio_block: delete DMAResource and IOScheduler in uninit_driver |
-| virtio-gpu-open-shared-area | [11851](https://review.haiku-os.org/c/haiku/+/11851) | `83d859ac` | virtio_gpu: clean up shared area when open fails |
-| tcp-error-received | [11847](https://review.haiku-os.org/c/haiku/+/11847) | `6c12327e` | tcp: free error buffer when ErrorReceived returns B_OK |
-| virtio-net-mutex-uninit | [11858](https://review.haiku-os.org/c/haiku/+/11858) | `1832af68` | virtio_net: destroy TX/RX mutexes if interrupt setup fails |
-| icmp-error-reply | [11869](https://review.haiku-os.org/c/haiku/+/11869) | `a4aa8679` | icmp: free error-reply buffer if domain lookup or prepend fails |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).
+`udp-deliverdata` landed; STATUS at repo root still records 11792.
