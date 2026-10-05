@@ -38,6 +38,7 @@ hold/virtio-scsi-register-get-driver/
 hold/virtio-scsi-controller-get-driver/
 hold/virtio-net-interrupt-uninit/
 hold/virtio-rx-freelist/
+hold/net-server-interface-network/  interfaces network name read from parent
 ```
 
 Merged upstream lives under [`merged/`](merged/README.md).
