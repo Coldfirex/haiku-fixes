@@ -15,7 +15,7 @@ https://www.haiku-os.org/development/coding-guidelines/
 Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
-ac-adapter-log/          log AC plug/unplug (battery notify was silent)
+ac-adapter-log/          log when the AC adapter is plugged or unplugged
 mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 touchpad-drag-wide-contact/ clickpad drag stops after a few pixels
