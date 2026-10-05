@@ -12,7 +12,7 @@ Stock numbers are taken *before* any file is copied into
 Patches follow the Haiku coding guidelines:
 https://www.haiku-os.org/development/coding-guidelines/
 
-Open and submitted (repo root):
+Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
 mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
@@ -22,7 +22,6 @@ udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
 arp-reject-learn/        #18816 reject never cleared on learn (not 11789)
 arp-protocol-teardown/   handler leak on init fail; UAF on uninit
-ipv4-multicast-filter/   UnblockSource/DropSSM Remove; last SSM source LeaveGroup
 ipv4-multicast-refs/     put_route/put_interface on membership wrappers
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
@@ -30,6 +29,8 @@ net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 syslog-remote-forward/   optional RFC 3164 UDP client in syslog_daemon
 wireless-autojoin-retry/ #18238 retry auto-join if the first scan misses
 ```
+
+`ipv4-multicast-filter/` at the repo root is a leftover pointer. The record is `merged/ipv4-multicast-filter/` (11850).
 
 Do-not-submit locals live under [`hold/`](hold/README.md):
 
@@ -52,7 +53,7 @@ abandoned/ipv4-error-received/        never submitted; consumer already frees on
 abandoned/ipv6-error-received/        never submitted; consumer already frees on error
 ```
 
-Merged:
+Every Gerrit change from this series is merged. Nothing is still open.
 
 ```
 merged/virtio-gpu-detach-backing/   Gerrit 11771 / 0438319c
@@ -64,15 +65,16 @@ merged/ipv4-multicast-filtermode/   Gerrit 11791 / 8d435047
 merged/udp-deliverdata/             Gerrit 11792 / 1ca7d0a6
 merged/virtio-tx-freelist/          Gerrit 11807 / d42d1ebd
 merged/virtio-gpu-free-areas/       Gerrit 11824
-merged/ipv4-multicast-if/          Gerrit 11827 / 04c75f4b
+merged/ipv4-multicast-if/           Gerrit 11827 / 04c75f4b
 merged/virtio-block-uninit-dma/     Gerrit 11843 / 40f89b3f
 merged/tcp-error-received/          Gerrit 11847 / 6c12327e
+merged/ipv4-multicast-filter/       Gerrit 11850 / e6ecc742
 merged/virtio-gpu-open-shared-area/ Gerrit 11851 / 83d859ac
 merged/virtio-net-mutex-uninit/     Gerrit 11858 / 1832af68
 merged/icmp-error-reply/            Gerrit 11869 / a4aa8679
 ```
 
-Gerrit tracking lives in each submitted folder as `STATUS`.
+Gerrit tracking lives in each folder as `STATUS`.
 Do not send the GitHub `.patch` files to review.haiku-os.org as-is.
 Do not submit `hold/` or re-push `abandoned/` / `merged/`.
 
