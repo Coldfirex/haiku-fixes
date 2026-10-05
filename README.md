@@ -27,6 +27,7 @@ ipv4-multicast-refs/     put_route/put_interface on membership wrappers
 ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
+net-server-interface-network/   read saved network name from the network block
 syslog-remote-forward/   optional RFC 3164 UDP client in syslog_daemon
 wireless-autojoin-retry/ #18238 retry auto-join if the first scan misses
 ```
@@ -39,7 +40,6 @@ hold/virtio-scsi-register-get-driver/
 hold/virtio-scsi-controller-get-driver/
 hold/virtio-net-interrupt-uninit/
 hold/virtio-rx-freelist/
-hold/net-server-interface-network/  interfaces network name read from parent
 ```
 
 Merged upstream lives under [`merged/`](merged/README.md).

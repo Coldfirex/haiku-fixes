@@ -13,7 +13,6 @@ Not merged. Do not `gerrit.sh` these. `work.sh` should ignore this tree.
 | virtio-scsi-controller-get-driver | get_parent_node / get_driver NULL in ctor |
 | virtio-net-interrupt-uninit | queue_setup_interrupt always returns B_OK |
 | virtio-rx-freelist | RX re-queue after dequeue is not B_BUSY |
-| net-server-interface-network | interfaces network block name read from parent |
 
 Device-manager is supposed to have a parent when these run. No QEMU
 repro. Move back to the repo root only after a real fail is shown.
@@ -27,7 +26,3 @@ descriptors, so open() fits. receive() only re-queues after a dequeue.
 drain_queues runs from free(); those BufInfos stay in rxBufInfos[] and
 are deleted on uninit. Not a heap leak. Keep virtio-tx-freelist (merged
 11807); TX can hit B_BUSY.
-
-`net-server-interface-network`: the loop is real, but nothing in current
-prefs writes a network block into the interfaces file. wireless_networks
-is the live auto-join file. Do not Gerrit for #18238.
