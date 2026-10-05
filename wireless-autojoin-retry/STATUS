@@ -1,0 +1,13 @@
+status: local
+gerrit: no
+ticket: #18238 #10162
+
+AutoconfigLooper auto-joins once on the first WLAN scan and never clears
+fJoiningNetwork. If the saved SSID is not in that scan, boot does not try
+again. madmax and jackburton hit this after wireless_networks existed.
+
+Reply kMsgAutoJoinFailed when the join does not start, and clear the flag.
+Leave it set once _JoinNetwork() returns B_OK.
+
+Not Gerrit yet. Needs a boot with a saved network that is missing from the
+first scan, then present on a later one.

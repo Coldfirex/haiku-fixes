@@ -28,6 +28,7 @@ ipv4-fragment-reassemble/ 32-bit fragment end; restore buffers on merge fail
 network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 syslog-remote-forward/   optional RFC 3164 UDP client in syslog_daemon
+wireless-autojoin-retry/ #18238 retry auto-join if the first scan misses
 ```
 
 Do-not-submit locals live under [`hold/`](hold/README.md):

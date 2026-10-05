@@ -1,0 +1,81 @@
+From 18ed922a212de6d5a825e584f45b26441b1c57f0 Mon Sep 17 00:00:00 2001
+From: Alan Shearer <Coldfirex@users.noreply.github.com>
+Date: Sun, 4 Oct 2026 20:50:00 -0500
+Subject: [PATCH] net_server: retry auto-join if the SSID is not in the scan
+
+AutoconfigLooper posts one auto-join on the first scan and then leaves
+fJoiningNetwork set. If that scan does not have the saved network,
+nothing tries again.
+
+Reply when the join does not start, and clear the flag. Leave it set
+once a join has been handed off, so a later scan does not fight it.
+
+---
+ headers/private/net/NetServer.h    | 1 +
+ src/servers/net/AutoconfigLooper.cpp | 16 ++++++++++------
+ src/servers/net/NetServer.cpp      | 7 ++++++-
+ 3 files changed, 17 insertions(+), 7 deletions(-)
+
+diff --git a/headers/private/net/NetServer.h b/headers/private/net/NetServer.h
+--- a/headers/private/net/NetServer.h
++++ b/headers/private/net/NetServer.h
+@@ -21,6 +21,7 @@
+ #define kMsgJoinNetwork				'JNnw'
+ #define kMsgLeaveNetwork			'LVnw'
+ #define kMsgAutoJoinNetwork			'AJnw'
++#define kMsgAutoJoinFailed			'AJfl'
+ #define kMsgIsServiceRunning		'IRsv'
+ 
+ 
+ #endif	// _NET_SERVER_H
+diff --git a/src/servers/net/AutoconfigLooper.cpp b/src/servers/net/AutoconfigLooper.cpp
+--- a/src/servers/net/AutoconfigLooper.cpp
++++ b/src/servers/net/AutoconfigLooper.cpp
+@@ -199,16 +199,14 @@ AutoconfigLooper::_NetworkMonitorNotification(BMessage* message)
+ 			break;
+ 		}
+ 
+-		fJoiningNetwork = true;
+-		// TODO: For now we never reset this flag. We can only do that
+-		// after infrastructure has been added to discern a scan reason.
+-		// If we would always auto join we would possibly interfere
+-		// with active scans in the process of connecting to an AP
+-		// either for the initial connection, or after connection loss
+-		// to re-establish the link.
++		// Set this before the send so a second scan does not join twice.
++		// NetServer replies kMsgAutoJoinFailed if this scan had no match.
++		fJoiningNetwork = true;
+ 
+ 		BMessage message(kMsgAutoJoinNetwork);
+ 		message.AddString("device", fDevice);
+ 		fTarget.SendMessage(&message);
+ 		break;
+ 	}
+@@ -224,6 +222,10 @@ AutoconfigLooper::MessageReceived(BMessage* message)
+ 		_ReadyToRun();
+ 		break;
+ 
++	case kMsgAutoJoinFailed:
++		fJoiningNetwork = false;
++		break;
++
+ 	case kMsgAutoConfigureFailed:
+ 		_ConfigureIPv4Failed();
+ 		break;
+diff --git a/src/servers/net/NetServer.cpp b/src/servers/net/NetServer.cpp
+--- a/src/servers/net/NetServer.cpp
++++ b/src/servers/net/NetServer.cpp
+@@ -233,7 +233,12 @@ NetServer::MessageReceived(BMessage* message)
+ 
+ 		case kMsgAutoJoinNetwork:
+ 		{
+-			_AutoJoinNetwork(*message);
++			status_t status = _AutoJoinNetwork(*message);
++			if (status != B_OK) {
++				BMessage reply(kMsgAutoJoinFailed);
++				reply.AddInt32("status", status);
++				message->SendReply(&reply);
++			}
+ 			break;
+ 		}
+ 
