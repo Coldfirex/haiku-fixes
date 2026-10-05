@@ -1,0 +1,10 @@
+status: hold
+gerrit: no
+ticket: not #18238
+
+net_server reads name and mac from the interface message while looping
+over nested network messages. The interface message has device, not name.
+
+Only hit if /boot/system/settings/network/interfaces has a network block.
+Users work around wireless by writing wireless_networks, not this block.
+Do not Gerrit.
