@@ -15,6 +15,7 @@ https://www.haiku-os.org/development/coding-guidelines/
 Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
+ac-adapter-log/          log AC plug/unplug (battery notify was silent)
 mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)

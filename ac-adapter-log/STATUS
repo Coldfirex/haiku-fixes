@@ -1,0 +1,3 @@
+local
+AC plug/unplug was silent in syslog.
+Not Gerrit until an unplug shows the line.
