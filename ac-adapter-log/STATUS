@@ -1,3 +1,3 @@
 local
-AC plug/unplug was silent in syslog.
-Not Gerrit until an unplug shows the line.
+Nothing in syslog when the adapter is unplugged.
+Not Gerrit yet.

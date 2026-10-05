@@ -1,20 +1,14 @@
 From: Alan Shearer
-Subject: power: log AC adapter and battery source changes
+Subject: power: log when the adapter is plugged or unplugged
 
-Unplugging the adapter does not add a syslog line. Two spots drop it.
+Nothing shows up in syslog when I unplug the AC adapter.
 
-acpi_ac only dprints the raw _PSR value behind its trace, and never
-reads status at init. acpi_battery gets the status notify (0x80) that
-most laptops actually send, but that trace is compiled out. power_daemon
-opens /dev/power/acpi_ac/0 and printf's only when status is 1. A server
-has no terminal, so that line never reaches syslog, and unplug is
-skipped.
+The battery driver gets the notify, but tracing is off. power_daemon
+only prints when status is 1, and printf does not go to syslog.
+Unplug is 0, so that was skipped too.
 
-Log a source change from the battery notify after _BST, and from
-acpi_ac when _PSR changes. power_daemon uses syslog() for both online
-and offline.
-
-Not Gerrit until an unplug shows the line.
+Print on battery or on AC when it changes. Use syslog() in
+power_daemon for both.
 
 --- a/src/add-ons/kernel/drivers/power/acpi_ac/acpi_ac.cpp
 +++ b/src/add-ons/kernel/drivers/power/acpi_ac/acpi_ac.cpp
@@ -38,7 +32,7 @@ Not Gerrit until an unplug shows the line.
  	device->updated = false;
  	device->select_pool = NULL;
  
-+	// so the first notify can tell a real change, and boot shows the source
++	// read the current state at startup
 +	acpi_ac_update_status(device);
 +
  	*_driverCookie = device;
@@ -66,11 +60,11 @@ Not Gerrit until an unplug shows the line.
 +	if (ReadBatteryStatus(cookie, &info) != B_OK)
 +		return;
 +
-+	// empty slot, not a plug event
++	// no battery in this slot
 +	if (info.capacity == UINT32_MAX && info.voltage == UINT32_MAX)
 +		return;
 +
-+	// discharging is on battery. charging or idle is AC.
++	// discharging means we are on battery
 +	bool onBattery = (info.state & BATTERY_DISCHARGING) != 0;
 +	if (cookie->have_source && cookie->on_battery == onBattery)
 +		return;
@@ -88,7 +82,7 @@ Not Gerrit until an unplug shows the line.
  battery_notify_handler(acpi_handle device, uint32 value, void *context)
  {
  	TRACE("battery_notify_handler event 0x%x\n", int(value));
-+	// 0x80 status, 0x81 info. capacity ticks stay quiet unless the source flips.
++	// 0x80 is status, 0x81 is info
 +	if (value == 0x80 || value == 0x81)
 +		log_power_source((battery_driver_cookie*)context);
  	sBatteryCondition.NotifyAll();
