@@ -1,0 +1,39 @@
+From: Alan Shearer
+Subject: input_server: keep a touchpad drag moving on a wide contact
+
+Pressing a clickpad makes the contact wider than 7 and can push the
+pressure over the normal limit. Those packets were handled as a finger
+lift, so a window drag only moved a few pixels.
+
+Accept the full single-finger width and pressure while a button is held.
+Taps still use the old check.
+
+---
+ src/add-ons/input_server/devices/mouse/movement_maker.cpp | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/src/add-ons/input_server/devices/mouse/movement_maker.cpp b/src/add-ons/input_server/devices/mouse/movement_maker.cpp
+--- a/src/add-ons/input_server/devices/mouse/movement_maker.cpp
++++ b/src/add-ons/input_server/devices/mouse/movement_maker.cpp
+@@ -356,9 +356,17 @@ TouchpadMovement::EventToMovement(const touchpad_movement* _event, mouse_movement* movement,
+ 			fValidEdgeMotion = false;
+ 	}
+ 
++	// A click widens the contact past width 7 and can push pressure over
++	// the normal limit. That was treated as a lift, so the drag stopped
++	// after a few pixels. Keep tracking while a button is held.
++	int32 maxWidth = 7;
++	int32 maxPressure = fSpecs.maxPressure;
++	if (event->buttons != 0) {
++		maxWidth = 15;
++		maxPressure = 256;
++	}
++
+ 	if (event->zPressure >= fSpecs.minPressure
+-		&& event->zPressure < fSpecs.maxPressure
+-		&& ((event->fingerWidth >= 4 && event->fingerWidth <= 7)
++		&& event->zPressure < maxPressure
++		&& ((event->fingerWidth >= 4 && event->fingerWidth <= maxWidth)
+ 			|| two_or_more_fingers(event))
+ 		&& (event->xPosition != 0 || event->yPosition != 0)) {
+ 		// The touch pad is in touch with at least one finger

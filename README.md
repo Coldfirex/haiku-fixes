@@ -18,6 +18,7 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 ac-adapter-log/          log AC plug/unplug (battery notify was silent)
 mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
+touchpad-drag-wide-contact/ clickpad drag stops after a few pixels
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
 udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
