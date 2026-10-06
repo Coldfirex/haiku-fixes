@@ -1,0 +1,11 @@
+local
+Not Gerrit yet.
+
+Preferences window with two checkboxes. It only writes
+/boot/system/settings/power_daemon and tells power_daemon to reload.
+It does not change the scheduler mode itself. Nothing happens until
+power-daemon-scheduler is applied too.
+
+Options:
+- Power saving on battery (off by default)
+- Keep power saving on AC (only used when the first option is on)

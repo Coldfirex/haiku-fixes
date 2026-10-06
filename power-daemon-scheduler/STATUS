@@ -1,0 +1,15 @@
+local
+Not Gerrit yet.
+
+power_daemon reads /boot/system/settings/power_daemon. On startup, on
+an AC event, and on the 'PwRl' message from the Power preferences app,
+it calls set_scheduler_mode().
+
+Off by default. No /dev/power/acpi_ac/0 means it leaves the mode alone.
+status 1 is AC online, same as the old printf.
+
+Conflicts with ac-adapter-log on ac_monitor.cpp. Do not apply both.
+This one replaces the printf. ac-adapter-log is still not for Gerrit.
+
+Needs the Power preferences app to write the file. Without that file
+this does nothing.

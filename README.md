@@ -16,6 +16,9 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
 ac-adapter-log/          log when the AC adapter is plugged or unplugged
+power-preferences/       battery power saving checkboxes
+power-daemon-scheduler/  apply scheduler mode from the AC adapter
+processcontroller-scheduler-settings/ stop saving scheduler_mode
 mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 touchpad-drag-wide-contact/ clickpad drag stops after a few pixels

@@ -1,0 +1,242 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alan Shearer <sakison@gmail.com>
+Date: Tue, 6 Oct 2026 13:40:00 -0500
+Subject: [PATCH] power_daemon: set scheduler mode from AC state
+
+Read /boot/system/settings/power_daemon. If power saving on battery
+is on, switch to power saving when AC is offline. Switch back to
+low latency when AC is online, unless keep power saving on AC is set.
+
+Apply that at startup, on an AC read, and when the preferences app
+sends 'PwRl'. No AC device means leave the mode alone. The option
+stays off until the settings file says otherwise.
+
+---
+ src/servers/power/Jamfile            |  1 +
+ src/servers/power/ac_monitor.cpp     | 23 +++++++++++++++++----
+ src/servers/power/ac_monitor.h       |  2 ++
+ src/servers/power/power_daemon.cpp   | 32 +++++++++++++++++++++++++++--
+ src/servers/power/power_settings.cpp | 49 ++++++++++++++++++++++++++++++++++++++++++++
+ src/servers/power/power_settings.h   | 20 ++++++++++++++++++
+ 6 files changed, 121 insertions(+), 6 deletions(-)
+ create mode 100644 src/servers/power/power_settings.cpp
+ create mode 100644 src/servers/power/power_settings.h
+
+diff --git a/src/servers/power/Jamfile b/src/servers/power/Jamfile
+--- a/src/servers/power/Jamfile
++++ b/src/servers/power/Jamfile
+@@ -4,6 +4,7 @@ UsePrivateHeaders app ;
+ Application power_daemon :
+ 	ac_monitor.cpp
+ 	lid_monitor.cpp
++	power_settings.cpp
+ 	power_daemon.cpp
+ 	power_button_monitor.cpp
+ 	;
+diff --git a/src/servers/power/ac_monitor.h b/src/servers/power/ac_monitor.h
+--- a/src/servers/power/ac_monitor.h
++++ b/src/servers/power/ac_monitor.h
+@@ -8,6 +8,8 @@ class ACMonitor : public PowerMonitor {
+ 	virtual ~ACMonitor();
+ 
+ 	virtual void HandleEvent(int fd);
++			status_t ReadStatus(uint8* status);
+ 
+ 	virtual const std::set<int>& FDs() const { return fFDs; }
+ private:
+diff --git a/src/servers/power/ac_monitor.cpp b/src/servers/power/ac_monitor.cpp
+--- a/src/servers/power/ac_monitor.cpp
++++ b/src/servers/power/ac_monitor.cpp
+@@ -7,6 +7,7 @@
+ 
+ 
+ #include "ac_monitor.h"
++#include "power_settings.h"
+ 
+ #include <Messenger.h>
+ #include <Roster.h>
+@@ -32,12 +33,26 @@ ACMonitor::~ACMonitor()
+ void
+ ACMonitor::HandleEvent(int fd)
+ {
+-	uint8 status;
+-	if (read(fd, &status, 1) != 1)
+-		return;
+-
+-	if (status == 1)
+-		printf("ac status 1\n");
++	uint8 status = 0;
++	if (ReadStatus(&status) != B_OK)
++		return;
++
++	apply_scheduler_for_ac(status);
++}
++
++
++status_t
++ACMonitor::ReadStatus(uint8* status)
++{
++	if (status == NULL || fFDs.empty())
++		return B_ERROR;
++
++	int fd = *fFDs.begin();
++	if (read(fd, status, 1) != 1)
++		return B_ERROR;
++
++	return B_OK;
+ }
+diff --git a/src/servers/power/power_settings.h b/src/servers/power/power_settings.h
+new file mode 100644
+--- /dev/null
++++ b/src/servers/power/power_settings.h
+@@ -0,0 +1,20 @@
++/*
++ * Copyright 2026, Alan Shearer, sakison@gmail.com
++ * Distributed under the terms of the MIT License.
++ */
++#ifndef POWER_SETTINGS_H
++#define POWER_SETTINGS_H
++
++
++#include <SupportDefs.h>
++
++
++// Same code the Power preferences app sends.
++enum {
++	kMsgReloadPowerSettings = 'PwRl'
++};
++
++
++void apply_scheduler_for_ac(uint8 acStatus);
++
++#endif
+diff --git a/src/servers/power/power_settings.cpp b/src/servers/power/power_settings.cpp
+new file mode 100644
+--- /dev/null
++++ b/src/servers/power/power_settings.cpp
+@@ -0,0 +1,49 @@
++/*
++ * Copyright 2026, Alan Shearer, sakison@gmail.com
++ * Distributed under the terms of the MIT License.
++ */
++
++
++#include "power_settings.h"
++
++#include <File.h>
++#include <FindDirectory.h>
++#include <Message.h>
++#include <Path.h>
++
++#include <scheduler.h>
++
++
++static const char* kSettingsFile = "power_daemon";
++
++
++void
++apply_scheduler_for_ac(uint8 acStatus)
++{
++	bool onBattery = false;
++	bool keepOnAc = false;
++
++	BPath path;
++	if (find_directory(B_SYSTEM_SETTINGS_DIRECTORY, &path) != B_OK)
++		return;
++	path.Append(kSettingsFile);
++
++	BFile file(path.Path(), B_READ_ONLY);
++	if (file.InitCheck() != B_OK)
++		return;
++
++	BMessage settings;
++	if (settings.Unflatten(&file) != B_OK)
++		return;
++
++	if (settings.FindBool("on_battery", &onBattery) != B_OK || !onBattery)
++		return;
++
++	settings.FindBool("keep_on_ac", &keepOnAc);
++
++	// status 1 is AC online. Same check as the old ac status printf.
++	int32 mode = SCHEDULER_MODE_POWER_SAVING;
++	if (acStatus == 1 && !keepOnAc)
++		mode = SCHEDULER_MODE_LOW_LATENCY;
++
++	if (get_scheduler_mode() != mode)
++		set_scheduler_mode(mode);
++}
+diff --git a/src/servers/power/power_daemon.cpp b/src/servers/power/power_daemon.cpp
+--- a/src/servers/power/power_daemon.cpp
++++ b/src/servers/power/power_daemon.cpp
+@@ -8,6 +8,7 @@
+ #include "ac_monitor.h"
+ #include "lid_monitor.h"
+ #include "power_button_monitor.h"
++#include "power_settings.h"
+ 
+ #include <Server.h>
+ 
+@@ -18,6 +19,7 @@ class PowerManagementDaemon : public BServer {
+ public:
+ 								PowerManagementDaemon();
+ 	virtual 					~PowerManagementDaemon();
++	virtual	void				MessageReceived(BMessage* message);
+ private:
+ 			void				_EventLoop();
+ 	static	status_t			_EventLooper(void *arg);
+@@ -26,6 +28,7 @@ private:
+ 			PowerMonitor*		fPowerMonitors[3];
+ 			uint32				fMonitorCount;
+ 
++			ACMonitor*			fACMonitor;
+ 			bool				fQuitRequested;
+ };
+ 
+@@ -40,7 +43,8 @@ int
+ PowerManagementDaemon::PowerManagementDaemon()
+ 	:
+ 	BServer("application/x-vnd.Haiku-powermanagement", false, NULL),
+-	fMonitorCount(0),
++	fMonitorCount(0),
++	fACMonitor(NULL),
+ 	fQuitRequested(false)
+ {
+ 	PowerMonitor* powerButtonMonitor = new PowerButtonMonitor;
+@@ -56,10 +60,18 @@ PowerManagementDaemon::PowerManagementDaemon()
+ 		delete lidMonitor;
+ 
+ 	PowerMonitor* acMonitor = new ACMonitor;
+-	if (acMonitor->FDs().size() > 0)
++	if (acMonitor->FDs().size() > 0) {
+ 		fPowerMonitors[fMonitorCount++] = acMonitor;
+-	else
++		fACMonitor = static_cast<ACMonitor*>(acMonitor);
++		uint8 status = 0;
++		if (fACMonitor->ReadStatus(&status) == B_OK)
++			apply_scheduler_for_ac(status);
++	} else
+ 		delete acMonitor;
+ 
+ 	fEventThread = spawn_thread(_EventLooper, "_power_daemon_event_loop_",
+ 		B_NORMAL_PRIORITY, this);
+@@ -80,6 +92,18 @@ PowerManagementDaemon::~PowerManagementDaemon()
+ }
+ 
+ 
++void
++PowerManagementDaemon::MessageReceived(BMessage* message)
++{
++	if (message->what == kMsgReloadPowerSettings && fACMonitor != NULL) {
++		uint8 status = 0;
++		if (fACMonitor->ReadStatus(&status) == B_OK)
++			apply_scheduler_for_ac(status);
++		return;
++	}
++	BServer::MessageReceived(message);
++}
++
++
+ status_t
+ PowerManagementDaemon::_EventLooper(void* arg)
+ {

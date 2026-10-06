@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alan Shearer <sakison@gmail.com>
+Date: Tue, 6 Oct 2026 13:40:00 -0500
+Subject: [PATCH] ProcessController: stop saving the scheduler mode
+
+The saved mode belongs in Power preferences. ProcessController was
+putting scheduler_mode back on startup, which fights power_daemon.
+
+Drop the load and save. The menu item opens the Power preferences
+app instead of calling set_scheduler_mode().
+
+---
+ src/apps/processcontroller/ProcessController.cpp | 31 +-----------------------
+ src/apps/processcontroller/ProcessController.h   |  2 --
+ 2 files changed, 1 insertion(+), 32 deletions(-)
+
+diff --git a/src/apps/processcontroller/ProcessController.h b/src/apps/processcontroller/ProcessController.h
+--- a/src/apps/processcontroller/ProcessController.h
++++ b/src/apps/processcontroller/ProcessController.h
+@@ -48,8 +48,6 @@ class ProcessController : public BView {
+ 		void			Init();
+ 		void			_HandleDebugRequest(team_id team, thread_id thread);
+-		void			_LoadSettings();
+-		void			_SaveSettings();
+ 
+ 		const int32		kCPUCount;
+ 		bool			fTemp;
+diff --git a/src/apps/processcontroller/ProcessController.cpp b/src/apps/processcontroller/ProcessController.cpp
+--- a/src/apps/processcontroller/ProcessController.cpp
++++ b/src/apps/processcontroller/ProcessController.cpp
+@@ -250,8 +250,6 @@ ProcessController::Init()
+ 	fMessageRunner = NULL;
+ 	fLastMemoryHeight = 0;
+ 	fPrevTime = 0;
+-
+-	_LoadSettings();
+ }
+ 
+ 
+@@ -270,24 +268,6 @@ ProcessController::~ProcessController()
+ }
+ 
+ 
+-void
+-ProcessController::_LoadSettings()
+-{
+-	Preferences preferences(kPreferencesFileName, NULL, false);
+-
+-	int32 currentMode = get_scheduler_mode();
+-	int32 savedMode;
+-	if (preferences.ReadInt32(savedMode, "scheduler_mode") && currentMode != savedMode)
+-		set_scheduler_mode(savedMode);
+-}
+-
+-
+-void
+-ProcessController::_SaveSettings()
+-{
+-	Preferences preferences(kPreferencesFileName);
+-
+-	preferences.SaveInt32(get_scheduler_mode(), "scheduler_mode");
+-}
+-
+-
+ ProcessController*
+ ProcessController::Instantiate(BMessage *data)
+ {
+@@ -500,14 +480,7 @@ ProcessController::MessageReceived(BMessage *message)
+ 
+ 		case 'Schd':
+ 		{
+-			BMenuItem* source;
+-			if (message->FindPointer("source", (void**)&source) != B_OK)
+-				break;
+-
+-			if (!source->IsMarked())
+-				set_scheduler_mode(SCHEDULER_MODE_POWER_SAVING);
+-			else
+-				set_scheduler_mode(SCHEDULER_MODE_LOW_LATENCY);
+-
+-			_SaveSettings();
++			be_roster->Launch("application/x-vnd.Haiku-Power");
+ 			break;
+ 		}
+ 
+@@ -875,8 +848,7 @@ thread_popup()
+ 	// Scheduler modes
+ 	BMessage* msg = new BMessage('Schd');
+-	item = new BMenuItem(B_TRANSLATE("Power saving"), msg);
+-	item->SetMarked((uint32)get_scheduler_mode() == SCHEDULER_MODE_POWER_SAVING);
++	item = new BMenuItem(B_TRANSLATE("Power preferences" B_UTF8_ELLIPSIS), msg);
+ 	item->SetTarget(gPCView);
+ 	addtopbottom(item);
+ 	addtopbottom(new BSeparatorItem());

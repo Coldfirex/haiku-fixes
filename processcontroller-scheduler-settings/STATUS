@@ -1,0 +1,10 @@
+local
+Not Gerrit yet.
+
+ProcessController was saving scheduler_mode and putting it back on
+startup. That fights power_daemon. This drops the save and the startup
+apply. The menu item opens the Power preferences app instead of
+flipping the mode.
+
+The live checkmark is gone. The preferences app owns the two options.
+Needs power-preferences for the menu item to open anything.
