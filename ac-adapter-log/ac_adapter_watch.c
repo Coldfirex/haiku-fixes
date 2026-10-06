@@ -2,8 +2,8 @@
  * Copyright 2026 Alan Shearer. All rights reserved.
  * Distributed under the terms of the MIT License.
  *
- * Print the AC and battery state, then wait.
- * Unplug the adapter and check syslog.
+ * Print the AC state, then wait.
+ * Unplug the adapter and check syslog for power_daemon.
  */
 
 

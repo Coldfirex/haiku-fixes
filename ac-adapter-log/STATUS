@@ -1,3 +1,11 @@
 local
 Nothing in syslog when the adapter is unplugged.
-Not Gerrit yet.
+power_daemon only printed status 1, and printf does not go to syslog.
+
+Cut down to ac_monitor.cpp. syslog() for online and offline.
+Kernel and battery hunks dropped. Those were extra logs, and the
+acpi_ac startup read wakes select.
+
+Not Gerrit yet. One-file log change. Does not change the clock.
+Conflicts with power-daemon-scheduler on ac_monitor.cpp.
+Do not apply both.
