@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Alan Shearer <sakison@gmail.com>
 Date: Tue, 6 Oct 2026 18:40:00 -0500
-Subject: power_daemon: log when the AC adapter is plugged or unplugged
+Subject: power_daemon: syslog when the AC adapter is plugged or unplugged
 
 Unplug was silent. HandleEvent() only printed when status was 1,
 and printf does not go to syslog. Status 0 is offline.
