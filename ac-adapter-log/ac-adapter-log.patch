@@ -6,7 +6,7 @@ Subject: [PATCH] power_daemon: log AC online and offline
 Unplug was silent. HandleEvent() only printed when status was 1,
 and printf does not go to syslog. Status 0 is offline.
 
-Log both through syslog(). No driver change.
+Log both through syslog().
 
 ---
  src/servers/power/ac_monitor.cpp | 5 +++--
