@@ -1,0 +1,25 @@
+diff --git a/src/apps/aboutsystem/AboutSystem.cpp b/src/apps/aboutsystem/AboutSystem.cpp
+index 2b59c4e1..ec321986 100644
+--- a/src/apps/aboutsystem/AboutSystem.cpp
++++ b/src/apps/aboutsystem/AboutSystem.cpp
+@@ -1806,9 +1806,9 @@ AboutView::_CreateCreditsView()
+ 
+ 	// FreeType copyrights
+ 	_AddPackageCredit(PackageCredit("FreeType2")
+-		.SetCopyrights(B_TRANSLATE(COPYRIGHT_STRING "1996-2002, 2006 "
++		.SetCopyrights(B_TRANSLATE(COPYRIGHT_STRING "1996-2026 "
+ 			"David Turner, Robert Wilhelm and Werner Lemberg."),
+-			COPYRIGHT_STRING "2014 The FreeType Project. "
++			COPYRIGHT_STRING "2006-2026 The FreeType Project. "
+ 			"All rights reserved.",
+ 			NULL)
+ 		.SetLicense("FreeType")
+@@ -1890,7 +1890,7 @@ AboutView::_CreateCreditsView()
+ 
+ 	// acpica copyrights
+ 	_AddPackageCredit(PackageCredit("ACPI Component Architecture (ACPICA)")
+-		.SetCopyright(COPYRIGHT_STRING "1999-2018 Intel Corp.")
++		.SetCopyright(COPYRIGHT_STRING "1999-2026 Intel Corp.")
+ 		.SetLicense("Intel (ACPICA)")
+ 		.SetURL("https://www.intel.com/content/www/us/en/developer/topic-technology/open/acpica/overview.html"));
+ 
