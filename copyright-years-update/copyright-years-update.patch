@@ -104,3 +104,47 @@ index e2e53966..69ada65c 100644
   * Distributed under the terms of the MIT License.
   *
   * Authors:
+diff --git a/src/apps/haiku3d/Haiku3d.rdef b/src/apps/haiku3d/Haiku3d.rdef
+index d4cf56fb..77397938 100644
+--- a/src/apps/haiku3d/Haiku3d.rdef
++++ b/src/apps/haiku3d/Haiku3d.rdef
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2009, Haiku Inc. All rights reserved.
++ * Copyright 2009-2026, Haiku Inc. All rights reserved.
+  * Distributed under the terms of the MIT License.
+  *
+  * Authors:
+diff --git a/src/apps/networkstatus/NetworkStatusIcons.rdef b/src/apps/networkstatus/NetworkStatusIcons.rdef
+index 76b63f7c..e6126499 100644
+--- a/src/apps/networkstatus/NetworkStatusIcons.rdef
++++ b/src/apps/networkstatus/NetworkStatusIcons.rdef
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2007, Haiku. All rights reserved.
++ * Copyright 2007-2026, Haiku. All rights reserved.
+  * Distributed under the terms of the MIT License.
+  *
+  * Authors:
+diff --git a/src/preferences/network/InterfaceIcons.rdef b/src/preferences/network/InterfaceIcons.rdef
+index d5c5c16d..d692b8fd 100644
+--- a/src/preferences/network/InterfaceIcons.rdef
++++ b/src/preferences/network/InterfaceIcons.rdef
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2009, Haiku. All rights reserved.
++ * Copyright 2009-2026, Haiku. All rights reserved.
+  * Distributed under the terms of the MIT License.
+  *
+  * Authors:
+diff --git a/src/servers/mail/DeskbarViewIcons.rdef b/src/servers/mail/DeskbarViewIcons.rdef
+index 84414fd9..eff7f785 100644
+--- a/src/servers/mail/DeskbarViewIcons.rdef
++++ b/src/servers/mail/DeskbarViewIcons.rdef
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2009, Haiku. All rights reserved.
++ * Copyright 2009-2026, Haiku. All rights reserved.
+  * Distributed under the terms of the MIT License.
+  *
+  * Authors:
