@@ -11,7 +11,6 @@ Watch B_NETWORK_INTERFACE_CHANGED. On a down-to-up transition, if the
 profile is static and still has a gateway, add that default route again.
 Leave DHCP / auto_config alone.
 
-Coldfirex/haiku-fixes#1
 https://dev.haiku-os.org/ticket/9695
 https://dev.haiku-os.org/ticket/16349
 
