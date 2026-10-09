@@ -1,5 +1,5 @@
 diff --git a/src/apps/aboutsystem/AboutSystem.cpp b/src/apps/aboutsystem/AboutSystem.cpp
-index 2b59c4e1..92a4c8c6 100644
+index 2b59c4e1..16b07035 100644
 --- a/src/apps/aboutsystem/AboutSystem.cpp
 +++ b/src/apps/aboutsystem/AboutSystem.cpp
 @@ -1770,7 +1770,7 @@ AboutView::_CreateCreditsView()
@@ -41,7 +41,25 @@ index 2b59c4e1..92a4c8c6 100644
  			"All rights reserved.",
  			NULL)
  		.SetLicense("FreeType")
-@@ -1890,7 +1901,7 @@ AboutView::_CreateCreditsView()
+@@ -1816,7 +1827,7 @@ AboutView::_CreateCreditsView()
+ 
+ 	// Mesa3D (http://www.mesa3d.org) copyrights
+ 	_AddPackageCredit(PackageCredit("Mesa")
+-		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "1999-2006 Brian Paul. "
++		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "1999-2026 Brian Paul. "
+ 			"Mesa3D Project. All rights reserved."))
+ 		.SetLicense("MIT")
+ 		.SetURL("https://www.mesa3d.org"));
+@@ -1869,7 +1880,7 @@ AboutView::_CreateCreditsView()
+ 
+ 	// zlib copyrights
+ 	_AddPackageCredit(PackageCredit("zlib")
+-		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "1995-2004 Jean-loup "
++		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "1995-2026 Jean-loup "
+ 			"Gailly and Mark Adler."))
+ 		.SetLicense("Zlib")
+ 		.SetURL("https://www.zlib.net"));
+@@ -1890,19 +1901,19 @@ AboutView::_CreateCreditsView()
  
  	// acpica copyrights
  	_AddPackageCredit(PackageCredit("ACPI Component Architecture (ACPICA)")
@@ -50,7 +68,30 @@ index 2b59c4e1..92a4c8c6 100644
  		.SetLicense("Intel (ACPICA)")
  		.SetURL("https://www.intel.com/content/www/us/en/developer/topic-technology/open/acpica/overview.html"));
  
-@@ -2010,7 +2021,7 @@ AboutView::_CreateCreditsView()
+ 	// libpng copyrights
+ 	_AddPackageCredit(PackageCredit("libpng")
+-		.SetCopyright(COPYRIGHT_STRING "1995-2017 libpng authors")
++		.SetCopyright(COPYRIGHT_STRING "1995-2025 libpng authors")
+ 		.SetLicense("LibPNG")
+ 		.SetURL("http://www.libpng.org"));
+ 
+ 	// libjpeg copyrights
+ 	_AddPackageCredit(PackageCredit("libjpeg")
+-		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "1994-2009, Thomas G. "
++		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "1991-2019, Thomas G. "
+ 			"Lane, Guido Vollbeding. This software is based in part on the "
+ 			"work of the Independent JPEG Group."))
+ 		.SetLicense("LibJPEG")
+@@ -1930,7 +1941,7 @@ AboutView::_CreateCreditsView()
+ 	// Xiph.org Foundation copyrights
+ 	_AddPackageCredit(PackageCredit("Xiph.org Foundation")
+ 		.SetCopyrights("libvorbis, libogg, libtheora, libspeex",
+-			B_TRANSLATE(COPYRIGHT_STRING "1994-2008 Xiph.Org. "
++			B_TRANSLATE(COPYRIGHT_STRING "1994-2018 Xiph.Org. "
+ 			"All rights reserved."), NULL)
+ 		.SetLicense(kBSDThreeClause)
+ 		.SetURL("https://www.xiph.org"));
+@@ -2010,14 +2021,14 @@ AboutView::_CreateCreditsView()
  	// Gutenprint
  	_AddPackageCredit(PackageCredit("Gutenprint")
  		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING
@@ -58,4 +99,12 @@ index 2b59c4e1..92a4c8c6 100644
 +			"1999-2020 by the authors of Gutenprint. All rights reserved."))
  		.SetLicense(kGPLv2)
  		.SetURL("https://gimp-print.sourceforge.io"));
+ 
+ 	// libwebp
+ 	_AddPackageCredit(PackageCredit("libwebp")
+ 		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING
+-			"2010-2011 Google Inc. All rights reserved."))
++			"2011-2025 Google Inc. All rights reserved."))
+ 		.SetLicense(kBSDThreeClause)
+ 		.SetURL("https://www.webmproject.org/code/#webp-repositories"));
  
