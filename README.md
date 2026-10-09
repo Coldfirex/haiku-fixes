@@ -16,7 +16,7 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
 ac-adapter-log/          log when the AC adapter is plugged or unplugged
-copyright-years-update/  bring .rdef long_info years in line with package copyrights (to 2026)
+aboutsystem-copyright-years/ #19046 update FreeType/ACPICA years in AboutSystem credits
 power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter
 processcontroller-scheduler-settings/ stop saving scheduler_mode
