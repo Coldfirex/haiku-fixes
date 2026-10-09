@@ -1,9 +1,14 @@
 local
 
-#19046: AboutSystem lists outdated copyright years for some third-party components.
+#19046: AboutSystem lists outdated copyright years for third-party components.
 
-Updated the hardcoded strings in AboutSystem.cpp for FreeType2 and ACPICA to match the years in the current FreeType headers and the vendored ACPICA (1999-2026).
+Updated hardcoded strings in AboutSystem.cpp:
+- FreeBSD: 1994-2008 -> 1994-2024 (covers recent driver imports and 2019 ping)
+- OpenBSD: added entry for iaxwifi200 (Intel AX200), 2014-2020
+- FreeType2: 1996-2002/2006 + 2014 -> 1996-2026 / 2006-2026
+- ACPICA: 1999-2018 -> 1999-2026 (matches vendored acpixf.h)
+- Gutenprint: 1999-2010 -> 1999-2020 (matches gutenprint9 recipe)
 
-Other entries (FreeBSD utilities, Gutenprint, etc.) left alone because the specific code or package years are less clear or still match older sources.
+FFmpeg left at 2000-2019 (HaikuPorts recipes still list the original Bellard years).
 
 Not Gerrit yet.
