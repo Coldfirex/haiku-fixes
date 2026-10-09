@@ -1,5 +1,5 @@
 diff --git a/src/apps/aboutsystem/AboutSystem.cpp b/src/apps/aboutsystem/AboutSystem.cpp
-index 2b59c4e1..16b07035 100644
+index 2b59c4e1..48bcd3ce 100644
 --- a/src/apps/aboutsystem/AboutSystem.cpp
 +++ b/src/apps/aboutsystem/AboutSystem.cpp
 @@ -1770,7 +1770,7 @@ AboutView::_CreateCreditsView()
@@ -11,25 +11,7 @@ index 2b59c4e1..16b07035 100644
  		"All rights reserved."),
  		StringVector(kBSDTwoClause, kBSDThreeClause, kBSDFourClause,
  			NULL),
-@@ -1790,6 +1790,17 @@ AboutView::_CreateCreditsView()
- 		StringVector(),
- 		"https://www.netbsd.org");
- 
-+	// OpenBSD copyrights
-+	AddCopyrightEntry("The OpenBSD Project",
-+		B_TRANSLATE("Contains software from the OpenBSD Project, "
-+		"released under the ISC license:\n"
-+		"iaxwifi200 (Intel AX200)\n"
-+		COPYRIGHT_STRING "2014-2020 Stefan Sperling, et al. "
-+		"All rights reserved."),
-+		StringVector("ISC", NULL),
-+		StringVector(),
-+		"https://www.openbsd.org");
-+
- 	// FFmpeg copyrights
- 	_AddPackageCredit(PackageCredit("FFmpeg")
- 		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "2000-2019 Fabrice "
-@@ -1806,9 +1817,9 @@ AboutView::_CreateCreditsView()
+@@ -1806,9 +1806,9 @@ AboutView::_CreateCreditsView()
  
  	// FreeType copyrights
  	_AddPackageCredit(PackageCredit("FreeType2")
@@ -41,7 +23,7 @@ index 2b59c4e1..16b07035 100644
  			"All rights reserved.",
  			NULL)
  		.SetLicense("FreeType")
-@@ -1816,7 +1827,7 @@ AboutView::_CreateCreditsView()
+@@ -1816,7 +1816,7 @@ AboutView::_CreateCreditsView()
  
  	// Mesa3D (http://www.mesa3d.org) copyrights
  	_AddPackageCredit(PackageCredit("Mesa")
@@ -50,7 +32,7 @@ index 2b59c4e1..16b07035 100644
  			"Mesa3D Project. All rights reserved."))
  		.SetLicense("MIT")
  		.SetURL("https://www.mesa3d.org"));
-@@ -1869,7 +1880,7 @@ AboutView::_CreateCreditsView()
+@@ -1869,7 +1869,7 @@ AboutView::_CreateCreditsView()
  
  	// zlib copyrights
  	_AddPackageCredit(PackageCredit("zlib")
@@ -59,7 +41,7 @@ index 2b59c4e1..16b07035 100644
  			"Gailly and Mark Adler."))
  		.SetLicense("Zlib")
  		.SetURL("https://www.zlib.net"));
-@@ -1890,19 +1901,19 @@ AboutView::_CreateCreditsView()
+@@ -1890,19 +1890,19 @@ AboutView::_CreateCreditsView()
  
  	// acpica copyrights
  	_AddPackageCredit(PackageCredit("ACPI Component Architecture (ACPICA)")
@@ -82,7 +64,7 @@ index 2b59c4e1..16b07035 100644
  			"Lane, Guido Vollbeding. This software is based in part on the "
  			"work of the Independent JPEG Group."))
  		.SetLicense("LibJPEG")
-@@ -1930,7 +1941,7 @@ AboutView::_CreateCreditsView()
+@@ -1930,7 +1930,7 @@ AboutView::_CreateCreditsView()
  	// Xiph.org Foundation copyrights
  	_AddPackageCredit(PackageCredit("Xiph.org Foundation")
  		.SetCopyrights("libvorbis, libogg, libtheora, libspeex",
@@ -91,7 +73,7 @@ index 2b59c4e1..16b07035 100644
  			"All rights reserved."), NULL)
  		.SetLicense(kBSDThreeClause)
  		.SetURL("https://www.xiph.org"));
-@@ -2010,14 +2021,14 @@ AboutView::_CreateCreditsView()
+@@ -2010,14 +2010,14 @@ AboutView::_CreateCreditsView()
  	// Gutenprint
  	_AddPackageCredit(PackageCredit("Gutenprint")
  		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING
