@@ -2,13 +2,22 @@ local
 
 #19046: AboutSystem lists outdated copyright years for third-party components.
 
-Updated hardcoded strings in AboutSystem.cpp:
-- FreeBSD: 1994-2008 -> 1994-2024 (covers recent driver imports and 2019 ping)
-- OpenBSD: added entry for iaxwifi200 (Intel AX200), 2014-2020
-- FreeType2: 1996-2002/2006 + 2014 -> 1996-2026 / 2006-2026
-- ACPICA: 1999-2018 -> 1999-2026 (matches vendored acpixf.h)
-- Gutenprint: 1999-2010 -> 1999-2020 (matches gutenprint9 recipe)
+Checked every hardcoded copyright entry in AboutSystem.cpp against HaikuPorts recipes and the tree.
 
-FFmpeg left at 2000-2019 (HaikuPorts recipes still list the original Bellard years).
+Updated:
+- FreeBSD: 1994-2008 -> 1994-2024
+- OpenBSD: added (iaxwifi200, 2014-2020)
+- FreeType2: 1996-2002/2006 + 2014 -> 1996-2026 / 2006-2026
+- Mesa: 1999-2006 -> 1999-2026
+- zlib: 1995-2004 -> 1995-2026
+- ACPICA: 1999-2018 -> 1999-2026
+- libpng: 1995-2017 -> 1995-2025
+- libjpeg: 1994-2009 -> 1991-2019
+- Xiph: 1994-2008 -> 1994-2018
+- Gutenprint: 1999-2010 -> 1999-2020
+- libwebp: 2010-2011 -> 2011-2025
+
+Left alone (years still match sources or no clear newer COPYRIGHT in recipes):
+FFmpeg, AGG, GLUT, BRegion, Bitstream Charter, Noto, expat, Info-ZIP, bzip2, libprint, Cortex, FluidSynth, libmatroska, CQuantizer, MAPM, MkDepend, libhttpd, Zydis, Intel/Marvell/Ralink firmwares, libavif, GTF, libqrencode, scrypt.
 
 Not Gerrit yet.
