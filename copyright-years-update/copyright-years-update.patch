@@ -1,0 +1,106 @@
+diff --git a/src/add-ons/kernel/bus_managers/usb/usb.rdef b/src/add-ons/kernel/bus_managers/usb/usb.rdef
+index 1a3b4465..94a0de87 100644
+--- a/src/add-ons/kernel/bus_managers/usb/usb.rdef
++++ b/src/add-ons/kernel/bus_managers/usb/usb.rdef
+@@ -11,5 +11,5 @@ resource app_version {
+ 	variety = 0,
+ 	internal = 1,
+ 	short_info = "USB bus manager",
+-	long_info = "Haiku USB bus manager - Copyright 2003-2008, Haiku Inc."
++	long_info = "Haiku USB bus manager - Copyright 2003-2026, Haiku Inc."
+ };
+diff --git a/src/add-ons/kernel/busses/usb/ehci.rdef b/src/add-ons/kernel/busses/usb/ehci.rdef
+index f33c3b30..e4d95fc5 100644
+--- a/src/add-ons/kernel/busses/usb/ehci.rdef
++++ b/src/add-ons/kernel/busses/usb/ehci.rdef
+@@ -11,5 +11,5 @@ resource app_version {
+ 	variety = 0,
+ 	internal = 0,
+ 	short_info = "EHCI host controller driver",
+-	long_info = "Haiku EHCI HCD - Copyright 2006-2009, Haiku Inc."
++	long_info = "Haiku EHCI HCD - Copyright 2006-2026, Haiku Inc."
+ };
+diff --git a/src/add-ons/kernel/busses/usb/ohci.rdef b/src/add-ons/kernel/busses/usb/ohci.rdef
+index be184dde..8efe867d 100644
+--- a/src/add-ons/kernel/busses/usb/ohci.rdef
++++ b/src/add-ons/kernel/busses/usb/ohci.rdef
+@@ -12,6 +12,6 @@ resource app_version {
+ 	variety = 0,
+ 	internal = 0,
+ 	short_info = "OHCI host controller driver",
+-	long_info = "Haiku OHCI HCD - Copyright 2005-2013, Haiku Inc."
++	long_info = "Haiku OHCI HCD - Copyright 2005-2026, Haiku Inc."
+ };
+ 
+diff --git a/src/add-ons/kernel/busses/usb/uhci.rdef b/src/add-ons/kernel/busses/usb/uhci.rdef
+index 6161a20b..ddc9a9aa 100644
+--- a/src/add-ons/kernel/busses/usb/uhci.rdef
++++ b/src/add-ons/kernel/busses/usb/uhci.rdef
+@@ -11,5 +11,5 @@ resource app_version {
+ 	variety = 0,
+ 	internal = 0,
+ 	short_info = "UHCI host controller driver",
+-	long_info = "Haiku UHCI HCD - Copyright 2003-2009, Haiku Inc."
++	long_info = "Haiku UHCI HCD - Copyright 2003-2026, Haiku Inc."
+ };
+diff --git a/src/add-ons/kernel/busses/usb/xhci.rdef b/src/add-ons/kernel/busses/usb/xhci.rdef
+index ed9a1ef2..0f5ba9ef 100644
+--- a/src/add-ons/kernel/busses/usb/xhci.rdef
++++ b/src/add-ons/kernel/busses/usb/xhci.rdef
+@@ -11,5 +11,5 @@ resource app_version {
+ 	variety = 0,
+ 	internal = 0,
+ 	short_info = "XHCI host controller driver",
+-	long_info = "Haiku XHCI HCD - Copyright 2011, Haiku Inc."
++	long_info = "Haiku XHCI HCD - Copyright 2011-2026, Haiku Inc."
+ };
+diff --git a/src/add-ons/tracker/mark_as/MarkAs.rdef b/src/add-ons/tracker/mark_as/MarkAs.rdef
+index 4c70b6ab..229f3151 100644
+--- a/src/add-ons/tracker/mark_as/MarkAs.rdef
++++ b/src/add-ons/tracker/mark_as/MarkAs.rdef
+@@ -16,7 +16,7 @@ resource app_version {
+ 
+ 	internal = 1,
+ 
+-	short_info = "MarkAs, Copyright 2006-2009 Haiku, Inc.",
++	short_info = "MarkAs, Copyright 2006-2026 Haiku, Inc.",
+ 	long_info = "A Tracker Add-on that marks emails with the chosen status."
+ };
+ 
+diff --git a/src/add-ons/tracker/mark_as/MarkAsRead.rdef b/src/add-ons/tracker/mark_as/MarkAsRead.rdef
+index ab55f458..024aadc3 100644
+--- a/src/add-ons/tracker/mark_as/MarkAsRead.rdef
++++ b/src/add-ons/tracker/mark_as/MarkAsRead.rdef
+@@ -16,7 +16,7 @@ resource app_version {
+ 
+ 	internal = 1,
+ 
+-	short_info = "MarkAsRead, Copyright 2006-2009 Haiku, Inc.",
++	short_info = "MarkAsRead, Copyright 2006-2026 Haiku, Inc.",
+ 	long_info = "A Tracker Add-on which marks the status of emails as Read."
+ };
+ 
+diff --git a/src/add-ons/tracker/zipomatic/ZipOMatic.rdef b/src/add-ons/tracker/zipomatic/ZipOMatic.rdef
+index 2b3a9dd2..e5463c54 100644
+--- a/src/add-ons/tracker/zipomatic/ZipOMatic.rdef
++++ b/src/add-ons/tracker/zipomatic/ZipOMatic.rdef
+@@ -14,7 +14,7 @@ resource app_version {
+ 	internal = 1,
+ 
+ 	short_info = "ZipOMatic",
+-	long_info = "ZipOMatic, Copyright 2003-2009 Haiku Inc."
++	long_info = "ZipOMatic, Copyright 2003-2026 Haiku Inc."
+ };
+ 
+ resource file_types message {
+diff --git a/src/apps/bootmanager/BootManager.rdef b/src/apps/bootmanager/BootManager.rdef
+index e2e53966..69ada65c 100644
+--- a/src/apps/bootmanager/BootManager.rdef
++++ b/src/apps/bootmanager/BootManager.rdef
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2008-2010, Haiku Inc. All rights reserved.
++ * Copyright 2008-2026, Haiku Inc. All rights reserved.
+  * Distributed under the terms of the MIT License.
+  *
+  * Authors:
