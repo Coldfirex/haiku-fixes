@@ -1,8 +1,35 @@
 diff --git a/src/apps/aboutsystem/AboutSystem.cpp b/src/apps/aboutsystem/AboutSystem.cpp
-index 2b59c4e1..ec321986 100644
+index 2b59c4e1..92a4c8c6 100644
 --- a/src/apps/aboutsystem/AboutSystem.cpp
 +++ b/src/apps/aboutsystem/AboutSystem.cpp
-@@ -1806,9 +1806,9 @@ AboutView::_CreateCreditsView()
+@@ -1770,7 +1770,7 @@ AboutView::_CreateCreditsView()
+ 		B_TRANSLATE("Contains software from the FreeBSD Project, "
+ 		"released under the BSD license:\n"
+ 		"ftpd, ping, telnet, telnetd, traceroute\n"
+-		COPYRIGHT_STRING "1994-2008 The FreeBSD Project. "
++		COPYRIGHT_STRING "1994-2024 The FreeBSD Project. "
+ 		"All rights reserved."),
+ 		StringVector(kBSDTwoClause, kBSDThreeClause, kBSDFourClause,
+ 			NULL),
+@@ -1790,6 +1790,17 @@ AboutView::_CreateCreditsView()
+ 		StringVector(),
+ 		"https://www.netbsd.org");
+ 
++	// OpenBSD copyrights
++	AddCopyrightEntry("The OpenBSD Project",
++		B_TRANSLATE("Contains software from the OpenBSD Project, "
++		"released under the ISC license:\n"
++		"iaxwifi200 (Intel AX200)\n"
++		COPYRIGHT_STRING "2014-2020 Stefan Sperling, et al. "
++		"All rights reserved."),
++		StringVector("ISC", NULL),
++		StringVector(),
++		"https://www.openbsd.org");
++
+ 	// FFmpeg copyrights
+ 	_AddPackageCredit(PackageCredit("FFmpeg")
+ 		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING "2000-2019 Fabrice "
+@@ -1806,9 +1817,9 @@ AboutView::_CreateCreditsView()
  
  	// FreeType copyrights
  	_AddPackageCredit(PackageCredit("FreeType2")
@@ -14,7 +41,7 @@ index 2b59c4e1..ec321986 100644
  			"All rights reserved.",
  			NULL)
  		.SetLicense("FreeType")
-@@ -1890,7 +1890,7 @@ AboutView::_CreateCreditsView()
+@@ -1890,7 +1901,7 @@ AboutView::_CreateCreditsView()
  
  	// acpica copyrights
  	_AddPackageCredit(PackageCredit("ACPI Component Architecture (ACPICA)")
@@ -22,4 +49,13 @@ index 2b59c4e1..ec321986 100644
 +		.SetCopyright(COPYRIGHT_STRING "1999-2026 Intel Corp.")
  		.SetLicense("Intel (ACPICA)")
  		.SetURL("https://www.intel.com/content/www/us/en/developer/topic-technology/open/acpica/overview.html"));
+ 
+@@ -2010,7 +2021,7 @@ AboutView::_CreateCreditsView()
+ 	// Gutenprint
+ 	_AddPackageCredit(PackageCredit("Gutenprint")
+ 		.SetCopyright(B_TRANSLATE(COPYRIGHT_STRING
+-			"1999-2010 by the authors of Gutenprint. All rights reserved."))
++			"1999-2020 by the authors of Gutenprint. All rights reserved."))
+ 		.SetLicense(kGPLv2)
+ 		.SetURL("https://gimp-print.sourceforge.io"));
  
