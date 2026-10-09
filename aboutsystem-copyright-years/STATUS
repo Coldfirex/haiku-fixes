@@ -6,7 +6,6 @@ Checked every hardcoded copyright entry in AboutSystem.cpp against HaikuPorts re
 
 Updated:
 - FreeBSD: 1994-2008 -> 1994-2024
-- OpenBSD: added (iaxwifi200, 2014-2020)
 - FreeType2: 1996-2002/2006 + 2014 -> 1996-2026 / 2006-2026
 - Mesa: 1999-2006 -> 1999-2026
 - zlib: 1995-2004 -> 1995-2026
@@ -16,6 +15,9 @@ Updated:
 - Xiph: 1994-2008 -> 1994-2018
 - Gutenprint: 1999-2010 -> 1999-2020
 - libwebp: 2010-2011 -> 2011-2025
+
+OpenBSD entry removed (not wanted).
+FluidSynth left as-is.
 
 Left alone (years still match sources or no clear newer COPYRIGHT in recipes):
 FFmpeg, AGG, GLUT, BRegion, Bitstream Charter, Noto, expat, Info-ZIP, bzip2, libprint, Cortex, FluidSynth, libmatroska, CQuantizer, MAPM, MkDepend, libhttpd, Zydis, Intel/Marvell/Ralink firmwares, libavif, GTF, libqrencode, scrypt.
