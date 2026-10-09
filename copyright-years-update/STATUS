@@ -1,0 +1,5 @@
+local
+
+Updates long_info and file header copyright years in .rdef files so they match the 2001-2026 range already used in the system package_infos and the bootloader.
+
+Not a functional bug. Cosmetic so the version resource strings are consistent with the rest of the system.
