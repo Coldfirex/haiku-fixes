@@ -1,0 +1,9 @@
+local
+
+#19046: AboutSystem lists outdated copyright years for some third-party components.
+
+Updated the hardcoded strings in AboutSystem.cpp for FreeType2 and ACPICA to match the years in the current FreeType headers and the vendored ACPICA (1999-2026).
+
+Other entries (FreeBSD utilities, Gutenprint, etc.) left alone because the specific code or package years are less clear or still match older sources.
+
+Not Gerrit yet.
