@@ -5,7 +5,7 @@ local
 Scope is the base system (vendored in the Haiku tree or part of the base image). Package copyrights live in the package .PackageInfo and are out of scope for this change.
 
 Updated:
-- FreeBSD: 1994-2008 -> 1994-2024 (ftpd, ping, telnet, telnetd, traceroute in src/bin/network/)
+- FreeBSD: 1994-2008 -> 1994-2024; added "and various network drivers" (covers ~32 FreeBSD-derived ether/wlan drivers without listing them all)
 - ACPICA: 1999-2018 -> 1999-2026 (vendored acpixf.h)
 
 Package entries left alone (FreeType, Mesa, zlib, libpng, libjpeg, Xiph, Gutenprint, libwebp, etc.).
