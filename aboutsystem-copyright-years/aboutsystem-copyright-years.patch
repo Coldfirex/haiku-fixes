@@ -9,7 +9,7 @@ index 2b59c4e1..635a5fb8 100644
 -		"ftpd, ping, telnet, telnetd, traceroute\n"
 -		COPYRIGHT_STRING "1994-2008 The FreeBSD Project. "
 +		"ftpd, ping, telnet, telnetd, traceroute, and various network drivers\n"
-+		COPYRIGHT_STRING "1994-2024 The FreeBSD Project. "
++		COPYRIGHT_STRING "1994-2026 The FreeBSD Project. "
  		"All rights reserved."),
  		StringVector(kBSDTwoClause, kBSDThreeClause, kBSDFourClause,
  			NULL),
