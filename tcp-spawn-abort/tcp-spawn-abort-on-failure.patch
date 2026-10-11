@@ -2,7 +2,7 @@ From: Alan Shearer
 Subject: tcp: abort the child if _Spawn fails
 
 The new socket is already on the listen queue when _Spawn runs.
-If open, bind, the send path, or the SYN-ACK fails, we just return
+If open, bind, send path, or SYN-ACK fails, we just return
 DROP and leave that child sitting there.
 
 Set CLOSED on the later failures. After _Spawn returns, abort the
