@@ -1,0 +1,157 @@
+From: Alan Shearer
+Subject: WebPositive: option to remove finished downloads on exit
+
+Add a checkbox in Settings to remove finished downloads when
+WebPositive quits. Off by default so old behavior stays.
+
+On quit, if the option is on, call the same remove-finished
+path the Downloads window button uses. That also saves the list.
+
+--- a/src/apps/webpositive/SettingsKeys.h	2026-10-11 13:42:03.584883981 +0000
++++ b/src/apps/webpositive/SettingsKeys.h	2026-10-11 13:41:41.652883033 +0000
+@@ -20,6 +20,7 @@
+ extern const char* kSettingsKeyAutoHideInterfaceInFullscreenMode;
+ extern const char* kSettingsKeyAutoHidePointer;
+ extern const char* kSettingsKeyShowHomeButton;
++extern const char* kSettingsKeyRemoveFinishedDownloadsOnExit;
+ 
+ extern const char* kSettingsKeyStartUpPolicy;
+ extern const char* kSettingsKeyNewWindowPolicy;
+--- a/src/apps/webpositive/SettingsKeys.cpp	2026-10-11 13:42:03.632883984 +0000
++++ b/src/apps/webpositive/SettingsKeys.cpp	2026-10-11 13:41:41.652883033 +0000
+@@ -20,6 +20,8 @@
+ 	= "auto hide interface in full screen mode";
+ const char* kSettingsKeyAutoHidePointer = "auto hide pointer";
+ const char* kSettingsKeyShowHomeButton = "show home button";
++const char* kSettingsKeyRemoveFinishedDownloadsOnExit
++	= "remove finished downloads on exit";
+ 
+ const char* kSettingsKeyNewWindowPolicy = "new window policy";
+ const char* kSettingsKeyNewTabPolicy = "new tab policy";
+--- a/src/apps/webpositive/SettingsWindow.h	2026-10-11 13:42:03.692883986 +0000
++++ b/src/apps/webpositive/SettingsWindow.h	2026-10-11 13:41:41.652883033 +0000
+@@ -87,6 +87,7 @@
+ 			BCheckBox*			fAutoHideInterfaceInFullscreenMode;
+ 			BCheckBox*			fAutoHidePointer;
+ 			BCheckBox*			fShowHomeButton;
++			BCheckBox*			fRemoveFinishedDownloadsOnExit;
+ 
+ 			FontSelectionView*	fStandardFontView;
+ 			FontSelectionView*	fSerifFontView;
+--- a/src/apps/webpositive/SettingsWindow.cpp	2026-10-11 13:42:03.748883989 +0000
++++ b/src/apps/webpositive/SettingsWindow.cpp	2026-10-11 13:41:55.384883627 +0000
+@@ -58,6 +58,7 @@
+ 	MSG_AUTO_HIDE_INTERFACE_BEHAVIOR_CHANGED	= 'ahic',
+ 	MSG_AUTO_HIDE_POINTER_BEHAVIOR_CHANGED		= 'ahpc',
+ 	MSG_SHOW_HOME_BUTTON_CHANGED				= 'shbc',
++	MSG_REMOVE_FINISHED_DOWNLOADS_ON_EXIT_CHANGED = 'rfde',
+ 
+ 	MSG_STANDARD_FONT_CHANGED					= 'stfc',
+ 	MSG_SERIF_FONT_CHANGED						= 'sefc',
+@@ -227,6 +228,7 @@
+ 		case MSG_AUTO_HIDE_INTERFACE_BEHAVIOR_CHANGED:
+ 		case MSG_AUTO_HIDE_POINTER_BEHAVIOR_CHANGED:
+ 		case MSG_SHOW_HOME_BUTTON_CHANGED:
++		case MSG_REMOVE_FINISHED_DOWNLOADS_ON_EXIT_CHANGED:
+ 		case MSG_STANDARD_FONT_CHANGED:
+ 		case MSG_SERIF_FONT_CHANGED:
+ 		case MSG_SANS_SERIF_FONT_CHANGED:
+@@ -400,6 +402,12 @@
+ 		new BMessage(MSG_SHOW_HOME_BUTTON_CHANGED));
+ 	fShowHomeButton->SetValue(B_CONTROL_ON);
+ 
++	fRemoveFinishedDownloadsOnExit = new BCheckBox(
++		"remove finished downloads on exit",
++		B_TRANSLATE("Remove finished downloads on exit"),
++		new BMessage(MSG_REMOVE_FINISHED_DOWNLOADS_ON_EXIT_CHANGED));
++	fRemoveFinishedDownloadsOnExit->SetValue(B_CONTROL_OFF);
++
+ 	BView* view = BGroupLayoutBuilder(B_VERTICAL, 0)
+ 		.Add(BGridLayoutBuilder(spacing / 2, spacing / 2)
+ 			.Add(fStartPageControl->CreateLabelLayoutItem(), 0, 0)
+@@ -431,6 +439,7 @@
+ 		.Add(fAutoHideInterfaceInFullscreenMode)
+ 		.Add(fAutoHidePointer)
+ 		.Add(fShowHomeButton)
++		.Add(fRemoveFinishedDownloadsOnExit)
+ 		.Add(BSpaceLayoutItem::CreateVerticalStrut(spacing))
+ 
+ 		.AddGroup(B_HORIZONTAL)
+@@ -612,6 +621,11 @@
+ 	canApply = canApply || ((fShowHomeButton->Value() == B_CONTROL_ON)
+ 		!= fSettings->GetValue(kSettingsKeyShowHomeButton, true));
+ 
++	canApply = canApply || (
++		(fRemoveFinishedDownloadsOnExit->Value() == B_CONTROL_ON)
++		!= fSettings->GetValue(kSettingsKeyRemoveFinishedDownloadsOnExit,
++			false));
++
+ 	canApply = canApply || (fDaysInHistory->Value()
+ 		!= BrowsingHistory::DefaultInstance()->MaxHistoryItemAge());
+ 
+@@ -689,6 +703,8 @@
+ 		fAutoHidePointer->Value() == B_CONTROL_ON);
+ 	fSettings->SetValue(kSettingsKeyShowHomeButton,
+ 		fShowHomeButton->Value() == B_CONTROL_ON);
++	fSettings->SetValue(kSettingsKeyRemoveFinishedDownloadsOnExit,
++		fRemoveFinishedDownloadsOnExit->Value() == B_CONTROL_ON);
+ 
+ 	// New page policies
+ 	fSettings->SetValue(kSettingsKeyStartUpPolicy, _StartUpPolicy());
+@@ -789,6 +805,8 @@
+ 		fSettings->GetValue(kSettingsKeyAutoHidePointer, false));
+ 	fShowHomeButton->SetValue(
+ 		fSettings->GetValue(kSettingsKeyShowHomeButton, true));
++	fRemoveFinishedDownloadsOnExit->SetValue(
++		fSettings->GetValue(kSettingsKeyRemoveFinishedDownloadsOnExit, false));
+ 
+ 	fDaysInHistory->SetValue(
+ 		BrowsingHistory::DefaultInstance()->MaxHistoryItemAge());
+--- a/src/apps/webpositive/DownloadWindow.h	2026-10-11 13:42:03.804883991 +0000
++++ b/src/apps/webpositive/DownloadWindow.h	2026-10-11 13:41:41.652883033 +0000
+@@ -31,6 +31,7 @@
+ 	virtual	bool				QuitRequested();
+ 
+ 			bool				DownloadsInProgress();
++			void				RemoveFinishedDownloads();
+ 			void				SetMinimizeOnClose(bool minimize);
+ 
+ private:
+--- a/src/apps/webpositive/DownloadWindow.cpp	2026-10-11 13:42:03.872883994 +0000
++++ b/src/apps/webpositive/DownloadWindow.cpp	2026-10-11 13:41:55.384883627 +0000
+@@ -358,6 +358,14 @@
+ }
+ 
+ 
++void
++DownloadWindow::RemoveFinishedDownloads()
++{
++	// Caller must hold the window lock.
++	_RemoveFinishedDownloads();
++}
++
++
+ // #pragma mark - private
+ 
+ 
+--- a/src/apps/webpositive/BrowserApp.cpp	2026-10-11 13:42:03.920883996 +0000
++++ b/src/apps/webpositive/BrowserApp.cpp	2026-10-11 13:41:55.384883627 +0000
+@@ -46,6 +46,7 @@
+ #include "BrowserWindow.h"
+ #include "BrowsingHistory.h"
+ #include "DownloadWindow.h"
++#include "SettingsKeys.h"
+ #include "SettingsMessage.h"
+ #include "SettingsWindow.h"
+ #include "ConsoleWindow.h"
+@@ -450,6 +451,10 @@
+ 
+ 	fSettings->SetValue("window frame", fLastWindowFrame);
+ 	if (fDownloadWindow->Lock()) {
++		if (fSettings->GetValue(kSettingsKeyRemoveFinishedDownloadsOnExit,
++			false)) {
++			fDownloadWindow->RemoveFinishedDownloads();
++		}
+ 		fSettings->SetValue("downloads window frame", fDownloadWindow->Frame());
+ 		fSettings->SetValue("show downloads", !fDownloadWindow->IsHidden());
+ 		fDownloadWindow->Unlock();
