@@ -2,14 +2,17 @@ local
 
 #19046: AboutSystem lists outdated copyright years for third-party components.
 
-Scope is the base system (vendored in the Haiku tree or part of the base image). Package copyrights live in the package .PackageInfo and are out of scope for this change.
+Subject:
+AboutSystem: update FreeBSD and ACPICA copyright years
+
+Patch notes:
+Update AboutSystem's old copyright years for FreeBSD and ACPICA.
+Added mention of various network drivers, since we have a bunch of those from FreeBSD in the tree.
+This only touches the base system, not HaikuPorts packages.
 
 Updated:
-- FreeBSD: 1994-2008 -> 1994-2024; added "and various network drivers" (covers ~32 FreeBSD-derived ether/wlan drivers without listing them all)
+- FreeBSD: 1994-2008 -> 1994-2024; added "and various network drivers"
 - ACPICA: 1999-2018 -> 1999-2026 (vendored acpixf.h)
 
-Package entries left alone (FreeType, Mesa, zlib, libpng, libjpeg, Xiph, Gutenprint, libwebp, etc.).
-FluidSynth left alone.
-OpenBSD not added.
-
+Package entries left alone.
 Not Gerrit yet.
