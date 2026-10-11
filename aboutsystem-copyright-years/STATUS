@@ -15,4 +15,5 @@ Updated:
 - ACPICA: 1999-2018 -> 1999-2026 (vendored acpixf.h)
 
 Package entries left alone.
-Submitted to Gerrit 2026-10-11. Topic aboutsystem.
+Gerrit 12024 topic aboutsystem. Submitted 2026-10-11.
+https://review.haiku-os.org/c/haiku/+/12024
