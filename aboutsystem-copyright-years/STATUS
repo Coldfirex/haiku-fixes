@@ -1,4 +1,4 @@
-local
+submitted
 
 #19046: AboutSystem lists outdated copyright years for third-party components.
 
@@ -15,4 +15,4 @@ Updated:
 - ACPICA: 1999-2018 -> 1999-2026 (vendored acpixf.h)
 
 Package entries left alone.
-Not Gerrit yet.
+Submitted to Gerrit 2026-10-11. Topic aboutsystem.
