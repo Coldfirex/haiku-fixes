@@ -5,9 +5,10 @@ The new socket is already on the listen queue when _Spawn runs.
 If open, bind, the send path, or the SYN-ACK fails, we just return
 DROP and leave that child sitting there.
 
-_Spawn has a TODO for proper error handling. This is that handling.
 Set CLOSED on the later failures. After _Spawn returns, abort the
 socket if it is CLOSED.
+
+Resolves ToDo for error handling.
 
 Don't abort inside _Spawn. It still holds the child lock.
 
