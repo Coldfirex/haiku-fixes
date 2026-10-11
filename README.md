@@ -20,7 +20,6 @@ aboutsystem-copyright-years/ #19046 update FreeType/ACPICA years in AboutSystem 
 power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter
 processcontroller-scheduler-settings/ stop saving scheduler_mode
-mediaplayer-stop-uninit/ #18714 Stop/Pause before node Init
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
 touchpad-drag-wide-contact/ clickpad drag stops after a few pixels
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
@@ -58,6 +57,7 @@ abandoned/virtio-block-blksize-zero/  Gerrit 11833 (spec has no blk_size==0 fall
 abandoned/udp-receiveerror/           never submitted; consumer already frees on error
 abandoned/ipv4-error-received/        never submitted; consumer already frees on error
 abandoned/ipv6-error-received/        never submitted; consumer already frees on error
+abandoned/mediaplayer-stop-uninit/    #18714 fixed by Gerrit 11966 (nipos)
 ```
 
 Every Gerrit change from this series is merged. Nothing is still open.

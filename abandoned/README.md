@@ -9,3 +9,4 @@ Do not re-push. Do not `git apply` these on current master.
 | udp-receiveerror | never submitted | ReceiveError early return is not a leak. Consumer frees on error. |
 | ipv4-error-received | never submitted | Only freed on error returns. Consumer already frees. |
 | ipv6-error-received | never submitted | Same as ipv4-error-received. |
+| mediaplayer-stop-uninit | never submitted | #18714 fixed by [11966](https://review.haiku-os.org/c/haiku/+/11966) (nipos). Their version is different. |

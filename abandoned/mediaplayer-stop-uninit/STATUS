@@ -1,0 +1,5 @@
+abandoned
+
+#18714 Esc on empty playlist
+Fixed upstream by Gerrit 11966 (nipos). Not ours.
+Do not re-push.
