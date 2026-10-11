@@ -5,8 +5,9 @@ The new socket is already on the listen queue when _Spawn runs.
 If open, bind, the send path, or the SYN-ACK fails, we just return
 DROP and leave that child sitting there.
 
-That is the TODO in _Spawn. Set CLOSED on the later failures.
-After _Spawn returns, abort the socket if it is CLOSED.
+_Spawn has a TODO for proper error handling. This is that handling.
+Set CLOSED on the later failures. After _Spawn returns, abort the
+socket if it is CLOSED.
 
 Don't abort inside _Spawn. It still holds the child lock.
 
@@ -15,18 +16,15 @@ Don't abort inside _Spawn. It still holds the child lock.
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
---- a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
-+++ b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
-@@ -1552,7 +1552,6 @@ TCPEndpoint::_Spawn(TCPEndpoint* parent, tcp_segment_header& segment,
- 	MutexLocker _(fLock);
+@@ -1552,7 +1552,6 @@
  
  	TRACE("Spawn()");
--
+ 
 -	// TODO: proper error handling!
  	if (ProtocolSocket::Open() != B_OK) {
  		T(Error(this, "opening failed", __LINE__));
  		return DROP;
-@@ -1564,10 +1563,12 @@ TCPEndpoint::_Spawn(TCPEndpoint* parent, tcp_segment_header& segment,
+@@ -1565,10 +1564,12 @@
  
  	if (fManager->BindChild(this, buffer->destination) != B_OK) {
  		T(Error(this, "binding failed", __LINE__));
@@ -39,7 +37,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  		return DROP;
  	}
  
-@@ -1579,6 +1580,7 @@ TCPEndpoint::_Spawn(TCPEndpoint* parent, tcp_segment_header& segment,
+@@ -1580,6 +1581,7 @@
  	// send SYN+ACK
  	if (_SendAcknowledge() != B_OK) {
  		T(Error(this, "sending failed", __LINE__));
@@ -47,7 +45,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  		return DROP;
  	}
  
-@@ -1613,8 +1615,14 @@ TCPEndpoint::_ListenReceive(tcp_segment_header& segment, net_buffer* buffer)
+@@ -1613,8 +1615,12 @@
  		return DROP;
  	}
  
