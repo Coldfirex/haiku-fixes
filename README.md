@@ -34,6 +34,7 @@ network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 syslog-remote-forward/   optional RFC 3164 UDP client in syslog_daemon
 wireless-autojoin-retry/ #18238 retry auto-join if the first scan misses
+webpositive-clear-downloads-on-exit/ option to remove finished downloads on exit
 ```
 
 `ipv4-multicast-filter/` at the repo root is a leftover pointer. The record is `merged/ipv4-multicast-filter/` (11850).
