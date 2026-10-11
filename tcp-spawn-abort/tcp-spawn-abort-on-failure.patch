@@ -1,14 +1,14 @@
 From: Alan Shearer
-Subject: tcp: drop child socket if _Spawn fails
+Subject: tcp: abort the child if _Spawn fails
 
-The child is already on the listen queue before _Spawn runs.
-If open, bind, or the SYN-ACK fails, _Spawn returns DROP and
-leaves that child sitting there.
+The new socket is already on the listen queue when _Spawn runs.
+If bind, the send path, or the SYN-ACK fails, we just return DROP
+and leave that child sitting there.
 
-Set CLOSED on the later failures. After _Spawn returns, abort
-if the child is CLOSED.
+Set CLOSED on those failures. After _Spawn returns, abort the socket
+if it is CLOSED.
 
-Do not abort inside _Spawn. It still holds the child's lock.
+Don't abort inside _Spawn. It still holds the child lock.
 
 ---
  src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 11 +++++++++--
@@ -46,8 +46,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
 -		segment, buffer);
 +	TCPEndpoint* child = (TCPEndpoint*)newSocket->first_protocol;
 +	int32 action = child->_Spawn(this, segment, buffer);
-+	// Do not abort inside _Spawn. It still holds the child lock, and
-+	// the destructor takes that same lock.
++	// Don't abort inside _Spawn. It still holds the child lock.
 +	if (child->State() == CLOSED)
 +		gSocketModule->set_aborted(newSocket);
 +	return action;
