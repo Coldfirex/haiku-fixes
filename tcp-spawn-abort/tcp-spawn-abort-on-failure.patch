@@ -7,102 +7,56 @@ we just return DROP and leave that child sitting there.
 
 _Spawn has a TODO for proper error handling. This is that handling.
 Set CLOSED on the later failures and trace the state change.
-After the child lock is released, abort the socket.
+After _Spawn returns, abort the socket if it is CLOSED.
 
 ---
- src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 47 ++++++++++++++---------
- 1 file changed, 31 insertions(+), 16 deletions(-)
+ src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
-@@ -1548,45 +1548,60 @@
- TCPEndpoint::_Spawn(TCPEndpoint* parent, tcp_segment_header& segment,
- 	net_buffer* buffer)
- {
--	MutexLocker _(fLock);
-+	bool failed = false;
-+	int32 action = DROP;
+@@ -1552,7 +1552,6 @@
  
--	TRACE("Spawn()");
-+	{
-+		MutexLocker _(fLock);
+ 	TRACE("Spawn()");
  
 -	// TODO: proper error handling!
--	if (ProtocolSocket::Open() != B_OK) {
--		T(Error(this, "opening failed", __LINE__));
--		return DROP;
--	}
-+		TRACE("Spawn()");
+ 	if (ProtocolSocket::Open() != B_OK) {
+ 		T(Error(this, "opening failed", __LINE__));
+ 		return DROP;
+@@ -1565,10 +1564,14 @@
  
--	fState = SYNCHRONIZE_RECEIVED;
--	T(Spawn(parent, this));
-+		if (ProtocolSocket::Open() != B_OK) {
-+			T(Error(this, "opening failed", __LINE__));
-+			failed = true;
-+		} else {
-+			fState = SYNCHRONIZE_RECEIVED;
-+			T(Spawn(parent, this));
- 
--	fManager = parent->fManager;
-+			fManager = parent->fManager;
- 
--	if (fManager->BindChild(this, buffer->destination) != B_OK) {
--		T(Error(this, "binding failed", __LINE__));
--		return DROP;
-+			if (fManager->BindChild(this, buffer->destination) != B_OK) {
-+				T(Error(this, "binding failed", __LINE__));
-+				fState = CLOSED;
-+				T(State(this));
-+				failed = true;
-+			} else if (_PrepareSendPath(buffer->source) != B_OK) {
-+				T(Error(this, "prepare send faild", __LINE__));
-+				fState = CLOSED;
-+				T(State(this));
-+				failed = true;
-+			} else {
-+				fOptions = parent->fOptions;
-+				fAcceptSemaphore = parent->fAcceptSemaphore;
-+
-+				_PrepareReceivePath(segment);
-+
-+				// send SYN+ACK
-+				if (_SendAcknowledge() != B_OK) {
-+					T(Error(this, "sending failed", __LINE__));
-+					fState = CLOSED;
-+					T(State(this));
-+					failed = true;
-+				} else {
-+					segment.flags &= ~TCP_FLAG_SYNCHRONIZE;
-+						// we handled this flag now, it must not be set
-+						// for further processing
-+
-+					action = _Receive(segment, buffer);
-+				}
-+			}
-+		}
+ 	if (fManager->BindChild(this, buffer->destination) != B_OK) {
+ 		T(Error(this, "binding failed", __LINE__));
++		fState = CLOSED;
++		T(State(this));
+ 		return DROP;
  	}
--	if (_PrepareSendPath(buffer->source) != B_OK) {
--		T(Error(this, "prepare send faild", __LINE__));
--		return DROP;
--	}
+ 	if (_PrepareSendPath(buffer->source) != B_OK) {
+ 		T(Error(this, "prepare send faild", __LINE__));
++		fState = CLOSED;
++		T(State(this));
+ 		return DROP;
+ 	}
  
--	fOptions = parent->fOptions;
--	fAcceptSemaphore = parent->fAcceptSemaphore;
--
--	_PrepareReceivePath(segment);
--
--	// send SYN+ACK
--	if (_SendAcknowledge() != B_OK) {
--		T(Error(this, "sending failed", __LINE__));
--		return DROP;
--	}
--
--	segment.flags &= ~TCP_FLAG_SYNCHRONIZE;
--		// we handled this flag now, it must not be set for further processing
--
--	return _Receive(segment, buffer);
+@@ -1580,6 +1583,8 @@
+ 	// send SYN+ACK
+ 	if (_SendAcknowledge() != B_OK) {
+ 		T(Error(this, "sending failed", __LINE__));
++		fState = CLOSED;
++		T(State(this));
+ 		return DROP;
+ 	}
+ 
+@@ -1613,8 +1618,12 @@
+ 		return DROP;
+ 	}
+ 
+-	return ((TCPEndpoint *)newSocket->first_protocol)->_Spawn(this,
+-		segment, buffer);
++	TCPEndpoint* child = (TCPEndpoint*)newSocket->first_protocol;
++	int32 action = child->_Spawn(this, segment, buffer);
 +	// Defer set_aborted() until the child lock is released.
-+	if (failed)
-+		gSocketModule->set_aborted(socket);
++	if (child->State() == CLOSED)
++		gSocketModule->set_aborted(newSocket);
 +	return action;
  }
  
