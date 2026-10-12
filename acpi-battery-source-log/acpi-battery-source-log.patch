@@ -5,7 +5,6 @@ Some laptops have no ACPI0003 device, so acpi_ac never publishes
 /dev/power/acpi_ac/0. Plug and unplug only show up as a battery
 state change.
 
-Log once when the discharging bit changes. Skip an empty slot.
 
 --- a/src/add-ons/kernel/drivers/power/acpi_battery/acpi_battery.cpp
 +++ b/src/add-ons/kernel/drivers/power/acpi_battery/acpi_battery.cpp
