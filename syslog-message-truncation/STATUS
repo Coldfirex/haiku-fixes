@@ -1,0 +1,9 @@
+STATUS: local
+
+Confirmed real stack buffer overflow in libroot send_syslog_message when
+the formatted syslog message is longer than the 2048-byte stack buffer.
+vsnprintf returns the would-be length, and the old else branch indexes
+past the end of the buffer.
+
+The patch clamps the length first so the newline logic stays inside the
+buffer. Easy to hit from any application that logs a long string.

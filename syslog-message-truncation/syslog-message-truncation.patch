@@ -1,0 +1,45 @@
+From: Alan Shearer <alan@example.com>
+Date: Mon, 12 Oct 2026 17:10:00 -0500
+Subject: [PATCH] libroot: clamp syslog message length to avoid buffer overflow
+
+When syslog() is called with a message that formats to more than the
+2048-byte buffer, vsnprintf returns a length larger than the buffer.
+The old code then wrote to buffer[length - 1] which is past the end
+of the stack buffer.
+
+This clamps the length to what actually fits and still adds a newline
+if there is room, or overwrites the last character if not.
+
+diff --git a/src/system/libroot/posix/syslog.cpp b/src/system/libroot/posix/syslog.cpp
+index 71482c6f31..xxxxxxxx 100644
+--- a/src/system/libroot/posix/syslog.cpp
++++ b/src/system/libroot/posix/syslog.cpp
+@@ -147,13 +147,22 @@ send_syslog_message(syslog_context *context, int priority, const char *text,
+ 	message.priority = priority;
+ 	strcpy(message.ident, context->ident);
+ 
+-	int length = vsnprintf(message.message, sizeof(buffer)
+-		- sizeof(syslog_message), text, args);
+-	if (message.message + length - buffer < (int32)sizeof(buffer)) {
+-		if (length == 0 || message.message[length - 1] != '\n')
++	const int maxLength = sizeof(buffer) - sizeof(syslog_message);
++	int length = vsnprintf(message.message, maxLength, text, args);
++	if (length < 0)
++		length = 0;
++	else if (length >= maxLength)
++		length = maxLength - 1;
++
++	// Make sure the message ends with a newline if it fits.
++	if (length == 0 || message.message[length - 1] != '\n') {
++		if (length + 1 < maxLength) {
+ 			message.message[length++] = '\n';
+-	} else
+-		buffer[length - 1] = '\n';
++			message.message[length] = '\0';
++		} else if (length > 0) {
++			message.message[length - 1] = '\n';
++		}
++	}
+ 
+ 	status_t status;
+ 	do {
