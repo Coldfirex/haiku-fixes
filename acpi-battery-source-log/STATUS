@@ -1,0 +1,9 @@
+local
+No /dev/power/acpi_ac/0 on this laptop. Firmware has no ACPI0003,
+so acpi_ac never loads. Plug and unplug only change the battery.
+
+Log in acpi_battery when the discharging bit changes. Skip an empty
+slot. dprintf goes to syslog. Not the ac-adapter-log patch.
+
+Not Gerrit yet. Kernel driver. Needs an overlay and a reboot.
+Do not apply on a machine that should be tested with ac-adapter-log.

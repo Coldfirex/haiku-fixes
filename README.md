@@ -16,6 +16,7 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
 ac-adapter-log/          log when the AC adapter is plugged or unplugged
+acpi-battery-source-log/ log on battery when there is no ACPI0003 AC device
 aboutsystem-copyright-years/ #19046 update FreeType/ACPICA years in AboutSystem credits
 power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter

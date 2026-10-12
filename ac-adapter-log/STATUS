@@ -9,3 +9,6 @@ acpi_ac startup read wakes select.
 Not Gerrit yet. One-file log change. Does not change the clock.
 Conflicts with power-daemon-scheduler on ac_monitor.cpp.
 Do not apply both.
+
+Needs /dev/power/acpi_ac/0. A laptop with no ACPI0003 uses
+acpi-battery-source-log instead.

@@ -1,0 +1,68 @@
+From: Alan Shearer
+Subject: acpi_battery: log when the machine switches to battery or AC
+
+Some laptops have no ACPI0003 device, so acpi_ac never publishes
+/dev/power/acpi_ac/0. Plug and unplug only show up as a battery
+state change.
+
+Log once when the discharging bit changes. Skip an empty slot.
+
+--- a/src/add-ons/kernel/drivers/power/acpi_battery/acpi_battery.cpp
++++ b/src/add-ons/kernel/drivers/power/acpi_battery/acpi_battery.cpp
+@@ -27,6 +27,8 @@ struct battery_driver_cookie {
+ 	device_node*				node;
+ 	acpi_device_module_info*	acpi;
+ 	acpi_device				acpi_cookie;
++	bool						have_source;
++	bool						on_battery;
+ };
+ 
+ 
+@@ -126,6 +128,28 @@ ReadBatteryStatus(battery_driver_cookie* cookie,
+ }
+ 
+ 
++static void
++log_power_source(battery_driver_cookie* cookie)
++{
++	acpi_battery_info info;
++	if (ReadBatteryStatus(cookie, &info) != B_OK)
++		return;
++
++	// empty slot
++	if (info.capacity == UINT32_MAX && info.voltage == UINT32_MAX)
++		return;
++
++	// discharging means we are on battery
++	bool onBattery = (info.state & BATTERY_DISCHARGING) != 0;
++	if (cookie->have_source && cookie->on_battery == onBattery)
++		return;
++
++	cookie->have_source = true;
++	cookie->on_battery = onBattery;
++	dprintf("acpi_battery: %s\n", onBattery ? "on battery" : "on AC");
++}
++
++
+ status_t
+ ReadBatteryInfo(battery_driver_cookie* cookie,
+ 	acpi_extended_battery_info* batteryInfo)
+@@ -257,6 +281,9 @@ EstimatedRuntime(battery_driver_cookie* cookie, acpi_battery_info* info)
+ void
+ battery_notify_handler(acpi_handle device, uint32 value, void *context)
+ {
+ 	TRACE("battery_notify_handler event 0x%x\n", int(value));
++	// 0x80 is status, 0x81 is info
++	if (value == 0x80 || value == 0x81)
++		log_power_source((battery_driver_cookie*)context);
+ 	sBatteryCondition.NotifyAll();
+ }
+ 
+@@ -568,6 +595,7 @@ acpi_battery_init_driver(device_node *node, void **driverCookie)
+ 	device->acpi->install_notify_handler(device->acpi_cookie,
+     	ACPI_ALL_NOTIFY, battery_notify_handler, device);
+ 
++	log_power_source(device);
+ 	return B_OK;
+ }
+ 
