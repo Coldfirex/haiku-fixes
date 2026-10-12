@@ -19,7 +19,6 @@ diff --git a/src/servers/power/ac_monitor.cpp b/src/servers/power/ac_monitor.cpp
 @@ -12,6 +12,7 @@
  #include <Roster.h>
  
- #include <stdio.h>
 +#include <syslog.h>
  
  
