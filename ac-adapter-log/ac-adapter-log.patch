@@ -10,24 +10,25 @@ Log both through syslog().
 Untested as my laptop does not expose ACPI0003 (Dell XPS).
 
 ---
- src/servers/power/ac_monitor.cpp | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ src/servers/power/ac_monitor.cpp | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/src/servers/power/ac_monitor.cpp b/src/servers/power/ac_monitor.cpp
 --- a/src/servers/power/ac_monitor.cpp
 +++ b/src/servers/power/ac_monitor.cpp
-@@ -12,6 +12,7 @@
+@@ -12,7 +12,7 @@
  #include <Roster.h>
  
+-#include <stdio.h>
 +#include <syslog.h>
  
  
  ACMonitor::ACMonitor()
-@@ -36,6 +37,6 @@ ACMonitor::HandleEvent(int fd)
+@@ -36,6 +36,5 @@ ACMonitor::HandleEvent(int fd)
  	if (read(fd, &status, 1) != 1)
  		return;
  
 -	if (status == 1)
 -		printf("ac status 1\n");
-+	syslog(LOG_INFO, "AC adapter %s\n",	status == 1 ? "online" : "offline");
++	syslog(LOG_INFO, "AC adapter %s", status == 1 ? "online" : "offline");
  }
