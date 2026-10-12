@@ -16,7 +16,8 @@ Untested as my laptop does not expose ACPI0003 (Dell XPS).
 diff --git a/src/servers/power/ac_monitor.cpp b/src/servers/power/ac_monitor.cpp
 --- a/src/servers/power/ac_monitor.cpp
 +++ b/src/servers/power/ac_monitor.cpp
-@@ -12,7 +12,7 @@
+@@ -10,7 +10,7 @@
+ #include <Messenger.h>
  #include <Roster.h>
  
 -#include <stdio.h>
@@ -24,7 +25,7 @@ diff --git a/src/servers/power/ac_monitor.cpp b/src/servers/power/ac_monitor.cpp
  
  
  ACMonitor::ACMonitor()
-@@ -36,6 +36,5 @@ ACMonitor::HandleEvent(int fd)
+@@ -32,6 +32,5 @@ ACMonitor::HandleEvent(int fd)
  	if (read(fd, &status, 1) != 1)
  		return;
  
