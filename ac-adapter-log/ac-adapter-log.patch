@@ -30,6 +30,5 @@ diff --git a/src/servers/power/ac_monitor.cpp b/src/servers/power/ac_monitor.cpp
  
 -	if (status == 1)
 -		printf("ac status 1\n");
-+	syslog(LOG_INFO, "AC adapter %s\n",
-+		status == 1 ? "online" : "offline");
++	syslog(LOG_INFO, "AC adapter %s\n",	status == 1 ? "online" : "offline");
  }
