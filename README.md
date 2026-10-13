@@ -23,7 +23,6 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 ```
 acpi-battery-source-log/ log on battery when there is no ACPI0003 AC device
 mail-utils-typos/        fix "occured" in mail2mbox and mbox2mail error messages
-icon-o-matic-typos/      fix "occured" in icon-o-matic exporter printf
 power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter
 processcontroller-scheduler-settings/ stop saving scheduler_mode
@@ -87,6 +86,7 @@ merged/icmp-error-reply/            Gerrit 11869 / a4aa8679
 merged/aboutsystem-copyright-years/ Gerrit 12024 / ee7ac6ab
 merged/bluetooth-sdp-typos/         Gerrit 12064 / 50014019
 merged/time-error-typos/            Gerrit 12066 / b99074d5
+merged/icon-o-matic-typos/          Gerrit 12068 / e7e87385
 ```
 
 Gerrit tracking lives in each folder as `STATUS`.
