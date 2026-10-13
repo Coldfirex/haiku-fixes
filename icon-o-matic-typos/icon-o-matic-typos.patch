@@ -1,5 +1,5 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 11:00:00 -0500
+Date: Tue, 13 Oct 2026 12:45:00 -0500
 Subject: icon-o-matic: fix spelling in exception message
 
 Fix "occured" to "occurred" in the exporter exception printf.
@@ -7,11 +7,9 @@ Fix "occured" to "occurred" in the exporter exception printf.
 No functional change.
 
 diff --git a/src/apps/icon-o-matic/import_export/Exporter.cpp b/src/apps/icon-o-matic/import_export/Exporter.cpp
---- a/src/apps/icon-o-matic/import_export/Exporter.cpp
-+++ b/src/apps/icon-o-matic/import_export/Exporter.cpp
-@@ -175,7 +175,7 @@
- 		try {
- 			// export using the virtual Export() version
+--- a/src/apps/icon-o-matic/import_export/Exporter.cpp	2026-10-13 17:37:30.038710952 +0000
++++ b/src/apps/icon-o-matic/import_export/Exporter.cpp	2026-10-13 17:37:30.042710952 +0000
+@@ -184,7 +184,7 @@
  			ret = Export(icon, &outFile);
  		} catch (...) {
  			printf("Exporter::_Export() - "
@@ -19,3 +17,4 @@ diff --git a/src/apps/icon-o-matic/import_export/Exporter.cpp b/src/apps/icon-o-
 +				   "unknown exception occurred!\n");
  			ret = B_ERROR;
  		}
+ 		if (ret < B_OK) {
