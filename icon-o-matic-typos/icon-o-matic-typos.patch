@@ -1,6 +1,6 @@
 From: Alan Shearer <sakison@gmail.com>
 Date: Tue, 13 Oct 2026 11:00:00 -0500
-Subject: icon-o-matic: fix spelling of "occurred" in exception message
+Subject: icon-o-matic: fix spelling in exception message
 
 Fix "occured" to "occurred" in the exporter exception printf.
 
