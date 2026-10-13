@@ -1,9 +1,0 @@
-STATUS: local
-
-Fix "occured" to "occurred" in Time preferences error messages.
-
-Shown in the GUI alert and printed by Time --update.
-
-Catalogs still have the old English key. Translations will fall back until regenerated.
-
-No functional change.
