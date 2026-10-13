@@ -1,7 +1,0 @@
-STATUS: local
-
-Fix "occured" to "occurred" in mail2mbox and mbox2mail error messages.
-
-Printed to the user on error.
-
-No functional change.
