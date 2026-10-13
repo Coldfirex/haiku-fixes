@@ -1,5 +1,5 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 09:23:00 -0500
+Date: Tue, 13 Oct 2026 10:30:00 -0500
 Subject: bluetooth: fix spelling in SDP client
 
 Fix spelling mistakes in the Bluetooth SDP client.
@@ -9,7 +9,8 @@ No functional change.
 diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClient.cpp
 --- a/src/servers/bluetooth/SDPClient.cpp
 +++ b/src/servers/bluetooth/SDPClient.cpp
-@@ -62,7 +62,7 @@
+@@ -50,7 +50,7 @@
+ 	socklen_t errorLength = sizeof(sockError);
  	status = getsockopt(fClientSocket, SOL_SOCKET, SO_ERROR, &sockError, &errorLength);
  	if (status < 0)
 -		TRACE_BT("SDP: Error occured\n");
@@ -17,7 +18,7 @@ diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClie
  	else if (sockError == 0)
  		TRACE_BT("SDP: Socket connected.\n");
  	else
-@@ -105,9 +105,9 @@
+@@ -97,9 +97,9 @@
  	rawReqDataIO.WriteExactly(&maxAttrByteCount, 2);
  
  	// getting all attributes start_id = 0x0000, end_id = 0xFFFF
@@ -29,7 +30,8 @@ diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClie
  
  	char contStateData[17];
  	uint8 contStateNumBytes = 0;
-@@ -140,7 +140,7 @@
+@@ -129,7 +129,7 @@
+ 
  		BMallocIO reply;
  		if (_IssueRequest(request.Buffer(), request.BufferLength(), &reply) != B_OK) {
 -			TRACE_BT("SDP: Issueing Request failed\n");
@@ -37,7 +39,7 @@ diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClie
  			return B_ERROR;
  		}
  
-@@ -248,7 +248,7 @@
+@@ -255,7 +255,7 @@
  	if (numBytes < 0)
  		return B_ERROR;
  
