@@ -1,5 +1,5 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 11:00:00 -0500
+Date: Tue, 13 Oct 2026 12:40:00 -0500
 Subject: mail_utils: fix spelling in error messages
 
 Fix "occured" to "occurred".
@@ -7,9 +7,8 @@ Fix "occured" to "occurred".
 No functional change.
 
 diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
---- a/src/bin/mail_utils/mail2mbox.cpp
-+++ b/src/bin/mail_utils/mail2mbox.cpp
-@@ -48,7 +48,7 @@
+@@ -56,7 +56,7 @@
+ 
  	if (errorNumber != 0) {
  		snprintf(errorBuffer, sizeof(errorBuffer), "%s: %s (%" B_PRIx32 ")"
 -			"has occured.", messageString, strerror(errorNumber), errorNumber);
@@ -17,7 +16,7 @@ diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
  		messageString = errorBuffer;
  	}
  
-@@ -340,7 +340,7 @@
+@@ -354,7 +354,7 @@
  	closedir(dir);
  
  	if (status != B_OK) {
@@ -25,10 +24,11 @@ diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
 +		DisplayErrorMessage("Stopping early because an error occurred", status);
  		return status;
  	}
+ 
+
 diff --git a/src/bin/mail_utils/mbox2mail.cpp b/src/bin/mail_utils/mbox2mail.cpp
---- a/src/bin/mail_utils/mbox2mail.cpp
-+++ b/src/bin/mail_utils/mbox2mail.cpp
-@@ -78,7 +78,7 @@
+@@ -99,7 +99,7 @@
+ 
    if (ErrorNumber != 0)
    {
 -    sprintf (ErrorBuffer, "%s, error code $%X/%d (%s) has occured.",
