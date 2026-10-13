@@ -1,11 +1,8 @@
 From: Alan Shearer <sakison@gmail.com>
 Date: Tue, 13 Oct 2026 11:00:00 -0500
-Subject: time: fix spelling of "occurred" in error messages
+Subject: time: fix spelling in error messages
 
-Fix "occured" to "occurred" in the Time preferences error messages.
-
-These strings are shown in the GUI alert and printed by the
---update command line path.
+Fix "occured" to "occurred" in the error messages.
 
 No functional change.
 
