@@ -1,14 +1,19 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 09:20:00 -0500
-Subject: [PATCH] bluetooth: fix spelling in SDP client TRACE messages
+Date: Tue, 13 Oct 2026 09:23:00 -0500
+Subject: [PATCH] bluetooth: fix spelling in SDP client
 
-Fix three spelling mistakes in the Bluetooth SDP client TRACE_BT
-messages. These show up in the syslog when Bluetooth tracing is
-enabled.
+Fix spelling mistakes in the Bluetooth SDP client.
 
+TRACE_BT messages:
 - Error occured -> occurred
 - Issueing -> Issuing
 - Recieved -> Received
+
+Variable name:
+- arrtRange -> attrRange
+
+These TRACE strings show up in syslog when Bluetooth tracing is on.
+No functional change.
 
 diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClient.cpp
 --- a/src/servers/bluetooth/SDPClient.cpp
@@ -21,6 +26,18 @@ diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClie
  	else if (sockError == 0)
  		TRACE_BT("SDP: Socket connected.\n");
  	else
+@@ -105,9 +105,9 @@
+ 	rawReqDataIO.WriteExactly(&maxAttrByteCount, 2);
+ 
+ 	// getting all attributes start_id = 0x0000, end_id = 0xFFFF
+-	uint32 arrtRange = 0x0000FFFF;
++	uint32 attrRange = 0x0000FFFF;
+ 	rawReq.AddDataSeq(5);
+-	rawReq.AddUInt32(arrtRange);
++	rawReq.AddUInt32(attrRange);
+ 
+ 	char contStateData[17];
+ 	uint8 contStateNumBytes = 0;
 @@ -140,7 +140,7 @@
  		BMallocIO reply;
  		if (_IssueRequest(request.Buffer(), request.BufferLength(), &reply) != B_OK) {
