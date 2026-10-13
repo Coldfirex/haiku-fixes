@@ -1,5 +1,0 @@
-STATUS: local
-
-Fix "occured" to "occurred" in icon-o-matic exporter exception printf.
-
-No functional change.
