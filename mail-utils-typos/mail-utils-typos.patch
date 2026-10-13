@@ -1,24 +1,25 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 12:50:00 -0500
+Date: Tue, 13 Oct 2026 13:40:00 -0500
 Subject: mail_utils: fix spelling in error messages
 
 Fix "occured" to "occurred".
 
-No functional change.
-
 diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
---- a/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 17:38:09.390712655 +0000
-+++ b/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 17:38:09.862712675 +0000
-@@ -56,7 +56,7 @@
+--- a/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 18:33:42.898689684 +0000
++++ b/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 18:33:52.422690096 +0000
+@@ -55,8 +55,9 @@
+ 	}
  
  	if (errorNumber != 0) {
- 		snprintf(errorBuffer, sizeof(errorBuffer), "%s: %s (%" B_PRIx32 ")"
+-		snprintf(errorBuffer, sizeof(errorBuffer), "%s: %s (%" B_PRIx32 ")"
 -			"has occured.", messageString, strerror(errorNumber), errorNumber);
-+			"has occurred.", messageString, strerror(errorNumber), errorNumber);
++		snprintf(errorBuffer, sizeof(errorBuffer),
++			"%s: %s (%" B_PRIx32 ") has occurred.",
++			messageString, strerror(errorNumber), errorNumber);
  		messageString = errorBuffer;
  	}
  
-@@ -354,7 +354,7 @@
+@@ -354,7 +355,7 @@
  	closedir(dir);
  
  	if (status != B_OK) {
@@ -29,8 +30,8 @@ diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
  
 
 diff --git a/src/bin/mail_utils/mbox2mail.cpp b/src/bin/mail_utils/mbox2mail.cpp
---- a/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 17:38:09.854712675 +0000
-+++ b/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 17:38:09.862712675 +0000
+--- a/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 18:33:43.350689704 +0000
++++ b/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 18:33:52.422690096 +0000
 @@ -99,7 +99,7 @@
  
    if (ErrorNumber != 0)
