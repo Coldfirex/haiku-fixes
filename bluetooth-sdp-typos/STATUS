@@ -1,5 +1,12 @@
-STATUS: local
+STATUS: submitted
 
-Fix spelling mistakes in the Bluetooth SDP client.
+Fix spelling in Bluetooth SDP client.
+
+TRACE_BT messages (syslog when tracing on):
+- Error occured -> occurred
+- Issueing -> Issuing
+- Recieved -> Received (also use B_PRIdSSIZE for the ssize_t)
+
+Variable: arrtRange -> attrRange
 
 No functional change.

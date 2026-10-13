@@ -1,5 +1,5 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 10:30:00 -0500
+Date: Tue, 13 Oct 2026 11:05:00 -0500
 Subject: bluetooth: fix spelling in SDP client
 
 Fix spelling mistakes in the Bluetooth SDP client.
@@ -44,7 +44,7 @@ diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClie
  		return B_ERROR;
  
 -	TRACE_BT("SDP: Recieved the response: num bytes=%ld\n", numBytes);
-+	TRACE_BT("SDP: Received the response: num bytes=%ld\n", numBytes);
++	TRACE_BT("SDP: Received the response: num bytes=%" B_PRIdSSIZE "\n", numBytes);
  
  	reply->SetSize(0);
  	reply->Write(buffer, numBytes);
