@@ -1,12 +1,12 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Tue, 13 Oct 2026 13:55:00 -0500
+Date: Tue, 13 Oct 2026 16:40:00 -0500
 Subject: mail_utils: fix spelling in error messages
 
-Fix "occured" to "occurred".
+Fix "occured" to "occurred" and "misssing" to "missing".
 
 diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
---- a/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 18:46:18.236973137 +0000
-+++ b/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 18:46:18.696973157 +0000
+--- a/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 21:35:55.007508502 +0000
++++ b/src/bin/mail_utils/mail2mbox.cpp	2026-10-13 21:35:55.471508522 +0000
 @@ -55,8 +55,8 @@
  	}
  
@@ -29,14 +29,25 @@ diff --git a/src/bin/mail_utils/mail2mbox.cpp b/src/bin/mail_utils/mail2mbox.cpp
  
 
 diff --git a/src/bin/mail_utils/mbox2mail.cpp b/src/bin/mail_utils/mbox2mail.cpp
---- a/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 18:46:18.668973156 +0000
-+++ b/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 18:46:18.696973157 +0000
-@@ -99,7 +99,7 @@
+--- a/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 21:35:55.431508520 +0000
++++ b/src/bin/mail_utils/mbox2mail.cpp	2026-10-13 21:35:55.471508522 +0000
+@@ -99,8 +99,8 @@
  
    if (ErrorNumber != 0)
    {
 -    sprintf (ErrorBuffer, "%s, error code $%X/%d (%s) has occured.",
-+    sprintf (ErrorBuffer, "%s, error code $%X/%d (%s) has occurred.",
-       MessageString, ErrorNumber, ErrorNumber, strerror (ErrorNumber));
+-      MessageString, ErrorNumber, ErrorNumber, strerror (ErrorNumber));
++    sprintf(ErrorBuffer, "%s, error code $%X/%d (%s) has occurred.", MessageString, ErrorNumber,
++        ErrorNumber, strerror(ErrorNumber));
      MessageString = ErrorBuffer;
+   }
+ 
+@@ -312,7 +312,7 @@
+ 
+   if (memcmp ("of ", StringPntr, 3) != 0)
+   {
+-    printf ("False alarm, article line \"of\" misssing in \"%s\".\n",
++    printf ("False alarm, article line \"of\" missing in \"%s\".\n",
+       LineString);
+     return false;
    }
