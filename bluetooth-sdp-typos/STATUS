@@ -1,0 +1,6 @@
+STATUS: local
+
+Fix spelling in Bluetooth SDP client TRACE messages.
+
+These TRACE_BT strings show up in syslog when Bluetooth tracing is on.
+No functional change. Just the words.

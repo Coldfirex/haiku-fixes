@@ -23,6 +23,7 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 ```
 acpi-battery-source-log/ log on battery when there is no ACPI0003 AC device
 aboutsystem-copyright-years/ #19046 update FreeType/ACPICA years in AboutSystem credits
+bluetooth-sdp-typos/     fix spelling in SDP client TRACE messages
 power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter
 processcontroller-scheduler-settings/ stop saving scheduler_mode

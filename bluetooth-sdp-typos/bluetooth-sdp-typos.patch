@@ -1,0 +1,40 @@
+From: Alan Shearer <sakison@gmail.com>
+Date: Tue, 13 Oct 2026 09:20:00 -0500
+Subject: [PATCH] bluetooth: fix spelling in SDP client TRACE messages
+
+Fix three spelling mistakes in the Bluetooth SDP client TRACE_BT
+messages. These show up in the syslog when Bluetooth tracing is
+enabled.
+
+- Error occured -> occurred
+- Issueing -> Issuing
+- Recieved -> Received
+
+diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClient.cpp
+--- a/src/servers/bluetooth/SDPClient.cpp
++++ b/src/servers/bluetooth/SDPClient.cpp
+@@ -62,7 +62,7 @@
+ 	status = getsockopt(fClientSocket, SOL_SOCKET, SO_ERROR, &sockError, &errorLength);
+ 	if (status < 0)
+-		TRACE_BT("SDP: Error occured\n");
++		TRACE_BT("SDP: Error occurred\n");
+ 	else if (sockError == 0)
+ 		TRACE_BT("SDP: Socket connected.\n");
+ 	else
+@@ -140,7 +140,7 @@
+ 		BMallocIO reply;
+ 		if (_IssueRequest(request.Buffer(), request.BufferLength(), &reply) != B_OK) {
+-			TRACE_BT("SDP: Issueing Request failed\n");
++			TRACE_BT("SDP: Issuing Request failed\n");
+ 			return B_ERROR;
+ 		}
+ 
+@@ -248,7 +248,7 @@
+ 	if (numBytes < 0)
+ 		return B_ERROR;
+ 
+-	TRACE_BT("SDP: Recieved the response: num bytes=%ld\n", numBytes);
++	TRACE_BT("SDP: Received the response: num bytes=%ld\n", numBytes);
+ 
+ 	reply->SetSize(0);
+ 	reply->Write(buffer, numBytes);
