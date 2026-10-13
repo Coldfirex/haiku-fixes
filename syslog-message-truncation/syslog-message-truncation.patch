@@ -1,4 +1,4 @@
-From: Alan Shearer <coldfirex@gmail.com>
+From: Alan Shearer <sakison@gmail.com>
 Date: Mon, 12 Oct 2026 18:05:00 -0500
 Subject: [PATCH] libroot: fix syslog truncation stack overflow
 
