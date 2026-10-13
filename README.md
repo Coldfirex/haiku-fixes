@@ -22,9 +22,6 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 
 ```
 acpi-battery-source-log/ log on battery when there is no ACPI0003 AC device
-aboutsystem-copyright-years/ #19046 update FreeType/ACPICA years in AboutSystem credits
-bluetooth-sdp-typos/     fix spelling in SDP client TRACE messages
-time-error-typos/        fix "occured" in Time preferences error messages
 mail-utils-typos/        fix "occured" in mail2mbox and mbox2mail error messages
 icon-o-matic-typos/      fix "occured" in icon-o-matic exporter printf
 power-preferences/       battery power saving checkboxes
@@ -70,8 +67,6 @@ abandoned/ipv6-error-received/        never submitted; consumer already frees on
 abandoned/mediaplayer-stop-uninit/    #18714 fixed by Gerrit 11966 (nipos)
 ```
 
-Every Gerrit change from this series is merged. Nothing is still open.
-
 ```
 merged/virtio-gpu-detach-backing/   Gerrit 11771 / 0438319c
 merged/virtio-gpu-mutex-uninit/     Gerrit 11776 / 768d4e6c
@@ -89,6 +84,9 @@ merged/ipv4-multicast-filter/       Gerrit 11850 / e6ecc742
 merged/virtio-gpu-open-shared-area/ Gerrit 11851 / 83d859ac
 merged/virtio-net-mutex-uninit/     Gerrit 11858 / 1832af68
 merged/icmp-error-reply/            Gerrit 11869 / a4aa8679
+merged/aboutsystem-copyright-years/ Gerrit 12024 / ee7ac6ab
+merged/bluetooth-sdp-typos/         Gerrit 12064 / 50014019
+merged/time-error-typos/            Gerrit 12066 / b99074d5
 ```
 
 Gerrit tracking lives in each folder as `STATUS`.
