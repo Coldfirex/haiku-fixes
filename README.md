@@ -24,6 +24,9 @@ Not submitted (repo root). Nothing in this list is on Gerrit:
 acpi-battery-source-log/ log on battery when there is no ACPI0003 AC device
 aboutsystem-copyright-years/ #19046 update FreeType/ACPICA years in AboutSystem credits
 bluetooth-sdp-typos/     fix spelling in SDP client TRACE messages
+time-error-occurred/     fix "occured" in Time preferences error messages
+mail-utils-error-occurred/ fix "occured" in mail2mbox and mbox2mail error messages
+icon-o-matic-exception-occurred/ fix "occured" in icon-o-matic exporter printf
 power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter
 processcontroller-scheduler-settings/ stop saving scheduler_mode

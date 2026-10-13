@@ -1,0 +1,21 @@
+From: Alan Shearer <sakison@gmail.com>
+Date: Tue, 13 Oct 2026 11:00:00 -0500
+Subject: icon-o-matic: fix spelling of "occurred" in exception message
+
+Fix "occured" to "occurred" in the exporter exception printf.
+
+No functional change.
+
+diff --git a/src/apps/icon-o-matic/import_export/Exporter.cpp b/src/apps/icon-o-matic/import_export/Exporter.cpp
+--- a/src/apps/icon-o-matic/import_export/Exporter.cpp
++++ b/src/apps/icon-o-matic/import_export/Exporter.cpp
+@@ -175,7 +175,7 @@
+ 		try {
+ 			// export using the virtual Export() version
+ 			ret = Export(icon, &outFile);
+ 		} catch (...) {
+ 			printf("Exporter::_Export() - "
+-				   "unknown exception occured!\n");
++				   "unknown exception occurred!\n");
+ 			ret = B_ERROR;
+ 		}
