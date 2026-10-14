@@ -1,7 +1,9 @@
-STATUS: local
+STATUS: merged
 
-Fix "occured" to "occurred" in mail2mbox and mbox2mail error messages.
+Gerrit 12067 / f0b22698
+Change-Id: I61919f2db717c9550a3a56a15c31cfc05f300445
 
-Printed to the user on error.
+Fix "occured" to "occurred" and "misssing" to "missing" in mail2mbox and mbox2mail.
 
-No functional change.
+No functional change beyond the string text.
+
