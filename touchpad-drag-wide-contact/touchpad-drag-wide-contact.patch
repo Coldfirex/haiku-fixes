@@ -1,12 +1,14 @@
 From: Alan Shearer
-Subject: input_server: keep a touchpad drag moving on a wide contact
+Subject: input_server: clickpad drag stops after a few pixels
 
-Pressing a clickpad makes the contact wider than 7 and can push the
-pressure over the normal limit. Those packets were handled as a finger
-lift, so a window drag only moved a few pixels.
+On a clickpad pressing the pad makes the contact wider than 7 and can
+push the pressure over the normal max. Those packets were treated as
+a finger lift so a drag only moved a few pixels.
 
-Accept the full single-finger width and pressure while a button is held.
+Allow the full single finger width and pressure while a button is held.
 Taps still use the old check.
+
+See #5179.
 
 ---
  src/add-ons/input_server/devices/mouse/movement_maker.cpp | 12 ++++++++++--
@@ -19,9 +21,9 @@ diff --git a/src/add-ons/input_server/devices/mouse/movement_maker.cpp b/src/add
  			fValidEdgeMotion = false;
  	}
  
-+	// A click widens the contact past width 7 and can push pressure over
-+	// the normal limit. That was treated as a lift, so the drag stopped
-+	// after a few pixels. Keep tracking while a button is held.
++	// Clickpad press widens the contact past width 7 and can push
++	// pressure over the normal max. That was treated as a lift so the
++	// drag stopped after a few pixels. Keep tracking while a button is held.
 +	int32 maxWidth = 7;
 +	int32 maxPressure = fSpecs.maxPressure;
 +	if (event->buttons != 0) {

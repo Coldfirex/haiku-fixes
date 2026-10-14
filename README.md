@@ -26,7 +26,7 @@ power-preferences/       battery power saving checkboxes
 power-daemon-scheduler/  apply scheduler mode from the AC adapter
 processcontroller-scheduler-settings/ stop saving scheduler_mode
 tcp-spawn-abort/         listen-queue child leak when _Spawn fails
-touchpad-drag-wide-contact/ clickpad drag stops after a few pixels
+touchpad-drag-wide-contact/ #5179 clickpad drag stops after a few pixels
 udp-unicast-enqueue/     #18730 enqueue incoming unicast buffer (no clone)
 udp-loopback-checksum/   #18730 skip TX checksum if route is IFF_LOOPBACK
 arp-queued-send/         MarkValid NULL protocol KDL + send-fail leak
