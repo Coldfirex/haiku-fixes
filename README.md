@@ -15,7 +15,7 @@ https://www.haiku-os.org/development/coding-guidelines/
 Submitted, not merged:
 
 ```
-ac-adapter-log/          Gerrit 12047 syslog when the AC adapter is plugged or unplugged
+(none)
 ```
 
 Not submitted (repo root). Nothing in this list is on Gerrit:
@@ -87,6 +87,7 @@ merged/bluetooth-sdp-typos/         Gerrit 12064 / 50014019
 merged/time-error-typos/            Gerrit 12066 / b99074d5
 merged/icon-o-matic-typos/          Gerrit 12068 / e7e87385
 merged/mail-utils-typos/            Gerrit 12067 / f0b22698
+merged/ac-adapter-log/              Gerrit 12047
 ```
 
 Gerrit tracking lives in each folder as `STATUS`.
