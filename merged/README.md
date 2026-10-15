@@ -23,5 +23,6 @@ Nothing from this series is still open on Gerrit.
 | virtio-gpu-open-shared-area | [11851](https://review.haiku-os.org/c/haiku/+/11851) | `83d859ac` | virtio_gpu: clean up shared area when open fails |
 | virtio-net-mutex-uninit | [11858](https://review.haiku-os.org/c/haiku/+/11858) | `1832af68` | virtio_net: destroy TX/RX mutexes if interrupt setup fails |
 | icmp-error-reply | [11869](https://review.haiku-os.org/c/haiku/+/11869) | `a4aa8679` | icmp: free error-reply buffer if domain lookup or prepend fails |
+| ac-adapter-log | [12047](https://review.haiku-os.org/c/haiku/+/12047) | | power_daemon: log to syslog when the AC adapter is plugged or unplugged |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).
