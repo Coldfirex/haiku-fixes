@@ -1,0 +1,10 @@
+status: local
+gerrit: no
+ticket: #10001
+
+NetworkStatus and Network preferences list every scan result.
+Same SSID on 2.4/5/6 or different APs shows up more than once.
+
+Keep only the strongest signal for each name. Join still uses the SSID.
+
+Not Gerrit yet. Check the menus on a dual-band or mesh network.
