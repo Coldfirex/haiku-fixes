@@ -1,0 +1,75 @@
+From: Alan Shearer <Coldfirex@users.noreply.github.com>
+Date: Thu, 15 Oct 2026 19:55:00 -0500
+Subject: [PATCH] wifi: show each SSID once in the menus
+
+NetworkStatus and Network preferences list every scan result.
+Same name on 2.4/5/6 GHz or different APs shows up more than once.
+
+Keep only the strongest signal for each SSID. Join still uses the name.
+
+---
+ src/apps/networkstatus/NetworkStatusView.cpp | 16 +++++++++++++++-
+ src/preferences/network/InterfaceView.cpp    | 24 ++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+), 1 deletion(-)
+
+diff --git a/src/apps/networkstatus/NetworkStatusView.cpp b/src/apps/networkstatus/NetworkStatusView.cpp
+--- a/src/apps/networkstatus/NetworkStatusView.cpp
++++ b/src/apps/networkstatus/NetworkStatusView.cpp
+@@ -410,8 +410,23 @@ NetworkStatusView::MouseDown(BPoint point)
+ 		uint32 networksCount = 0;
+ 		wireless_network* networks = NULL;
+ 		device.GetNetworks(networks, networksCount);
++		// Show each SSID once. Keep the strongest signal.
++		// Same name on different bands or APs was listed more than once.
+ 		for (uint32 i = 0; i < networksCount; i++) {
+ 			const wireless_network& network = networks[i];
++			bool betterExists = false;
++			for (uint32 j = 0; j < networksCount; j++) {
++				if (j == i)
++					continue;
++				if (strcmp(networks[j].name, network.name) == 0
++					&& networks[j].signal_strength >= network.signal_strength
++					&& j < i) {
++					betterExists = true;
++					break;
++				}
++			}
++			if (betterExists)
++				continue;
++
+ 			BMessage* message = new BMessage(kMsgJoinNetwork);
+ 			message->AddString("device", wifiInterface);
+ 			message->AddString("name", network.name);
+diff --git a/src/preferences/network/InterfaceView.cpp b/src/preferences/network/InterfaceView.cpp
+--- a/src/preferences/network/InterfaceView.cpp
++++ b/src/preferences/network/InterfaceView.cpp
+@@ -291,6 +291,30 @@ InterfaceView::_Update(bool updateWirelessNetworks)
+ 			device.GetNetworks(networks, networksCount);
+ 		}
+ 
++		// Show each SSID once. Keep the strongest signal.
++		// Same name on different bands or APs was listed more than once.
++		for (uint32 i = 0; i < networksCount; ) {
++			bool betterExists = false;
++			for (uint32 j = 0; j < networksCount; j++) {
++				if (j == i)
++					continue;
++				if (strcmp(networks[j].name, networks[i].name) == 0
++					&& networks[j].signal_strength >= networks[i].signal_strength
++					&& j < i) {
++					betterExists = true;
++					break;
++				}
++			}
++			if (betterExists) {
++				for (uint32 k = i + 1; k < networksCount; k++)
++					networks[k - 1] = networks[k];
++				networksCount--;
++				continue;
++			}
++			i++;
++		}
++
+ 		ArrayDeleter<wireless_network> networksDeleter(networks);
+ 
+ 		// go through menu items and remove networks that have dropped out
