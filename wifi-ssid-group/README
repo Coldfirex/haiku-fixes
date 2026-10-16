@@ -1,0 +1,9 @@
+# wifi-ssid-group
+
+NetworkStatus and Network preferences show the same SSID more than once
+when the router has multiple bands or the network has multiple APs.
+
+The menus list every result from the scan. This keeps only the strongest
+signal for each name. Joining still uses the SSID.
+
+See STATUS for more.
