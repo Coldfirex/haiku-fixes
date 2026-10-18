@@ -11,12 +11,20 @@ Taps still use the old check.
 See #5179.
 
 ---
- src/add-ons/input_server/devices/mouse/movement_maker.cpp | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ src/add-ons/input_server/devices/mouse/movement_maker.cpp | 14 +++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/src/add-ons/input_server/devices/mouse/movement_maker.cpp b/src/add-ons/input_server/devices/mouse/movement_maker.cpp
 --- a/src/add-ons/input_server/devices/mouse/movement_maker.cpp
 +++ b/src/add-ons/input_server/devices/mouse/movement_maker.cpp
+@@ -20,7 +20,7 @@
+ #include <util/BitUtils.h>
+ 
+-//#define TRACE_MOVEMENT_MAKER
++#define TRACE_MOVEMENT_MAKER
+ 
+ #ifdef TRACE_MOVEMENT_MAKER
+ #	include <String.h>
 @@ -356,9 +356,17 @@ TouchpadMovement::EventToMovement(const touchpad_movement* _event, mouse_movement* movement,
  			fValidEdgeMotion = false;
  	}
