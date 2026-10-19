@@ -1,0 +1,8 @@
+STATUS: merged
+
+Gerrit 12067 / f0b22698
+Change-Id: I61919f2db717c9550a3a56a15c31cfc05f300445
+
+Fix "occured" to "occurred" and "misssing" to "missing" in mail2mbox and mbox2mail.
+
+No functional change beyond the string text.
