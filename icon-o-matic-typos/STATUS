@@ -1,8 +1,0 @@
-STATUS: merged
-
-Gerrit 12068 / e7e87385
-Change-Id: Idc2cf48c18d0c67de5c9a89feb1bd1a171b736ae
-
-Fix "occured" to "occurred" in icon-o-matic exporter exception printf.
-
-No functional change.
