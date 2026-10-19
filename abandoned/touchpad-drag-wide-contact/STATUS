@@ -1,0 +1,5 @@
+abandoned
+Width/pressure check was not the cause. Packets accepted the whole time.
+One-finger press-and-move works. Two-finger (hold + move) needs per-finger
+positions the current packets do not provide. Not a small patch.
+Do not Gerrit.
