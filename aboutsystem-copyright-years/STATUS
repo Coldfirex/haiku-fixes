@@ -1,8 +1,0 @@
-STATUS: merged
-
-Gerrit 12024 / ee7ac6ab
-Change-Id: Ia73e590421e8cc94d4ccf373dd5f6e3abcd1bcae
-
-Update FreeBSD and ACPICA copyright years in AboutSystem.
-
-No functional change.
