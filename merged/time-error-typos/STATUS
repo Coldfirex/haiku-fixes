@@ -1,0 +1,11 @@
+STATUS: merged
+
+Gerrit 12066 / b99074d5
+Change-Id: I88ffaa10f7f2e2db563a46b3b0f9beca1b7e1ee7
+
+Fix "occured" to "occurred" in Time preferences error messages.
+Shown in the GUI alert and printed by Time --update.
+
+Catalogs still have the old English key. Translations will fall back until regenerated.
+
+No functional change.
