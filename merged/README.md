@@ -24,5 +24,10 @@ Nothing from this series is still open on Gerrit.
 | virtio-net-mutex-uninit | [11858](https://review.haiku-os.org/c/haiku/+/11858) | `1832af68` | virtio_net: destroy TX/RX mutexes if interrupt setup fails |
 | icmp-error-reply | [11869](https://review.haiku-os.org/c/haiku/+/11869) | `a4aa8679` | icmp: free error-reply buffer if domain lookup or prepend fails |
 | ac-adapter-log | [12047](https://review.haiku-os.org/c/haiku/+/12047) | | power_daemon: log to syslog when the AC adapter is plugged or unplugged |
+| aboutsystem-copyright-years | [12024](https://review.haiku-os.org/c/haiku/+/12024) | `ee7ac6ab` | AboutSystem: update FreeBSD and ACPICA copyright years |
+| bluetooth-sdp-typos | [12064](https://review.haiku-os.org/c/haiku/+/12064) | `50014019` | bluetooth: fix spelling in SDP client |
+| time-error-typos | [12066](https://review.haiku-os.org/c/haiku/+/12066) | `b99074d5` | time: fix spelling in error messages |
+| mail-utils-typos | [12067](https://review.haiku-os.org/c/haiku/+/12067) | `f0b22698` | mail_utils: fix spelling in error messages |
+| icon-o-matic-typos | [12068](https://review.haiku-os.org/c/haiku/+/12068) | `e7e87385` | icon-o-matic: fix spelling in exception message |
 
 Move a folder here only after Gerrit status is **merged** (not submitted).
