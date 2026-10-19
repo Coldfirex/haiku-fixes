@@ -1,0 +1,10 @@
+STATUS: merged
+
+Gerrit 12064 / 50014019
+Change-Id: I58825df12a73be179f136a665bbc808b3572fbc6
+
+Fix spelling in Bluetooth SDP client.
+TRACE_BT messages and arrtRange -> attrRange.
+Also B_PRIdSSIZE for the two ssize_t prints.
+
+No functional change.
