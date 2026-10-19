@@ -4,8 +4,6 @@ Subject: bluetooth: fix spelling in SDP client
 
 Fix spelling mistakes in the Bluetooth SDP client.
 
-No functional change.
-
 diff --git a/src/servers/bluetooth/SDPClient.cpp b/src/servers/bluetooth/SDPClient.cpp
 --- a/src/servers/bluetooth/SDPClient.cpp
 +++ b/src/servers/bluetooth/SDPClient.cpp
