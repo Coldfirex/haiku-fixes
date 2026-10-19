@@ -1,0 +1,44 @@
+From: Alan Shearer <sakison@gmail.com>
+Date: Tue, 13 Oct 2026 11:00:00 -0500
+Subject: time: fix spelling in error messages
+
+Fix "occured" to "occurred" in the error messages.
+
+No functional change.
+
+diff --git a/src/preferences/time/NetworkTimeView.cpp b/src/preferences/time/NetworkTimeView.cpp
+--- a/src/preferences/time/NetworkTimeView.cpp
++++ b/src/preferences/time/NetworkTimeView.cpp
+@@ -390,7 +390,7 @@
+ 
+ 				int32 errorCode;
+ 				if (message->FindInt32("error code", &errorCode) == B_OK) {
+ 					snprintf(buffer, sizeof(buffer),
+-						B_TRANSLATE("The following error occured "
++						B_TRANSLATE("The following error occurred "
+ 							"while synchronizing:\n%s: %s"),
+ 						errorString, strerror(errorCode));
+ 				} else {
+ 					snprintf(buffer, sizeof(buffer),
+-						B_TRANSLATE("The following error occured "
++						B_TRANSLATE("The following error occurred "
+ 							"while synchronizing:\n%s"),
+ 						errorString);
+ 				}
+diff --git a/src/preferences/time/Time.cpp b/src/preferences/time/Time.cpp
+--- a/src/preferences/time/Time.cpp
++++ b/src/preferences/time/Time.cpp
+@@ -108,10 +108,10 @@
+ 		if (update_time(settings, &errorString, &errorCode) == B_OK) {
+ 			printf("Synchronization successful\n");
+ 		} else if (errorCode != 0) {
+-			printf("The following error occured "
++			printf("The following error occurred "
+ 					"while synchronizing:\n%s: %s\n",
+ 				errorString, strerror(errorCode));
+ 		} else {
+-			printf("The following error occured while synchronizing:\n%s\n",
++			printf("The following error occurred while synchronizing:\n%s\n",
+ 				errorString);
+ 		}
+ 	} else {
