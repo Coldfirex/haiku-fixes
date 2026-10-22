@@ -38,6 +38,7 @@ network-prefs-gateway-fallback/ #1 keep saved gateway in the IPv4 field
 net-server-reapply-gateway/     #1 restore static default route on IFF_UP
 syslog-remote-forward/   optional RFC 3164 UDP client in syslog_daemon
 wireless-autojoin-retry/ #18238 retry auto-join if the first scan misses
+wireless-autojoin-poll/  poll for scan results when WLAN_SCANNED is missing
 webpositive-clear-downloads-on-exit/ option to remove finished downloads on exit
 wifi-ssid-group/         show each SSID once (strongest signal) in the menus
 ```
