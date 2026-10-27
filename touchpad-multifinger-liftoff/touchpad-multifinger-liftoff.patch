@@ -1,0 +1,58 @@
+diff --git a/src/add-ons/input_server/devices/mouse/movement_maker.cpp b/src/add-ons/input_server/devices/mouse/movement_maker.cpp
+index 0000000..1111111 100644
+--- a/src/add-ons/input_server/devices/mouse/movement_maker.cpp
++++ b/src/add-ons/input_server/devices/mouse/movement_maker.cpp
+@@ -80,6 +80,8 @@ TouchpadMovement::TouchpadMovement()
+ 	fMovementStarted = false;
+ 	fScrollingStarted = false;
+ 	fTapStarted = false;
++	fMultiFingerGesture = false;
++	fPreviousFingers = 0;
+ 	fValidEdgeMotion = false;
+ 	fDoubleClick = false;
+ }
+@@ -360,12 +362,23 @@ TouchpadMovement::EventToMovement(const touchpad_movement* _event, mouse_movemen
+ 		&& ((event->fingerWidth >= 4 && event->fingerWidth <= 7)
+ 			|| two_or_more_fingers(event))
+ 		&& (event->xPosition != 0 || event->yPosition != 0)) {
+-		// The touch pad is in touch with at least one finger
+-		if (!_CheckScrollingToMovement(event, movement))
+-			_MoveToMovement(event, movement);
+-	} else
++		// A finger being added or lifted changes the reported primary position.
++		uint8 fingers = count_set_bits(event->fingers);
++		if (fingers == 0)
++			fingers = 1;
++		if (fPreviousFingers != fingers)
++			StartNewMovment();
++		fPreviousFingers = fingers;
++		if (fingers >= 2)
++			fMultiFingerGesture = true;
++		// Keep a scrolling gesture from turning into pointer motion on lift-off.
++		if (fMultiFingerGesture && fingers == 1 && event->buttons == 0) {
++			movement->buttons = 0;
++			_UpdateButtons(movement);
++		} else if (!_CheckScrollingToMovement(event, movement))
++			_MoveToMovement(event, movement);
++	} else {
+ 		_NoTouchToMovement(event, movement);
+-
++		fPreviousFingers = 0;
++		fMultiFingerGesture = false;
++	}
+ 
+ 	if (fTapdragStarted || fValidEdgeMotion) {
+ 		// We want the current event to be repeated in 50ms if no other
+diff --git a/src/add-ons/input_server/devices/mouse/movement_maker.h b/src/add-ons/input_server/devices/mouse/movement_maker.h
+index 0000000..2222222 100644
+--- a/src/add-ons/input_server/devices/mouse/movement_maker.h
++++ b/src/add-ons/input_server/devices/mouse/movement_maker.h
+@@ -85,6 +85,8 @@ class TouchpadMovement : public MovementMaker {
+ 	inline	void				_CheckTapStarted(const touchpad_movement *event);
+ 
+ 
++			bool				fMultiFingerGesture;
++			uint8				fPreviousFingers;
+ 			bool				fMovementStarted;
+ 			bool				fScrollingStarted;
+ 			bool				fTapStarted;
