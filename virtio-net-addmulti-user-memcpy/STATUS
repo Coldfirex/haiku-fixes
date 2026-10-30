@@ -1,0 +1,16 @@
+state: local
+gerrit:
+change-id:
+topic: virtio-net
+branch: master
+patchset:
+commit:
+subject: virtio_net: use user_memcpy for multicast add/remove
+bug:
+submitted:
+code-review:
+merged:
+submitter:
+hrev:
+haiku-commit:
+note: local; ETHER_ADDMULTI/REMMULTI ioctl path. Do not Gerrit until smoke-tested.

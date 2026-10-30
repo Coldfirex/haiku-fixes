@@ -1,0 +1,62 @@
+From: Alan Shearer
+Subject: virtio_net: use user_memcpy for multicast add/remove
+
+ETHER_ADDMULTI and ETHER_REMMULTI compared and copied the user buffer
+with memcmp/memcpy. Other ioctl cases in the same function already use
+user_memcpy. This can fault under SMAP.
+
+Copy the address into a kernel buffer first.
+
+---
+diff --git a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
+index 67ed27bd..2f1e62bb 100644
+--- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
++++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
+@@ -844,6 +844,7 @@ virtio_net_ioctl(void* cookie, uint32 op, void* buffer, size_t length)
+ 		case ETHER_ADDMULTI:
+ 		{
+ 			uint32 i, multiCount = info->multiCount;
++			ether_address_t address;
+ 			TRACE("ioctl: add multicast\n");
+ 
+ 			if ((info->features & VIRTIO_NET_F_CTRL_RX) == 0)
+@@ -852,15 +853,18 @@ virtio_net_ioctl(void* cookie, uint32 op, void* buffer, size_t length)
+ 			if (multiCount == MAX_MULTI)
+ 				return B_ERROR;
+ 
++			if (user_memcpy(&address, buffer, sizeof(address)) != B_OK)
++				return B_BAD_ADDRESS;
++
+ 			for (i = 0; i < multiCount; i++) {
+-				if (memcmp(&info->multi[i], buffer,
++				if (memcmp(&info->multi[i], &address,
+ 					sizeof(info->multi[0])) == 0) {
+ 					break;
+ 				}
+ 			}
+ 
+ 			if (i == multiCount) {
+-				memcpy(&info->multi[i], buffer, sizeof(info->multi[i]));
++				info->multi[i] = address;
+ 				info->multiCount++;
+ 			}
+ 			if (info->multiCount == 1) {
+@@ -873,13 +877,17 @@ virtio_net_ioctl(void* cookie, uint32 op, void* buffer, size_t length)
+ 		case ETHER_REMMULTI:
+ 		{
+ 			uint32 i, multiCount = info->multiCount;
++			ether_address_t address;
+ 			TRACE("ioctl: remove multicast\n");
+ 
+ 			if ((info->features & VIRTIO_NET_F_CTRL_RX) == 0)
+ 				return B_NOT_SUPPORTED;
+ 
++			if (user_memcpy(&address, buffer, sizeof(address)) != B_OK)
++				return B_BAD_ADDRESS;
++
+ 			for (i = 0; i < multiCount; i++) {
+-				if (memcmp(&info->multi[i], buffer,
++				if (memcmp(&info->multi[i], &address,
+ 					sizeof(info->multi[0])) == 0) {
+ 					break;
+ 				}
