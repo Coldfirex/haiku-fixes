@@ -1,23 +1,8 @@
-From: Alan Shearer
-Subject: mouse: keep the watcher alive on B_DEVICE_NOT_READY
-
-USB HID checksum and transfer errors come back as Device not ready.
-The regular mouse path exits the control thread on any error other
-than B_INTERRUPTED. The mouse stays dead until the device is unplugged
-or the machine reboots.
-
-Snooze a bit and try the read again. Same idea as the touchpad path
-already does for timeouts and bad data.
-
----
-src/add-ons/input_server/devices/mouse/MouseInputDevice.cpp | 6 ++++++
-1 file changed, 6 insertions(+)
-
 diff --git a/src/add-ons/input_server/devices/mouse/MouseInputDevice.cpp b/src/add-ons/input_server/devices/mouse/MouseInputDevice.cpp
+index 0000000..1111111 100644
 --- a/src/add-ons/input_server/devices/mouse/MouseInputDevice.cpp
 +++ b/src/add-ons/input_server/devices/mouse/MouseInputDevice.cpp
-@@ -406,6 +406,12 @@
- 			if (ioctl(fDevice, MS_READ, &movements, sizeof(movements)) != B_OK) {
+@@ -406,6 +406,13 @@
  				if (errno == B_INTERRUPTED)
  					continue;
  
@@ -31,5 +16,3 @@ diff --git a/src/add-ons/input_server/devices/mouse/MouseInputDevice.cpp b/src/a
  				LOG_ERROR("Mouse device exiting, %s\n", strerror(errno));
  				_ControlThreadCleanup();
  				// TOAST!
- 				return;
- 			}
