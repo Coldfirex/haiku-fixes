@@ -1,0 +1,6 @@
+local
+
+Not on Gerrit yet.
+
+USB mouse watcher exits on B_DEVICE_NOT_READY from usb_hid checksum / transfer errors.
+Seen in syslog: "Mouse device exiting, Device not ready".
