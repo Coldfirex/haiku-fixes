@@ -8,7 +8,7 @@ index 0000000..1111111 100644
  
 +				// USB checksum / transfer errors show up as device not ready.
 +				// Do not kill the watcher for that.
-+				if (errno == B_DEVICE_NOT_READY) {
++				if (errno == B_DEV_NOT_READY) {
 +					snooze(10000);
 +					continue;
 +				}
