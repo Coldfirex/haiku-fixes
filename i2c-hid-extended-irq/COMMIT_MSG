@@ -1,0 +1,15 @@
+i2c_hid: support EXTENDED_IRQ as input-ready line
+
+Some trackpads (Dell XPS 15 9560) put an Extended IRQ resource in
+_CRS instead of a GPIO interrupt. InputReadyLine only looked for the
+GPIO type, so Init failed, fInputReady stayed NULL, and the driver
+re-read the input register forever.
+
+Add a second walker for ACPI_RESOURCE_TYPE_EXTENDED_IRQ. When one is
+found, install an interrupt handler that sets a flag. IsAsserted
+returns and clears that flag. The existing loop in MaybeScheduleTransfer
+then only reads when a report is actually ready.
+
+The GPIO pad path is unchanged.
+
+See https://github.com/RenkuOS/Source/issues/702

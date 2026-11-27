@@ -1,0 +1,139 @@
+--- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
++++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
+@@ -28,6 +28,10 @@ private:
+ 			area_id				fArea;
+ 			volatile uint32*	fPadConfig;
+ 			uint32				fStateMask;
+ 			bool				fActiveLow;
++
++			// Interrupt path used when the device has an EXTENDED_IRQ
++			// resource instead of a GPIO interrupt.
++			bool				fUsingInterrupt;
++			int32				fIrq;
++			volatile int32	fAsserted;
+ };
+ 
+ #endif // I2C_HID_INPUT_READY_LINE_H
+--- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
++++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
+@@ -116,6 +116,14 @@ struct gpio_interrupt {
+ 	uint8	triggering;
+ 	uint8	polarity;
+ };
+ 
++struct extended_irq {
++	bool	found;
++	int32	irq;
++	uint8	triggering;
++	uint8	polarity;
++};
++
+ struct controller_memory {
+ 	uint32	count;
+ 	uint32	base[MAX_COMMUNITIES];
+@@ -150,6 +158,28 @@ find_gpio_interrupt(ACPI_RESOURCE* resource, void* context)
+ 	return AE_OK;
+ }
+ 
++
++static acpi_status
++find_extended_irq(ACPI_RESOURCE* resource, void* context)
++{
++	extended_irq* irq = (extended_irq*)context;
++	if (irq->found || resource->Type != ACPI_RESOURCE_TYPE_EXTENDED_IRQ)
++		return AE_OK;
++
++	ACPI_RESOURCE_EXTENDED_IRQ& ext = resource->Data.ExtendedIrq;
++	if (ext.InterruptCount == 0)
++		return AE_OK;
++
++	irq->irq = ext.Interrupts[0];
++	irq->triggering = ext.Triggering;
++	irq->polarity = ext.Polarity;
++	irq->found = true;
++	return AE_OK;
++}
++
++
++static int32
++input_ready_interrupt(void* data)
++{
++	InputReadyLine* line = (InputReadyLine*)data;
++	line->fAsserted = 1;
++	return B_HANDLED_INTERRUPT;
++}
++
++
+ static acpi_status
+ find_controller_memory(ACPI_RESOURCE* resource, void* context)
+ {
+@@ -196,6 +226,8 @@ InputReadyLine::InputReadyLine()
+ 	fPadConfig(NULL),
+ 	fStateMask(PADCFG0_GPIORXSTATE),
+ 	fActiveLow(true),
++	fUsingInterrupt(false),
++	fIrq(-1),
++	fAsserted(0)
+ {
+ }
+ 
+@@ -204,6 +236,9 @@ InputReadyLine::~InputReadyLine()
+ {
+ 	if (fArea >= 0)
+ 		delete_area(fArea);
++	if (fUsingInterrupt && fIrq >= 0)
++		remove_io_interrupt_handler(fIrq, input_ready_interrupt, this);
+ }
+ 
+ 
+@@ -213,6 +248,42 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
+ 	gpio_interrupt interrupt = {};
+ 	if (acpi->walk_resources(device, (char*)"_CRS", find_gpio_interrupt,
+ 			&interrupt) != B_OK || !interrupt.found) {
++		// No GPIO interrupt. Try an Extended IRQ resource. Some trackpads
++		// (XPS 15 9560) only have this.
++		extended_irq ext = {};
++		if (acpi->walk_resources(device, (char*)"_CRS", find_extended_irq,
++				&ext) != B_OK || !ext.found) {
++			return B_ENTRY_NOT_FOUND;
++		}
++
++		if (ext.triggering != ACPI_LEVEL_SENSITIVE
++			&& ext.triggering != ACPI_EDGE_SENSITIVE) {
++			TRACE_ALWAYS("IRQ %" B_PRId32 " has bad trigger\n", ext.irq);
++			return B_NOT_SUPPORTED;
++		}
++
++		status_t status = install_io_interrupt_handler(ext.irq,
++			input_ready_interrupt, this, 0);
++		if (status != B_OK) {
++			TRACE_ALWAYS("install IRQ %" B_PRId32 " failed: %s\n",
++				ext.irq, strerror(status));
++			return status;
++		}
++
++		fUsingInterrupt = true;
++		fIrq = ext.irq;
++		fActiveLow = ext.polarity == ACPI_ACTIVE_LOW;
++		TRACE_ALWAYS("using IRQ %" B_PRId32 "\n", ext.irq);
++		return B_OK;
++	}
++
++	// Existing GPIO path below.
+ 		return B_ENTRY_NOT_FOUND;
+ 	}
+ 
+@@ -338,6 +413,11 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
+ 
+ bool
+ InputReadyLine::IsAsserted() const
+ {
++	if (fUsingInterrupt) {
++		// Handler sets the flag. Clear it so we only see the edge once.
++		int32 was = atomic_and(&fAsserted, 0);
++		return was != 0;
++	}
++
+ 	bool high = (*fPadConfig & fStateMask) != 0;
+ 	return high != fActiveLow;
+ }

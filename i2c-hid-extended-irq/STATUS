@@ -1,0 +1,7 @@
+local
+
+Real fix for the case where the trackpad _CRS has an Extended IRQ
+instead of a GPIO interrupt. Installs an interrupt handler and sets a
+flag so the existing wait in MaybeScheduleTransfer is used. GPIO path
+is left alone. Needs a test on the XPS 15 9560. Not Gerrit yet.
+See RenkuOS/Source#702.
