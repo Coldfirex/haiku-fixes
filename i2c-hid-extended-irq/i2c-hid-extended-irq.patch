@@ -10,7 +10,7 @@
 +			// resource instead of a GPIO interrupt.
 +			bool				fUsingInterrupt;
 +			int32				fIrq;
-+			volatile int32	fAsserted;
++			int32				fAsserted;
  };
  
  #endif // I2C_HID_INPUT_READY_LINE_H
@@ -39,7 +39,7 @@
 +static acpi_status
 +find_extended_irq(ACPI_RESOURCE* resource, void* context)
 +{
-+	extended_irq* irq = (extended_irq*)context;
++	extended_irq* irq = static_cast<extended_irq*>(context);
 +	if (irq->found || resource->Type != ACPI_RESOURCE_TYPE_EXTENDED_IRQ)
 +		return AE_OK;
 +
@@ -58,7 +58,7 @@
 +static int32
 +input_ready_interrupt(void* data)
 +{
-+	InputReadyLine* line = (InputReadyLine*)data;
++	InputReadyLine* line = static_cast<InputReadyLine*>(data);
 +	line->fAsserted = 1;
 +	return B_HANDLED_INTERRUPT;
 +}
@@ -86,17 +86,18 @@
  }
  
  
-@@ -213,6 +248,42 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
- 	gpio_interrupt interrupt = {};
+@@ -213,6 +248,45 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
+ 	gpio_interrupt interrupt;
+ 	memset(&interrupt, 0, sizeof(interrupt));
  	if (acpi->walk_resources(device, (char*)"_CRS", find_gpio_interrupt,
  			&interrupt) != B_OK || !interrupt.found) {
 +		// No GPIO interrupt. Try an Extended IRQ resource. Some trackpads
 +		// (XPS 15 9560) only have this.
-+		extended_irq ext = {};
++		extended_irq ext;
++		memset(&ext, 0, sizeof(ext));
 +		if (acpi->walk_resources(device, (char*)"_CRS", find_extended_irq,
-+				&ext) != B_OK || !ext.found) {
++				&ext) != B_OK || !ext.found)
 +			return B_ENTRY_NOT_FOUND;
-+		}
 +
 +		if (ext.triggering != ACPI_LEVEL_SENSITIVE
 +			&& ext.triggering != ACPI_EDGE_SENSITIVE) {
@@ -117,12 +118,9 @@
 +		fActiveLow = ext.polarity == ACPI_ACTIVE_LOW;
 +		TRACE_ALWAYS("using IRQ %" B_PRId32 "\n", ext.irq);
 +		return B_OK;
-+	}
-+
-+	// Existing GPIO path below.
- 		return B_ENTRY_NOT_FOUND;
  	}
  
+ 	// GPIO path continues here.
 @@ -338,6 +413,11 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
  
  bool
