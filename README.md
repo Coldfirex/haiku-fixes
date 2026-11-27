@@ -43,7 +43,6 @@ webpositive-clear-downloads-on-exit/ option to remove finished downloads on exit
 wifi-ssid-group/         show each SSID once (strongest signal) in the menus
 virtio-net-addmulti-user-memcpy/ ETHER_ADDMULTI/REMMULTI user buffer copy
 mouse-usb-device-not-ready/ keep mouse watcher alive on B_DEVICE_NOT_READY
-i2c-hid-no-ready-poll/   snooze when there is no input-ready line (RenkuOS #702)
 i2c-hid-extended-irq/    use EXTENDED_IRQ as input-ready line (RenkuOS #702)
 ```
 
@@ -78,6 +77,7 @@ abandoned/udp-receiveerror/           never submitted; consumer already frees on
 abandoned/ipv4-error-received/        never submitted; consumer already frees on error
 abandoned/ipv6-error-received/        never submitted; consumer already frees on error
 abandoned/mediaplayer-stop-uninit/    #18714 fixed by Gerrit 11966 (nipos)
+abandoned/i2c-hid-no-ready-poll/      temporary snooze; real fix is i2c-hid-extended-irq
 ```
 
 ```
