@@ -1,0 +1,5 @@
+abandoned
+
+Temporary 10 ms snooze when fInputReady was NULL. Stopped the core burn
+but did not fix cursor drift. Real fix is i2c-hid-extended-irq (EXTENDED_IRQ
+path). Do not re-push. See RenkuOS/Source#702.
