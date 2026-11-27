@@ -2,10 +2,10 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h b/src/add
 --- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
 +++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
 @@ -28,6 +28,11 @@ private:
- 			area_id				fArea;
- 			volatile uint32*	fPadConfig;
- 			uint32				fStateMask;
- 			bool				fActiveLow;
+			area_id				fArea;
+			volatile uint32*	fPadConfig;
+			uint32				fStateMask;
+			bool				fActiveLow;
 +
 +			// Interrupt path used when the device has an EXTENDED_IRQ
 +			// resource instead of a GPIO interrupt.
@@ -19,9 +19,9 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
 --- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
 +++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
 @@ -116,6 +116,15 @@ struct gpio_interrupt {
- 	uint8	triggering;
- 	uint8	polarity;
- };
+	uint8	triggering;
+	uint8	polarity;
+};
  
 +struct extended_irq {
 +	bool	found;
@@ -31,11 +31,11 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
 +};
 +
  struct controller_memory {
- 	uint32	count;
- 	uint32	base[MAX_COMMUNITIES];
+	uint32	count;
+	uint32	base[MAX_COMMUNITIES];
 @@ -150,6 +159,29 @@ find_gpio_interrupt(ACPI_RESOURCE* resource, void* context)
- 	return AE_OK;
- }
+	return AE_OK;
+}
  
 +
 +static acpi_status
@@ -70,9 +70,9 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
  find_controller_memory(ACPI_RESOURCE* resource, void* context)
  {
 @@ -196,6 +228,9 @@ InputReadyLine::InputReadyLine()
- 	fPadConfig(NULL),
- 	fStateMask(PADCFG0_GPIORXSTATE),
- 	fActiveLow(true),
+	fPadConfig(NULL),
+	fStateMask(PADCFG0_GPIORXSTATE),
+	fActiveLow(true),
 +	fUsingInterrupt(false),
 +	fIrq(-1),
 +	fAsserted(0)
@@ -81,18 +81,18 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
  
 @@ -204,6 +239,9 @@ InputReadyLine::~InputReadyLine()
  {
- 	if (fArea >= 0)
- 		delete_area(fArea);
+	if (fArea >= 0)
+		delete_area(fArea);
 +	if (fUsingInterrupt && fIrq >= 0)
 +		remove_io_interrupt_handler(fIrq, input_ready_interrupt, this);
  }
  
  
 @@ -213,6 +251,46 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
- 	gpio_interrupt interrupt;
- 	memset(&interrupt, 0, sizeof(interrupt));
- 	if (acpi->walk_resources(device, (char*)"_CRS", find_gpio_interrupt,
- 			&interrupt) != B_OK || !interrupt.found) {
+	gpio_interrupt interrupt;
+	memset(&interrupt, 0, sizeof(interrupt));
+	if (acpi->walk_resources(device, (char*)"_CRS", find_gpio_interrupt,
+			&interrupt) != B_OK || !interrupt.found) {
 +		// No GPIO interrupt. Try an Extended IRQ resource. Some trackpads
 +		// (XPS 15 9560) only have this.
 +		extended_irq ext;
