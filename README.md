@@ -47,6 +47,15 @@ i2c-hid-no-ready-poll/   snooze when there is no input-ready line (RenkuOS #702)
 i2c-hid-extended-irq/    use EXTENDED_IRQ as input-ready line (RenkuOS #702)
 ```
 
+Reviewed against RenkuOS/Source main on 2026-11-27. These were regenerated so they apply cleanly:
+
+- tcp-spawn-abort
+- virtio-net-addmulti-user-memcpy
+- arp-queued-send
+- syslog-message-truncation
+
+The rest of the active list still matches current RenkuOS with only trivial offsets.
+
 `ipv4-multicast-filter/` at the repo root is a leftover pointer. The record is `merged/ipv4-multicast-filter/` (11850).
 
 Do-not-submit locals live under [`hold/`](hold/README.md):
