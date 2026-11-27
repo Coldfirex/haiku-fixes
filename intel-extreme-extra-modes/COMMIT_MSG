@@ -1,0 +1,13 @@
+intel_extreme: offer intermediate modes on high-DPI panels
+
+High-DPI laptop panels only advertise their native mode in the EDID.
+The well-known mode list stops at 1920x1200, so Screen preferences
+jumps from that straight to 3840x2160.
+
+Pass a few intermediate modes (2048x1152, 2304x1296, 2560x1440,
+2560x1600) as initial modes when the panel is at least 3000 wide.
+The panel fitter already scales non-native modes; the timings only
+need to be plausible.
+
+Tested on a Dell XPS 15 9560 (SHP1476, 3840x2160). All four modes
+work with no artifacts.
