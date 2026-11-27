@@ -1,11 +1,9 @@
-diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
---- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
-+++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
-@@ -28,6 +28,11 @@ private:
-			area_id				fArea;
-			volatile uint32*	fPadConfig;
-			uint32				fStateMask;
-			bool				fActiveLow;
+--- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h	2026-11-27 15:44:40.942500964 +0000
++++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h	2026-11-27 15:44:53.706500964 +0000
+@@ -30,6 +30,12 @@
+ 			volatile uint32*	fPadConfig;
+ 			uint32				fStateMask;
+ 			bool				fActiveLow;
 +
 +			// Interrupt path used when the device has an EXTENDED_IRQ
 +			// resource instead of a GPIO interrupt.
@@ -14,14 +12,12 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h b/src/add
 +			int32				fAsserted;
  };
  
- #endif // I2C_HID_INPUT_READY_LINE_H
-diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
---- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
-+++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
-@@ -116,6 +116,15 @@ struct gpio_interrupt {
-	uint8	triggering;
-	uint8	polarity;
-};
+ 
+--- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp	2026-11-27 15:44:41.030500964 +0000
++++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp	2026-11-27 15:44:53.718500964 +0000
+@@ -121,6 +121,13 @@
+ 	uint8	polarity;
+ };
  
 +struct extended_irq {
 +	bool	found;
@@ -31,14 +27,12 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
 +};
 +
  struct controller_memory {
-	uint32	count;
-	uint32	base[MAX_COMMUNITIES];
-@@ -150,6 +159,29 @@ find_gpio_interrupt(ACPI_RESOURCE* resource, void* context)
-	return AE_OK;
-}
+ 	uint32	count;
+ 	uint32	base[MAX_COMMUNITIES];
+@@ -151,6 +158,34 @@
  
-+
-+static acpi_status
+ 
+ static acpi_status
 +find_extended_irq(ACPI_RESOURCE* resource, void* context)
 +{
 +	extended_irq* irq = static_cast<extended_irq*>(context);
@@ -66,33 +60,40 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
 +}
 +
 +
- static acpi_status
++static acpi_status
  find_controller_memory(ACPI_RESOURCE* resource, void* context)
  {
-@@ -196,6 +228,9 @@ InputReadyLine::InputReadyLine()
-	fPadConfig(NULL),
-	fStateMask(PADCFG0_GPIORXSTATE),
-	fActiveLow(true),
+ 	controller_memory* memory = (controller_memory*)context;
+@@ -195,7 +230,10 @@
+ 	fArea(-1),
+ 	fPadConfig(NULL),
+ 	fStateMask(PADCFG0_GPIORXSTATE),
+-	fActiveLow(true)
++	fActiveLow(true),
 +	fUsingInterrupt(false),
 +	fIrq(-1),
 +	fAsserted(0)
  {
  }
  
-@@ -204,6 +239,9 @@ InputReadyLine::~InputReadyLine()
+@@ -204,16 +242,45 @@
  {
-	if (fArea >= 0)
-		delete_area(fArea);
+ 	if (fArea >= 0)
+ 		delete_area(fArea);
 +	if (fUsingInterrupt && fIrq >= 0)
 +		remove_io_interrupt_handler(fIrq, input_ready_interrupt, this);
  }
  
  
-@@ -213,6 +251,46 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
-	gpio_interrupt interrupt;
-	memset(&interrupt, 0, sizeof(interrupt));
-	if (acpi->walk_resources(device, (char*)"_CRS", find_gpio_interrupt,
-			&interrupt) != B_OK || !interrupt.found) {
+ status_t
+ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
+ {
+-	gpio_interrupt interrupt = {};
++	gpio_interrupt interrupt;
++	memset(&interrupt, 0, sizeof(interrupt));
+ 	if (acpi->walk_resources(device, (char*)"_CRS", find_gpio_interrupt,
+ 			&interrupt) != B_OK || !interrupt.found) {
+-		return B_ENTRY_NOT_FOUND;
 +		// No GPIO interrupt. Try an Extended IRQ resource. Some trackpads
 +		// (XPS 15 9560) only have this.
 +		extended_irq ext;
@@ -122,9 +123,8 @@ diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/a
 +		return B_OK;
  	}
  
- 	// GPIO path continues here.
-@@ -338,6 +416,11 @@ InputReadyLine::Init(acpi_module_info* acpi, acpi_handle device)
- 
+ 	// The line must stay asserted while a report is ready.
+@@ -338,6 +405,12 @@
  bool
  InputReadyLine::IsAsserted() const
  {
