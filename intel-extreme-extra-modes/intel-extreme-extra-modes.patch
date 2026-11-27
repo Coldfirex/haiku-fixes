@@ -8,23 +8,22 @@
 +// Extra scaled modes for high-DPI panels. The panel fitter handles these.
 +// Timings are approximate; the hardware runs the panel at native mode.
 +// Flags match the base mode list so scrolling and overlays still work.
-+#define EXTRA_MODE_FLAGS \
-+	(B_8_BIT_DAC | B_HARDWARE_CURSOR | B_PARALLEL_ACCESS | B_DPMS \
-+		| B_SUPPORTS_OVERLAYS | B_SCROLL)
++static const uint32 kExtraModeFlags = B_8_BIT_DAC | B_HARDWARE_CURSOR
++	| B_PARALLEL_ACCESS | B_DPMS | B_SUPPORTS_OVERLAYS | B_SCROLL;
 +
 +static const display_mode kExtraHighDpiModes[] = {
 +	{{241500, 2560, 2608, 2640, 2720, 1440, 1443, 1448, 1481,
 +		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2560, 1440, 0, 0,
-+		EXTRA_MODE_FLAGS},
++		kExtraModeFlags},
 +	{{268500, 2560, 2608, 2640, 2720, 1600, 1603, 1609, 1646,
 +		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2560, 1600, 0, 0,
-+		EXTRA_MODE_FLAGS},
++		kExtraModeFlags},
 +	{{162000, 2048, 2074, 2154, 2250, 1152, 1155, 1160, 1200,
 +		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2048, 1152, 0, 0,
-+		EXTRA_MODE_FLAGS},
++		kExtraModeFlags},
 +	{{198000, 2304, 2336, 2368, 2440, 1296, 1299, 1304, 1350,
 +		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2304, 1296, 0, 0,
-+		EXTRA_MODE_FLAGS},
++		kExtraModeFlags},
 +};
 +
 +
@@ -33,12 +32,13 @@
 +{
 +	// Prefer the VBT panel timing if we have it.
 +	if (gInfo->shared_info->got_vbt
-+		&& gInfo->shared_info->panel_timing.h_display >= 3000)
++		&& gInfo->shared_info->panel_timing.h_display >= 3000) {
 +		return true;
++	}
 +
 +	// Otherwise look at the detailed timings in the EDID.
 +	if (gInfo->has_edid) {
-+		for (int i = 0; i < EDID1_NUM_DETAILED_MONITOR_DESC; i++) {
++		for (uint32 i = 0; i < EDID1_NUM_DETAILED_MONITOR_DESC; i++) {
 +			edid1_detailed_monitor* mon = &gInfo->edid_info.detailed_monitor[i];
 +			if (mon->monitor_desc_type != EDID1_IS_DETAILED_TIMING)
 +				continue;
