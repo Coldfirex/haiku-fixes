@@ -1,0 +1,7 @@
+SubDir HAIKU_TOP src add-ons kernel drivers power acpi_video ;
+
+UsePrivateKernelHeaders ;
+
+KernelAddon acpi_video :
+	acpi_video.cpp
+;
