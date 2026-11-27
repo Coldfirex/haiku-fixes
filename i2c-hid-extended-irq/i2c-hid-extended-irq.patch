@@ -1,6 +1,15 @@
---- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h	2026-11-27 15:44:40.942500964 +0000
-+++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h	2026-11-27 15:44:53.706500964 +0000
-@@ -30,6 +30,12 @@
+--- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
++++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
+@@ -23,13 +23,20 @@
+ 			status_t			Init(acpi_module_info* acpi,
+ 								acpi_handle device);
+ 
+-			bool				IsAsserted() const;
++			bool				IsAsserted();
+ 
++			friend int32 input_ready_interrupt(void* data);
+ private:
+ 			area_id				fArea;
  			volatile uint32*	fPadConfig;
  			uint32				fStateMask;
  			bool				fActiveLow;
@@ -13,8 +22,8 @@
  };
  
  
---- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp	2026-11-27 15:44:41.030500964 +0000
-+++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp	2026-11-27 15:44:53.718500964 +0000
+--- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
++++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
 @@ -121,6 +121,13 @@
  	uint8	polarity;
  };
@@ -124,9 +133,12 @@
  	}
  
  	// The line must stay asserted while a report is ready.
-@@ -338,6 +405,12 @@
+@@ -336,8 +403,14 @@
+ 
+ 
  bool
- InputReadyLine::IsAsserted() const
+-InputReadyLine::IsAsserted() const
++InputReadyLine::IsAsserted()
  {
 +	if (fUsingInterrupt) {
 +		// Handler sets the flag. Clear it so we only see the edge once.
