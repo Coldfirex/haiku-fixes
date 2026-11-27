@@ -9,20 +9,17 @@ _Spawn has a TODO for proper error handling. This is that handling.
 Set CLOSED on the later failures and trace the state change.
 After _Spawn returns, abort the socket if it is CLOSED.
 
----
- src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
-
-diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp
-@@ -1552,7 +1552,6 @@
- 
- 	TRACE("Spawn()");
+--- a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp	2026-11-27 15:22:23.639211973 +0000
++++ b/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp	2026-11-27 15:22:28.367211973 +0000
+@@ -1620,7 +1620,6 @@
+ 	// Reset local address, so we don't end up with an invalid address in case of failure
+ 	(*LocalAddress())->sa_len = 0;
  
 -	// TODO: proper error handling!
  	if (ProtocolSocket::Open() != B_OK) {
  		T(Error(this, "opening failed", __LINE__));
  		return DROP;
-@@ -1565,10 +1564,14 @@
+@@ -1633,10 +1632,14 @@
  
  	if (fManager->BindChild(this, buffer->destination) != B_OK) {
  		T(Error(this, "binding failed", __LINE__));
@@ -37,16 +34,7 @@ diff --git a/src/add-ons/kernel/network/protocols/tcp/TCPEndpoint.cpp b/src/add-
  		return DROP;
  	}
  
-@@ -1580,6 +1583,8 @@
- 	// send SYN+ACK
- 	if (_SendAcknowledge() != B_OK) {
- 		T(Error(this, "sending failed", __LINE__));
-+		fState = CLOSED;
-+		T(State(this));
- 		return DROP;
- 	}
- 
-@@ -1613,8 +1618,12 @@
+@@ -1694,8 +1697,12 @@
  		return DROP;
  	}
  

@@ -6,14 +6,9 @@ If send_data fails it does not take the buffer, so free it.
 
 If there is no protocol, just drop the queue.
 
----
- src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
-
-diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
---- a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
-+++ b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp
-@@ -337,16 +337,24 @@
+--- a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp	2026-11-27 15:22:23.639211973 +0000
++++ b/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp	2026-11-27 15:22:44.271211973 +0000
+@@ -339,6 +339,11 @@
  
  	flags = (flags & ~ARP_FLAG_REJECT) | ARP_FLAG_VALID;
  
@@ -25,9 +20,7 @@ diff --git a/src/add-ons/kernel/network/datalink_protocols/arp/arp.cpp b/src/add
  	BufferList::Iterator iterator = queue.GetIterator();
  	while (iterator.HasNext()) {
  		net_buffer *buffer = iterator.Next();
- 		iterator.Remove();
- 
- 		TRACE(("  ARP Dequeing packet %p...\n", buffer));
+@@ -348,7 +353,10 @@
  
  		memcpy(buffer->destination, &hardware_address,
  			hardware_address.sdl_len);

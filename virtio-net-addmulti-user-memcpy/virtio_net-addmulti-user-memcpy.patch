@@ -7,12 +7,9 @@ user_memcpy. This can fault under SMAP.
 
 Copy the address into a kernel buffer first.
 
----
-diff --git a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
-index 67ed27bd..2f1e62bb 100644
---- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
-+++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp
-@@ -844,6 +844,7 @@ virtio_net_ioctl(void* cookie, uint32 op, void* buffer, size_t length)
+--- a/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp	2026-11-27 15:22:23.639211973 +0000
++++ b/src/add-ons/kernel/drivers/network/ether/virtio/virtio_net.cpp	2026-11-27 15:22:35.947211973 +0000
+@@ -839,6 +839,7 @@
  		case ETHER_ADDMULTI:
  		{
  			uint32 i, multiCount = info->multiCount;
@@ -20,7 +17,7 @@ index 67ed27bd..2f1e62bb 100644
  			TRACE("ioctl: add multicast\n");
  
  			if ((info->features & VIRTIO_NET_F_CTRL_RX) == 0)
-@@ -852,15 +853,18 @@ virtio_net_ioctl(void* cookie, uint32 op, void* buffer, size_t length)
+@@ -847,15 +848,18 @@
  			if (multiCount == MAX_MULTI)
  				return B_ERROR;
  
@@ -41,7 +38,7 @@ index 67ed27bd..2f1e62bb 100644
  				info->multiCount++;
  			}
  			if (info->multiCount == 1) {
-@@ -873,13 +877,17 @@ virtio_net_ioctl(void* cookie, uint32 op, void* buffer, size_t length)
+@@ -868,13 +872,17 @@
  		case ETHER_REMMULTI:
  		{
  			uint32 i, multiCount = info->multiCount;
@@ -50,13 +47,14 @@ index 67ed27bd..2f1e62bb 100644
  
  			if ((info->features & VIRTIO_NET_F_CTRL_RX) == 0)
  				return B_NOT_SUPPORTED;
- 
++
 +			if (user_memcpy(&address, buffer, sizeof(address)) != B_OK)
 +				return B_BAD_ADDRESS;
-+
+ 
  			for (i = 0; i < multiCount; i++) {
 -				if (memcmp(&info->multi[i], buffer,
 +				if (memcmp(&info->multi[i], &address,
  					sizeof(info->multi[0])) == 0) {
  					break;
  				}
+ 			}
