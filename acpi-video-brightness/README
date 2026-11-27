@@ -1,23 +1,12 @@
-ACPI video brightness keys
+ACPI video brightness keys.
 
-The brightness keys on many laptops (Dell XPS 15 9560 and others) do not
-send PS/2 scancodes. They only generate ACPI video notifies:
+Kernel driver installs a notify handler on devices that have _BCL
+(for example \_SB_.PCI0.GFX0.LCD_). On 0x86/0x87 it publishes
+/dev/power/acpi_video/0.
 
-  0x86 = brightness up
-  0x87 = brightness down
+Userspace helper waits on that device and calls screenmode -b.
 
-Volume and keyboard-backlight keys send normal extended scancodes, which
-is why they already work. The Screen preferences slider and `screenmode`
-also work because they use the intel_extreme accelerant path.
+Overlay path:
+~/config/non-packaged/add-ons/kernel/drivers/power/acpi_video
 
-This folder adds a small kernel driver that installs a notify handler on
-ACPI video devices (ones that implement _BCL) and publishes
-/dev/power/acpi_video/0. A tiny userspace helper reads the events and
-calls `screenmode -b` to step the brightness.
-
-Not Gerrit yet. Overlay the kernel add-on and run the helper.
-
-Build the helper with:
-  gcc -o brightness-helper brightness-helper.c
-
-Put the helper in UserBootScript or run it by hand after boot.
+Not Gerrit yet.
