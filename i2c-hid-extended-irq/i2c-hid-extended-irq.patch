@@ -60,7 +60,7 @@
 +}
 +
 +
-+static int32
++int32
 +input_ready_interrupt(void* data)
 +{
 +	InputReadyLine* line = static_cast<InputReadyLine*>(data);
