@@ -1,0 +1,6 @@
+local
+
+Temporary. When there is no input-ready line the watcher spins reading
+the last report. A 10 ms snooze stops the CPU use. Cursor still drifts
+after finger-up (just slower). Real fix is the ready line (RenkuOS #702).
+Not Gerrit yet.
