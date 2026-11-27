@@ -1,6 +1,5 @@
 From: Alan Shearer <sakison@gmail.com>
-Date: Mon, 12 Oct 2026 18:05:00 -0500
-Subject: [PATCH] libroot: fix syslog truncation stack overflow
+Subject: libroot: fix syslog truncation stack overflow
 
 vsnprintf returns the length that would have been written. When the
 message is longer than the buffer the old else branch used that large
@@ -9,10 +8,9 @@ value as an index and wrote past the end of the stack buffer.
 Clamp the length to what actually fits before the newline check so the
 existing logic never indexes outside the buffer.
 
-diff --git a/src/system/libroot/posix/syslog.cpp b/src/system/libroot/posix/syslog.cpp
---- a/src/system/libroot/posix/syslog.cpp
-+++ b/src/system/libroot/posix/syslog.cpp
-@@ -147,13 +147,19 @@
+--- a/src/system/libroot/posix/syslog.cpp	2026-11-27 15:25:30.591211973 +0000
++++ b/src/system/libroot/posix/syslog.cpp	2026-11-27 15:25:30.611211973 +0000
+@@ -161,13 +161,18 @@
  	message.priority = priority;
  	strcpy(message.ident, context->ident);
  
