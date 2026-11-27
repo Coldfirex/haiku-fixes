@@ -1,21 +1,30 @@
 --- a/src/add-ons/accelerants/intel_extreme/mode.cpp
 +++ b/src/add-ons/accelerants/intel_extreme/mode.cpp
-@@ -271,6 +271,45 @@
+@@ -271,6 +271,54 @@
  	return limit == 0 || mode->timing.pixel_clock <= limit;
  }
  
 +
 +// Extra scaled modes for high-DPI panels. The panel fitter handles these.
 +// Timings are approximate; the hardware runs the panel at native mode.
++// Flags match the base mode list so scrolling and overlays still work.
++#define EXTRA_MODE_FLAGS \
++	(B_8_BIT_DAC | B_HARDWARE_CURSOR | B_PARALLEL_ACCESS | B_DPMS \
++		| B_SUPPORTS_OVERLAYS | B_SCROLL)
++
 +static const display_mode kExtraHighDpiModes[] = {
 +	{{241500, 2560, 2608, 2640, 2720, 1440, 1443, 1448, 1481,
-+		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2560, 1440, 0, 0, 0},
++		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2560, 1440, 0, 0,
++		EXTRA_MODE_FLAGS},
 +	{{268500, 2560, 2608, 2640, 2720, 1600, 1603, 1609, 1646,
-+		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2560, 1600, 0, 0, 0},
++		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2560, 1600, 0, 0,
++		EXTRA_MODE_FLAGS},
 +	{{162000, 2048, 2074, 2154, 2250, 1152, 1155, 1160, 1200,
-+		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2048, 1152, 0, 0, 0},
++		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2048, 1152, 0, 0,
++		EXTRA_MODE_FLAGS},
 +	{{198000, 2304, 2336, 2368, 2440, 1296, 1299, 1304, 1350,
-+		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2304, 1296, 0, 0, 0},
++		B_POSITIVE_HSYNC | B_POSITIVE_VSYNC}, B_RGB32, 2304, 1296, 0, 0,
++		EXTRA_MODE_FLAGS},
 +};
 +
 +
@@ -27,7 +36,7 @@
 +		&& gInfo->shared_info->panel_timing.h_display >= 3000)
 +		return true;
 +
-+	// Otherwise look at the first detailed timing in the EDID.
++	// Otherwise look at the detailed timings in the EDID.
 +	if (gInfo->has_edid) {
 +		for (int i = 0; i < EDID1_NUM_DETAILED_MONITOR_DESC; i++) {
 +			edid1_detailed_monitor* mon = &gInfo->edid_info.detailed_monitor[i];
@@ -46,7 +55,7 @@
  /*!	Creates the initial mode list of the primary accelerant.
  	It's called from intel_init_accelerant().
  */
-@@ -338,9 +377,17 @@
+@@ -338,9 +386,17 @@
  		gInfo->mode_list_area = create_display_modes("intel extreme modes", NULL, &mode, 1,
  			supportedSpaces, colorSpaceCount, limitModes, &list, &count);
  	} else {
