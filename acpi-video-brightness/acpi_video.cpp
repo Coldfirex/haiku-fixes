@@ -9,14 +9,15 @@
 
 #include <KernelExport.h>
 #include <device_manager.h>
-#include <drivers/KernelExport.h>
 
 #include <ACPI.h>
+#include <fs/select_sync_pool.h>
 
 
 #define ACPI_VIDEO_MODULE_NAME "drivers/power/acpi_video/driver_v1"
 #define ACPI_VIDEO_DEVICE_MODULE_NAME "drivers/power/acpi_video/device_v1"
 #define ACPI_VIDEO_BASENAME "power/acpi_video/%d"
+#define ACPI_VIDEO_PATHID_GENERATOR "acpi_video/path_id"
 
 #define ACPI_VIDEO_NOTIFY_INC	0x86
 #define ACPI_VIDEO_NOTIFY_DEC	0x87
@@ -27,11 +28,12 @@ struct acpi_video_device {
 	acpi_device_module_info*	acpi;
 	acpi_device					acpi_cookie;
 	uint32						last_notify;
+	bool						updated;
+	select_sync_pool*			select_pool;
 };
 
 
 static device_manager_info* sDeviceManager;
-static acpi_module_info* sAcpi;
 
 
 static void
@@ -42,46 +44,27 @@ acpi_video_notify_handler(acpi_handle device, uint32 value, void* context)
 		return;
 
 	info->last_notify = value;
-	dprintf("acpi_video: notify 0x%lx\n", (unsigned long)value);
-	// wake any waiting readers
-	sDeviceManager->publish_device(info->node, ACPI_VIDEO_BASENAME, NULL);
+	info->updated = true;
+	dprintf("acpi_video: notify 0x%" B_PRIx32 "\n", value);
+
+	if (info->select_pool != NULL)
+		notify_select_event_pool(info->select_pool, B_SELECT_READ);
 }
 
 
+// #pragma mark - device module API
+
 static status_t
-acpi_video_init_device(device_node* node, void** _cookie)
+acpi_video_init_device(void* driverCookie, void** _cookie)
 {
-	acpi_video_device* info = (acpi_video_device*)calloc(1, sizeof(*info));
-	if (info == NULL)
-		return B_NO_MEMORY;
-
-	info->node = node;
-
-	device_node* parent = sDeviceManager->get_parent_node(node);
-	sDeviceManager->get_driver(parent, (driver_module_info**)&info->acpi,
-		(void**)&info->acpi_cookie);
-	sDeviceManager->put_node(parent);
-
-	status_t status = info->acpi->install_notify_handler(info->acpi_cookie,
-		ACPI_DEVICE_NOTIFY, acpi_video_notify_handler, info);
-	if (status != B_OK) {
-		dprintf("acpi_video: install_notify_handler failed\n");
-		free(info);
-		return status;
-	}
-
-	*_cookie = info;
+	*_cookie = driverCookie;
 	return B_OK;
 }
 
 
 static void
-acpi_video_uninit_device(void* _cookie)
+acpi_video_uninit_device(void* cookie)
 {
-	acpi_video_device* info = (acpi_video_device*)_cookie;
-	info->acpi->remove_notify_handler(info->acpi_cookie,
-		ACPI_DEVICE_NOTIFY, acpi_video_notify_handler);
-	free(info);
 }
 
 
@@ -116,6 +99,7 @@ acpi_video_read(void* cookie, off_t position, void* buffer, size_t* numBytes)
 
 	uint32 value = info->last_notify;
 	info->last_notify = 0;
+	info->updated = false;
 	memcpy(buffer, &value, sizeof(value));
 	*numBytes = sizeof(value);
 	return B_OK;
@@ -139,12 +123,49 @@ acpi_video_control(void* cookie, uint32 op, void* arg, size_t len)
 
 
 static status_t
+acpi_video_select(void* _cookie, uint8 event, selectsync* sync)
+{
+	acpi_video_device* info = (acpi_video_device*)_cookie;
+	if (event != B_SELECT_READ)
+		return B_BAD_VALUE;
+
+	status_t error = add_select_sync_pool_entry(&info->select_pool, sync, event);
+	if (error != B_OK)
+		return error;
+
+	if (info->updated)
+		notify_select_event(sync, event);
+
+	return B_OK;
+}
+
+
+static status_t
+acpi_video_deselect(void* _cookie, uint8 event, selectsync* sync)
+{
+	acpi_video_device* info = (acpi_video_device*)_cookie;
+	if (event != B_SELECT_READ)
+		return B_BAD_VALUE;
+
+	return remove_select_sync_pool_entry(&info->select_pool, sync, event);
+}
+
+
+// #pragma mark - driver module API
+
+static float
 acpi_video_support(device_node* parent)
 {
 	const char* bus = NULL;
-	sDeviceManager->get_attr_string(parent, B_DEVICE_BUS, &bus, false);
-	if (bus == NULL || strcmp(bus, "acpi") != 0)
-		return B_ERROR;
+	if (sDeviceManager->get_attr_string(parent, B_DEVICE_BUS, &bus, false) != B_OK
+		|| strcmp(bus, "acpi") != 0)
+		return 0.0f;
+
+	uint32 deviceType;
+	if (sDeviceManager->get_attr_uint32(parent, ACPI_DEVICE_TYPE_ITEM,
+			&deviceType, false) != B_OK
+		|| deviceType != ACPI_TYPE_DEVICE)
+		return 0.0f;
 
 	// only devices that have _BCL
 	acpi_device_module_info* acpi = NULL;
@@ -152,14 +173,14 @@ acpi_video_support(device_node* parent)
 	sDeviceManager->get_driver(parent, (driver_module_info**)&acpi,
 		(void**)&cookie);
 	if (acpi == NULL)
-		return B_ERROR;
+		return 0.0f;
 
 	acpi_data result;
 	result.pointer = NULL;
 	result.length = ACPI_ALLOCATE_BUFFER;
 	status_t status = acpi->evaluate_method(cookie, "_BCL", NULL, &result);
 	free(result.pointer);
-	return status == B_OK ? B_OK : B_ERROR;
+	return status == B_OK ? 0.6f : 0.0f;
 }
 
 
@@ -170,7 +191,7 @@ acpi_video_register_device(device_node* node)
 		{ B_DEVICE_PRETTY_NAME, B_STRING_TYPE, { .string = "ACPI Video" } },
 		{ NULL }
 	};
-	return sDeviceManager->register_node(node, ACPI_VIDEO_DEVICE_MODULE_NAME,
+	return sDeviceManager->register_node(node, ACPI_VIDEO_MODULE_NAME,
 		attrs, NULL, NULL);
 }
 
@@ -178,59 +199,63 @@ acpi_video_register_device(device_node* node)
 static status_t
 acpi_video_init_driver(device_node* node, void** _cookie)
 {
-	*_cookie = node;
+	acpi_video_device* info = (acpi_video_device*)calloc(1, sizeof(*info));
+	if (info == NULL)
+		return B_NO_MEMORY;
+
+	info->node = node;
+
+	device_node* parent = sDeviceManager->get_parent_node(node);
+	sDeviceManager->get_driver(parent, (driver_module_info**)&info->acpi,
+		(void**)&info->acpi_cookie);
+	sDeviceManager->put_node(parent);
+
+	info->last_notify = 0;
+	info->updated = false;
+	info->select_pool = NULL;
+
+	status_t status = info->acpi->install_notify_handler(info->acpi_cookie,
+		ACPI_DEVICE_NOTIFY, acpi_video_notify_handler, info);
+	if (status != B_OK) {
+		dprintf("acpi_video: install_notify_handler failed\n");
+		free(info);
+		return status;
+	}
+
+	*_cookie = info;
 	return B_OK;
 }
 
 
 static void
-acpi_video_uninit_driver(void* cookie)
+acpi_video_uninit_driver(void* _cookie)
 {
-}
-
-
-static float
-acpi_video_support_child(device_node* parent)
-{
-	return 0.0f;
+	acpi_video_device* info = (acpi_video_device*)_cookie;
+	info->acpi->remove_notify_handler(info->acpi_cookie,
+		ACPI_DEVICE_NOTIFY, acpi_video_notify_handler);
+	free(info);
 }
 
 
 static status_t
-std_ops(int32 op, ...)
+acpi_video_register_child_devices(void* driverCookie)
 {
-	switch (op) {
-		case B_MODULE_INIT:
-		case B_MODULE_UNINIT:
-			return B_OK;
-	}
-	return B_ERROR;
+	acpi_video_device* info = (acpi_video_device*)driverCookie;
+	int pathId = sDeviceManager->create_id(ACPI_VIDEO_PATHID_GENERATOR);
+	if (pathId < 0)
+		return B_ERROR;
+
+	char name[B_DEV_NAME_LENGTH];
+	snprintf(name, sizeof(name), ACPI_VIDEO_BASENAME, pathId);
+
+	return sDeviceManager->publish_device(info->node, name,
+		ACPI_VIDEO_DEVICE_MODULE_NAME);
 }
 
 
-static driver_module_info sAcpiVideoDevice = {
-	{
-		ACPI_VIDEO_DEVICE_MODULE_NAME,
-		0,
-		std_ops
-	},
-
-	NULL,
-	NULL,
-	acpi_video_init_device,
-	acpi_video_uninit_device,
-
-	acpi_video_open,
-	acpi_video_close,
-	acpi_video_free,
-
-	acpi_video_read,
-	acpi_video_write,
-	NULL,
-	acpi_video_control,
-
-	NULL,
-	NULL
+module_dependency module_dependencies[] = {
+	{ B_DEVICE_MANAGER_MODULE_NAME, (module_info**)&sDeviceManager },
+	{}
 };
 
 
@@ -238,32 +263,39 @@ static driver_module_info sAcpiVideoDriver = {
 	{
 		ACPI_VIDEO_MODULE_NAME,
 		0,
-		std_ops
+		NULL
 	},
 
 	acpi_video_support,
 	acpi_video_register_device,
 	acpi_video_init_driver,
 	acpi_video_uninit_driver,
-
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	NULL
+	acpi_video_register_child_devices,
+	NULL,	// rescan
+	NULL	// removed
 };
 
 
-module_dependency module_dependencies[] = {
-	{ B_DEVICE_MANAGER_MODULE_NAME, (module_info**)&sDeviceManager },
-	{ B_ACPI_MODULE_NAME, (module_info**)&sAcpi },
-	{}
+static device_module_info sAcpiVideoDevice = {
+	{
+		ACPI_VIDEO_DEVICE_MODULE_NAME,
+		0,
+		NULL
+	},
+
+	acpi_video_init_device,
+	acpi_video_uninit_device,
+	NULL,
+
+	acpi_video_open,
+	acpi_video_close,
+	acpi_video_free,
+	acpi_video_read,
+	acpi_video_write,
+	NULL,
+	acpi_video_control,
+	acpi_video_select,
+	acpi_video_deselect
 };
 
 
