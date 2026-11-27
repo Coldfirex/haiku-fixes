@@ -15,7 +15,7 @@
  			bool				fActiveLow;
 +
 +			// Interrupt path used when the device has an EXTENDED_IRQ
-+			// resource instead of a GPIO interrupt.
++			// resource instead of a GPIO interrupt. See RenkuOS #702.
 +			bool				fUsingInterrupt;
 +			int32				fIrq;
 +			int32				fAsserted;
@@ -104,7 +104,7 @@
  			&interrupt) != B_OK || !interrupt.found) {
 -		return B_ENTRY_NOT_FOUND;
 +		// No GPIO interrupt. Try an Extended IRQ resource. Some trackpads
-+		// (XPS 15 9560) only have this.
++		// (XPS 15 9560) only have this. See RenkuOS #702.
 +		extended_irq ext;
 +		memset(&ext, 0, sizeof(ext));
 +		if (acpi->walk_resources(device, (char*)"_CRS", find_extended_irq,
