@@ -2,4 +2,4 @@ local
 
 Adds 2560x1440, 2560x1600, 2048x1152 and 2304x1296 as scaled modes
 on high-DPI panels (native width >= 3000). The panel fitter already
-handles non-native modes. Flags match the base mode list. Not Gerrit yet.
+handles non-native modes. Flags match the base mode list. Gerrit-ready.
