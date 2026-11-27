@@ -1,5 +1,4 @@
 diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
-index 0000000..1111111 100644
 --- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
 +++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.h
 @@ -28,6 +28,11 @@ private:
@@ -17,7 +16,6 @@ index 0000000..1111111 100644
  
  #endif // I2C_HID_INPUT_READY_LINE_H
 diff --git a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
-index 0000000..1111111 100644
 --- a/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
 +++ b/src/add-ons/kernel/drivers/input/i2c_hid/InputReadyLine.cpp
 @@ -116,6 +116,15 @@ struct gpio_interrupt {
