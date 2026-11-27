@@ -4,6 +4,7 @@
  * can call screenmode. Matches any device that has _BCL.
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
