@@ -43,6 +43,7 @@ webpositive-clear-downloads-on-exit/ option to remove finished downloads on exit
 wifi-ssid-group/         show each SSID once (strongest signal) in the menus
 virtio-net-addmulti-user-memcpy/ ETHER_ADDMULTI/REMMULTI user buffer copy
 mouse-usb-device-not-ready/ keep mouse watcher alive on B_DEVICE_NOT_READY
+i2c-hid-no-ready-poll/   snooze when there is no input-ready line (RenkuOS #702)
 ```
 
 `ipv4-multicast-filter/` at the repo root is a leftover pointer. The record is `merged/ipv4-multicast-filter/` (11850).
