@@ -1,10 +1,9 @@
 --- a/src/add-ons/accelerants/intel_extreme/mode.cpp
 +++ b/src/add-ons/accelerants/intel_extreme/mode.cpp
-@@ -186,6 +186,46 @@
- 		return false;
+@@ -271,6 +271,45 @@
+ 	return limit == 0 || mode->timing.pixel_clock <= limit;
+ }
  
- 	return true;
-+
 +
 +// Extra scaled modes for high-DPI panels. The panel fitter handles these.
 +// Timings are approximate; the hardware runs the panel at native mode.
@@ -44,10 +43,10 @@
 +}
 +
 +
- }
- 
  /*!	Creates the initial mode list of the primary accelerant.
-@@ -255,9 +295,17 @@
+ 	It's called from intel_init_accelerant().
+ */
+@@ -338,9 +377,17 @@
  		gInfo->mode_list_area = create_display_modes("intel extreme modes", NULL, &mode, 1,
  			supportedSpaces, colorSpaceCount, limitModes, &list, &count);
  	} else {
@@ -64,6 +63,6 @@
  		gInfo->mode_list_area = create_display_modes("intel extreme modes",
 -			gInfo->has_edid ? &gInfo->edid_info : NULL, NULL, 0,
 +			gInfo->has_edid ? &gInfo->edid_info : NULL, extra, extraCount,
- 			supportedSpaces, colorSpaceCount, NULL, &list, &count);
+ 			supportedSpaces, colorSpaceCount,
+ 			max_port_pixel_clock() != 0 ? limit_modes_for_ports : NULL, &list, &count);
  	}
- 
