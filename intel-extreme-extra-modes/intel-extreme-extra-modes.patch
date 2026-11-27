@@ -1,11 +1,10 @@
-diff --git a/src/add-ons/accelerants/intel_extreme/mode.cpp b/src/add-ons/accelerants/intel_extreme/mode.cpp
-index 0000000..1111111 100644
 --- a/src/add-ons/accelerants/intel_extreme/mode.cpp
 +++ b/src/add-ons/accelerants/intel_extreme/mode.cpp
-@@ -190,6 +190,50 @@ limit_modes_for_gen3_lvds(display_mode* mode)
- 	return true;
- }
+@@ -186,6 +186,46 @@
+ 		return false;
  
+ 	return true;
++
 +
 +// Extra scaled modes for high-DPI panels. The panel fitter handles these.
 +// Timings are approximate; the hardware runs the panel at native mode.
@@ -45,18 +44,14 @@ index 0000000..1111111 100644
 +}
 +
 +
+ }
+ 
  /*!	Creates the initial mode list of the primary accelerant.
- 	It's called from intel_init_accelerant().
- */
-@@ -250,12 +294,20 @@ create_mode_list(void)
- 		// TODO: support lower modes via scaling and windowing
+@@ -255,9 +295,17 @@
  		gInfo->mode_list_area = create_display_modes("intel extreme modes", NULL, &mode, 1,
  			supportedSpaces, colorSpaceCount, limitModes, &list, &count);
  	} else {
 -		// Otherwise return the 'real' list of modes
--		gInfo->mode_list_area = create_display_modes("intel extreme modes",
--			gInfo->has_edid ? &gInfo->edid_info : NULL, NULL, 0,
--			supportedSpaces, colorSpaceCount, NULL, &list, &count);
 +		// Otherwise return the real list of modes.
 +		// On high-DPI panels also offer a few intermediate scaled modes.
 +		const display_mode* extra = NULL;
@@ -66,9 +61,9 @@ index 0000000..1111111 100644
 +			extraCount = B_COUNT_OF(kExtraHighDpiModes);
 +		}
 +
-+		gInfo->mode_list_area = create_display_modes("intel extreme modes",
+ 		gInfo->mode_list_area = create_display_modes("intel extreme modes",
+-			gInfo->has_edid ? &gInfo->edid_info : NULL, NULL, 0,
 +			gInfo->has_edid ? &gInfo->edid_info : NULL, extra, extraCount,
-+			supportedSpaces, colorSpaceCount, NULL, &list, &count);
+ 			supportedSpaces, colorSpaceCount, NULL, &list, &count);
  	}
  
- 	if (gInfo->mode_list_area < B_OK)
